@@ -1,0 +1,5 @@
+numpy
+jsonpickle
+scipy
+Pillow
+pandas

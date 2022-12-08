@@ -1,0 +1,43 @@
+# Modified mmdetection Dockerfile
+ARG PYTORCH="1.4"
+ARG CUDA="10.1"
+ARG CUDNN="7"
+
+FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
+
+ENV TORCH_CUDA_ARCH_LIST="3.7 6.0 6.1 7.0+PTX"
+ENV TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
+ENV CMAKE_PREFIX_PATH="$(dirname $(which conda))/../"
+
+#ENV http_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
+#ENV https_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
+
+# Added poppler-utils, default-jre installations
+RUN apt-get update && apt-get install -y git vim ninja-build poppler-utils default-jre \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install mmdetection
+RUN conda clean --all
+RUN git clone --branch v1.2.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
+WORKDIR /mmdetection
+ENV FORCE_CUDA="1"
+RUN pip install cython --no-cache-dir
+RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
+RUN pip install --no-cache-dir -e .
+
+# Reinstall openmm-mmcv to use the right version, somehow the above installation
+# of mmdetection installs mmcv of an updated version which is not compatible for
+# mmdetection v1.2
+RUN pip install mmcv==0.5.7
+WORKDIR /app
+# Install our package
+COPY ./esg_data_pipeline ./code/esg_data_pipeline
+WORKDIR /app/code/esg_data_pipeline
+RUN pip install -e .
+
+RUN mkdir -p /app/server_logs
+RUN chmod u+x entry.sh
+CMD ./entry.sh
+
+

@@ -1,0 +1,141 @@
+allianz_nlp-git/
+├── bin/
+│   └── <application>/
+│       └── run
+?├── docker/
+│   ├──<application>/
+│   │   └── Dockerfile
+│   ├── docker-compose.yaml
+│   └── <application>.Dockerfie
+│
+├── docs/
+│   ├── data_handler.md
+│   ├── inference.md
+│   └── ...
+│
+├── code/
+│   ├── data_loader/
+│   │   ├── subfolder/
+│   │   ├── __init__.py
+│   │   ├── data_handler.py
+│   │   ├── aws_bucket.py
+│   │   ├── (Dockerfile)
+│   │   └── test/
+│   │		└── data_handler_tests.py
+│   │
+│   ├── esg_data_pipeline/
+│   │   ├── subfolder/
+│   │   ├── __init__.py
+│   │   ├── (Dockerfile)
+│   │   ├── <...>.py
+│   │   └── <...>.py
+│   │
+│   └── model_pipeline/
+│       ├── subfolder/
+│       ├── kpi_inference_pipeline/
+│       ├── __init__.py
+│       ├── (Dockerfile)
+│       ├── <...>.py
+│       └── <...>.py
+│
+├── models/
+│	├── base/
+│	│	└──relevance_roberta
+│	│	
+│   └── <project>
+│       ├── RELEVANCE/
+│		│	├── model_<timestamp0>/
+│		│	│	└── model.model
+│		│	└── model_<timestamp1>/
+│		│		└── model.model
+│		│	
+│		└── KPI_EXTRACTION/
+│			└── Text/
+│		     
+├── data/
+│   └── <project>
+│       ├── interim/
+│		│	├── kpi_mapping/
+│		│	├── pdfs/
+│       │   ├── ml/
+│		│	│	├── annotations/
+│		│	│	├──	curation/
+│		│	│	│    └── esg_TEXT_dataset.csv
+│		│	│	├──	extraction/
+│		│	│	├──	KPI_EXTRACTION/
+│		│	│	│	└──	Text/
+│		│	│	├── training/
+│		│	│	│   ├── kpi_val_split.csv
+│		│	│	│   └── kpi_train_split.csv
+│		│	│	└──	text_3434.csv
+│		│	└── rb/
+│		│		├──	KPI_EXTRACTION/
+│		│		└── work/			
+│       ├── input/
+│		│	├── annotations/
+│		│	├── kpi_mapping/
+│		│	└── pdfs/
+│		│		├── inference/
+│		│		└── training/
+│       ├── output/
+│		│	├──	KPI_EXTRACTION/
+│		│	│	└──	Text/
+│		│   └──	Text/
+│       ├── running
+│       └── settings.json 
+│
+├── notebook/
+│   └── <application>/
+│       └── example.ipynb
+│
+├── log/
+├── tests/
+├── .gitignore
+├── LICENSE
+└── README.md
+
+
+
+--In container look
+
+app/
+│
+├── code/
+│   ├── __init__.py
+│   ├── helpers/
+│   │   ├── __init__.py
+│   │   ├── data_handler.py
+│   │   ├── aws_bucket.py
+│   │   └── test/
+│   │		└── data_handler_tests.py
+│   │
+│   ├── esg_data_pipeline/
+│   │   ├── __init__.py
+│   │   ├── helpers.py
+│   │   └── world.py
+│   │
+│   ├── kpi_inference_pipeline/
+│   │   ├── __init__.py
+│   │   ├── helpers.py
+│   │   └── world.py
+│   │
+│   └── model_pipeline/
+│       ├── __init__.py
+│       ├── helpers.py
+│       └── world.py
+│
+├── data/
+│   └── <project> 
+│       ├── interim/
+│       ├── input/
+│       └── output/
+│ 
+├── model/
+│
+├── notebook/
+│   └── <application>/
+│       └── example.ipynb
+│
+├── entrypoint.sh
+│
+?── README.md
