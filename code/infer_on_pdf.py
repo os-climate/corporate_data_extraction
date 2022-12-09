@@ -277,7 +277,7 @@ def main():
                     
     parser.add_argument('--mode',
                     type=str,
-                    default='ML', # TODO: For now, this is "ML". In the future, the default should probably be "both"
+                    default='both', 
                     help='Inference Mode (RB, ML, both, or none - for just doing postprocessing)')
                     
     args = parser.parse_args()
