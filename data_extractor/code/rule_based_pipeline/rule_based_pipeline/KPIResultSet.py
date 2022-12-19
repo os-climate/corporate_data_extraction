@@ -76,7 +76,7 @@ class KPIResultSet:
 		ctab = self.to_ctab()
 		csv_str = ctab.to_string(use_format = ConsoleTable.FORMAT_CSV)
 
-		f = open(csv_file, "w")
+		f = open(csv_file, "w", encoding="utf-8")
 		f.write(csv_str)
 		f.close()
 		
