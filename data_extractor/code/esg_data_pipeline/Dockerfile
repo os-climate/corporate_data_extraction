@@ -12,6 +12,12 @@ ENV CMAKE_PREFIX_PATH="$(dirname $(which conda))/../"
 #ENV http_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
 #ENV https_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
 
+RUN apt-key del 3bf863cc
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+
+RUN apt-key del 7fa2af80
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+
 # Added poppler-utils, default-jre installations
 RUN apt-get update && apt-get install -y git vim ninja-build poppler-utils default-jre \
     && apt-get clean \
