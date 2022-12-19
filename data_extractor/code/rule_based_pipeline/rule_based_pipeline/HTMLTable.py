@@ -1876,7 +1876,7 @@ class HTMLTable:
 				max_height = max(max_height, it.height)
 		
 		y0 = it0.pos_y
-		y1 = it0.pos_y + it.height
+		y1 = it0.pos_y + it0.height
 		if(y1 < min_y0):
 			return min_y0 - y1 < 0.5 * max_height
 		if(y0 > max_y1):
