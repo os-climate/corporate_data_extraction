@@ -35,10 +35,10 @@ curation:
 # All the input parameters for the relevance training stage
 train_relevance: 
   tokenizer_base_model: roberta-base
-  base_model: relevance_roberta
+  base_model: roberta-base
   input_model_name:
   output_model_name: ESG_REL_1
-  train: false
+  train: true
   seed: 42
   tokenizer_pretrained_model_name_or_path: roberta-base # farm.tokenization input
   processor: # farm.processor TextPairClassificationProcessor input
@@ -77,10 +77,10 @@ infer_relevance:
   return_class_probs: false
 # All the input parameters for the kpi training stage
 train_kpi:
-  input_model_name: ESG_KPI_1
+  input_model_name: 
   output_model_name: ESG_KPI_1
   base_model: a-ware/roberta-large-squadv2
-  train: false
+  train: true
   seed: 42
   curation:
     val_ratio: 0
