@@ -17,19 +17,19 @@ Note: Adjust mounting paths such that /app/ids/corporate_data_extraction/ points
 
 2.1 via docker
 
-docker run --gpus all -d -p 4000:4000 -v /app/ids/corporate_data_extraction/data:/app/data -v /app/ids/corporate_data_extraction/models:/app/models -v /app/ids/corporate_data_extraction/log:/app/server_logs esg_data_pipeline:latest 
+docker run --gpus all -d -p 4000:4000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs esg_data_pipeline:latest 
 
-docker run --gpus all -d -p 6000:6000 -v /app/ids/corporate_data_extraction/data:/app/data -v /app/ids/corporate_data_extraction/models:/app/models -v /app/ids/corporate_data_extraction/log:/app/server_logs model_pipeline:latest 
+docker run --gpus all -d -p 6000:6000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs model_pipeline:latest 
 
-docker run -d -p 8000:8000 -v /app/ids/corporate_data_extraction/data:/app/data -v /app/ids/corporate_data_extraction/log:/app/server_logs rule_based_pipeline:latest 
+docker run -d -p 8000:8000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs rule_based_pipeline:latest 
 
 2.2 via podman
 
-podman run --privileged -d -p 4000:4000 -v /app/ids/corporate_data_extraction/data:/app/data -v /app/ids/corporate_data_extraction/models:/app/models -v /app/ids/corporate_data_extraction/log:/app/server_logs esg_data_pipeline:latest 
+podman run --privileged -d -p 4000:4000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs esg_data_pipeline:latest 
 
-podman run --privileged -d -p 6000:6000 -v /app/ids/corporate_data_extraction/data:/app/data -v /app/ids/corporate_data_extraction/models:/app/models -v /app/ids/corporate_data_extraction/log:/app/server_logs model_pipeline:latest 
+podman run --privileged -d -p 6000:6000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs model_pipeline:latest 
 
-podman run -d -p 8000:8000 -v /app/ids/corporate_data_extraction/data:/app/data -v /app/ids/corporate_data_extraction/log:/app/server_logs rule_based_pipeline:latest 
+podman run -d -p 8000:8000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs rule_based_pipeline:latest 
 
 # 3. Setup new project
 
