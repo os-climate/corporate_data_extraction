@@ -78,7 +78,7 @@ def run_train_relevance():
             model_dir = os.path.join(str(MODEL_FOLDER), project_name, 
                                      "RELEVANCE", "Text", relevance_training_settings["input_model_name"])
         else:
-            model_dir = os.path.join(str(MODEL_FOLDER), "base", relevance_training_settings["base_model"])
+            model_dir = relevance_training_settings["base_model"]
         processor_config.load_dir = model_dir
         model_config.lang_model = model_dir
         model_config.load_dir = model_dir
