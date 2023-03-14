@@ -18,13 +18,14 @@ RUN apt-get update
 RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
 
 COPY ./rule_based_pipeline /app/code/rule_based_pipeline
-RUN chmod u+x /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod
+#RUN chmod u+x /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod
 
-WORKDIR /app/code/rule_based_pipeline
-RUN dpkg -i libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb
-RUN pip install -e .
+#WORKDIR /app/code/rule_based_pipeline
+#RUN dpkg -i libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb
+#RUN pip install -e .
 
-RUN mkdir -p /app/server_logs
+#RUN mkdir -p /app/server_logs
 
-RUN chmod u+x entry.sh
-CMD ./entry.sh
+#RUN chmod u+x entry.sh
+#CMD ./entry.sh
+CMD sleep infinity
