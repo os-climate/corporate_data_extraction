@@ -12,5 +12,5 @@ COPY entry.sh /app/code
 #RUN mkdir -p /app/server_logs
 
 #RUN chmod u+x entry.sh
-CMD /app/code/entry.sh
-#run sleep infinity
+#CMD /app/code/entry.sh
+RUN sleep infinity
