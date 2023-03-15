@@ -15,6 +15,7 @@ RUN chgrp 0 ./pdftohtml_mod/pdftohtml_mod && \
 RUN chmod u+x ./pdftohtml_mod/pdftohtml_mod
 ## <------ Changed setting for open shift
 
+run apt-get update && apt-get install -y software-properties-common
 run add-apt-repository ppa:linuxuprising/libpng12
 run apt-get update
 run apt-get install libpng12-0
