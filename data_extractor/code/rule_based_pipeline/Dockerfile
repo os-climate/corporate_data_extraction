@@ -48,4 +48,6 @@ RUN chgrp 0 ./entry.sh && \
     chmod g=u ./entry.sh  
 RUN chmod u+x ./entry.sh
 
+USER admin
+
 CMD ./entry.sh
