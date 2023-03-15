@@ -40,9 +40,10 @@ run apt-get update
 run apt-get install libpng12-0
 ## <-------------------------------------------------- Changed setting for open shift
 
-RUN pip install -e /app/code
+#RUN pip install -e /app/code
 
-RUN mkdir -p /app/server_logs
+#RUN mkdir -p /app/server_logs
 
-RUN chmod u+x entry.sh
-CMD ./entry.sh
+#RUN chmod u+x entry.sh
+#CMD ./entry.sh
+run sleep infinity
