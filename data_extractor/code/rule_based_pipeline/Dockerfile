@@ -20,6 +20,8 @@ RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-de
 RUN useradd -ms /bin/bash admin
 
 COPY ./rule_based_pipeline /app/code/rule_based_pipeline
+## NEW: Copy python setup file for "pip install -e ." below
+COPY ./setup.py /app/code/rule_based_pipeline
 WORKDIR /app/code/rule_based_pipeline
 
 RUN chown admin:admin ./pdftohtml_mod/pdftohtml_mod
@@ -37,11 +39,9 @@ run apt-get update
 run apt-get install libpng12-0
 ## <-------------------------------------------------- Changed setting for open shift
 
-run sleep infinity
+RUN pip install -e .
 
-#RUN pip install -e .
+RUN mkdir -p /app/server_logs
 
-#RUN mkdir -p /app/server_logs
-
-#RUN chmod u+x entry.sh
-#CMD ./entry.sh
+RUN chmod u+x entry.sh
+CMD ./entry.sh
