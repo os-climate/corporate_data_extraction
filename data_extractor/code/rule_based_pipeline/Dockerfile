@@ -20,7 +20,7 @@ RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-de
 COPY . /app/code
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
-RUN chmod u+x /app/code
+RUN chmod -R u+x /app/code
 
 WORKDIR /app/code
 
