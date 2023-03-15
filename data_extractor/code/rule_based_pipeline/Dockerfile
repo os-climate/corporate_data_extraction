@@ -12,4 +12,4 @@ COPY setup.py /app/code
 
 #RUN chmod u+x entry.sh
 #CMD ./entry.sh
-run sleep infinity
+#run sleep infinity
