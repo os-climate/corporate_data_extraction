@@ -1,11 +1,13 @@
 FROM ubuntu:20.04
 
-COPY ./rule_based_pipeline /app/code/rule_based_pipeline
-
 RUN useradd -ms /bin/bash admin
+
+COPY ./rule_based_pipeline /app/code/rule_based_pipeline
+WORKDIR /app/code/rule_based_pipeline
+
 RUN chown admin:admin /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod
-RUN chgrp -R 0 /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod && \
-    chmod -R g=u /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod
+RUN chgrp 0 /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod && \
+    chmod g=u /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod
     
 RUN chmod u+x /app/code/rule_based_pipeline/rule_based_pipeline/pdftohtml_mod/pdftohtml_mod
 
