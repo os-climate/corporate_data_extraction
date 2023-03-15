@@ -21,7 +21,8 @@ RUN useradd -ms /bin/bash admin
 
 COPY ./rule_based_pipeline /app/code/rule_based_pipeline
 ## NEW: Copy python setup file for "pip install -e ." below
-COPY ./setup.py /app/code/rule_based_pipeline
+COPY ./setup.py /app/code
+
 WORKDIR /app/code/rule_based_pipeline
 
 RUN chown admin:admin ./pdftohtml_mod/pdftohtml_mod
@@ -39,7 +40,7 @@ run apt-get update
 run apt-get install libpng12-0
 ## <-------------------------------------------------- Changed setting for open shift
 
-RUN pip install -e .
+RUN pip install -e /app/code
 
 RUN mkdir -p /app/server_logs
 
