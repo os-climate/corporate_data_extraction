@@ -13,4 +13,4 @@ COPY entry.sh /app/code
 
 #RUN chmod u+x entry.sh
 #CMD /app/code/entry.sh
-RUN sleep infinity
+#RUN sleep infinity
