@@ -1,5 +1,19 @@
 FROM ubuntu:20.04
 
+LABEL maintainer="ismail.demir@investmentdataservices.com"
+LABEL version="1.0"
+LABEL description="Image for rule-based solution."
+
+# no prompt during installation:
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+#RUN add-apt-repository -E --yes ppa:linuxuprising/libpng12
+RUN apt-get update
+#RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libpng12-0 libfontconfig
+RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
+
 ## Changed setting for open shift ------------------------------------------------->
 # https://stackoverflow.com/questions/58473832/how-do-i-change-the-permissions-in-openshift-container-platform
 #Add a default user admin
