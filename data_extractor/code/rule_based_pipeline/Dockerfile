@@ -21,7 +21,7 @@ RUN useradd -ms /bin/bash admin
 
 COPY ./rule_based_pipeline /app/code/rule_based_pipeline
 ## NEW: Copy python setup file for "pip install -e ." below
-COPY ./setup.py /app/code
+COPY setup.py /app/code
 
 WORKDIR /app/code/rule_based_pipeline
 
