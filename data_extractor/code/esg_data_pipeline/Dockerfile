@@ -36,14 +36,20 @@ RUN pip install --no-cache-dir -e .
 # of mmdetection installs mmcv of an updated version which is not compatible for
 # mmdetection v1.2
 RUN pip install mmcv==0.5.7
-WORKDIR /app
-# Install our package
-COPY ./esg_data_pipeline ./code/esg_data_pipeline
-WORKDIR /app/code/esg_data_pipeline
-RUN pip install -e .
 
+# Install our package
+COPY . ./code
+
+RUN chgrp -R 0 /app/code && chmod g=u /app/code
+RUN chmod -R a+x /app/code
+
+WORKDIR /app/code
+
+RUN pip install -e .
 RUN mkdir -p /app/server_logs
-RUN chmod u+x entry.sh
+
+USER 1234
+
 CMD ./entry.sh
 
 
