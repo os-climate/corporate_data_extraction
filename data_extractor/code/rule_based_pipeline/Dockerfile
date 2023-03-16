@@ -14,15 +14,12 @@ RUN apt-get update
 #RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libpng12-0 libfontconfig
 RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
 
-# https://stackoverflow.com/questions/58473832/how-do-i-change-the-permissions-in-openshift-container-platform
+COPY ./rule_based_pipeline /app/code/rule_based_pipeline
 
-# Changed
-COPY . /app/code
+RUN chgrp -R 0 /app/code/rule_based_pipeline && chmod g=u /app/code/rule_based_pipeline
+RUN chmod -R a+x /app/code/rule_based_pipeline
 
-RUN chgrp -R 0 /app/code && chmod g=u /app/code
-RUN chmod -R a+x /app/code
-
-WORKDIR /app/code
+WORKDIR /app/code/rule_based_pipeline
 
 RUN dpkg -i libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb
 RUN pip install -e .
