@@ -9,9 +9,6 @@ ENV TORCH_CUDA_ARCH_LIST="3.7 6.0 6.1 7.0+PTX"
 ENV TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
 ENV CMAKE_PREFIX_PATH="$(dirname $(which conda))/../"
 
-#ENV http_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
-#ENV https_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
-
 RUN apt-key del 3bf863cc
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
@@ -37,13 +34,12 @@ RUN pip install --no-cache-dir -e .
 # mmdetection v1.2
 RUN pip install mmcv==0.5.7
 
-# Install our package
-COPY . /app/code
+COPY ./esg_data_pipeline /app/code/esg_data_pipeline
 
-RUN chgrp -R 0 /app/code && chmod g=u /app/code
-RUN chmod -R a+x /app/code
+RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
+RUN chmod -R a+x /app/code/esg_data_pipeline
 
-WORKDIR /app/code
+WORKDIR /app/code/esg_data_pipeline
 
 RUN pip install -e .
 RUN mkdir -p /app/server_logs
