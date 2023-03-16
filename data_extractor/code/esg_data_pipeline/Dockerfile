@@ -38,7 +38,7 @@ RUN pip install --no-cache-dir -e .
 RUN pip install mmcv==0.5.7
 
 # Install our package
-COPY . ./code
+COPY . /app/code
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
 RUN chmod -R a+x /app/code
