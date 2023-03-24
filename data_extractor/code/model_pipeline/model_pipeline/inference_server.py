@@ -77,12 +77,15 @@ def run_train_relevance():
         if relevance_training_settings["input_model_name"] is not None:
             model_dir = os.path.join(str(MODEL_FOLDER), project_name, 
                                      "RELEVANCE", "Text", relevance_training_settings["input_model_name"])
+            model_config.load_dir = model_dir
+            tokenizer_config.pretrained_model_name_or_path = model_dir
+            model_config.lang_model = model_dir
+            processor_config.load_dir = model_dir
         else:
             model_dir = relevance_training_settings["base_model"]
-        processor_config.load_dir = model_dir
-        model_config.lang_model = model_dir
-        model_config.load_dir = model_dir
-        tokenizer_config.pretrained_model_name_or_path = model_dir
+            model_config.load_dir = None
+            tokenizer_config.pretrained_model_name_or_path = relevance_training_settings["base_model"]
+            processor_config.load_dir = None        
         
         train_config.n_epochs = relevance_training_settings["training"]["n_epochs"]
         train_config.run_hyp_tuning = relevance_training_settings["training"]["run_hyp_tuning"]
