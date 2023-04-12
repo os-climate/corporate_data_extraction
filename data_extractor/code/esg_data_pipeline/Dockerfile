@@ -9,9 +9,6 @@ ENV TORCH_CUDA_ARCH_LIST="3.7 6.0 6.1 7.0+PTX"
 ENV TORCH_NVCC_FLAGS="-Xfatbin -compress-all"
 ENV CMAKE_PREFIX_PATH="$(dirname $(which conda))/../"
 
-#ENV http_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
-#ENV https_proxy="http://proxy-ids-poc-d.we1.azure.aztec.cloud.allianz:80"
-
 RUN apt-key del 3bf863cc
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
@@ -36,14 +33,19 @@ RUN pip install --no-cache-dir -e .
 # of mmdetection installs mmcv of an updated version which is not compatible for
 # mmdetection v1.2
 RUN pip install mmcv==0.5.7
-WORKDIR /app
-# Install our package
-COPY ./esg_data_pipeline ./code/esg_data_pipeline
-WORKDIR /app/code/esg_data_pipeline
-RUN pip install -e .
 
+COPY ./esg_data_pipeline /app/code/esg_data_pipeline
+
+RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
+RUN chmod -R a+x /app/code/esg_data_pipeline
+
+WORKDIR /app/code/esg_data_pipeline
+
+RUN pip install -e .
 RUN mkdir -p /app/server_logs
-RUN chmod u+x entry.sh
+
+USER 1234
+
 CMD ./entry.sh
 
 
