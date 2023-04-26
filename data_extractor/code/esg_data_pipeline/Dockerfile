@@ -41,11 +41,13 @@ RUN chmod -R a+x /app/code/esg_data_pipeline
 
 WORKDIR /app/code/esg_data_pipeline
 
-RUN pip install -e .
-RUN mkdir -p /app/server_logs
+RUN sleep infinity
 
-USER 1234
+#RUN pip install -e .
+#RUN mkdir -p /app/server_logs
 
-CMD ./entry.sh
+#USER 1234
+
+#CMD ./entry.sh
 
 
