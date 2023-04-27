@@ -20,6 +20,16 @@ RUN apt-get update && apt-get install -y git vim ninja-build poppler-utils defau
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-RUN sleep infinity
+COPY ./esg_data_pipeline /app/code/esg_data_pipeline
 
+RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
+RUN chmod -R a+x /app/code/esg_data_pipeline
 
+WORKDIR /app/code/esg_data_pipeline
+
+#RUN pip install -e .
+RUN mkdir -p /app/server_logs
+
+USER 1234
+
+CMD ./entry.sh
