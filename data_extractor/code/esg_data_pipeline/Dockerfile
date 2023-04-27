@@ -20,6 +20,14 @@ RUN apt-get update && apt-get install -y git vim ninja-build poppler-utils defau
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Install mmdetection
+RUN conda clean --all
+RUN git clone --branch v1.2.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
+WORKDIR /mmdetection
+ENV FORCE_CUDA="1"
+RUN pip install cython --no-cache-dir
+RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
+
 COPY ./esg_data_pipeline /app/code/esg_data_pipeline
 
 RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
