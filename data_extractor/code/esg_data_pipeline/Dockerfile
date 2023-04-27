@@ -28,6 +28,8 @@ ENV FORCE_CUDA="1"
 RUN pip install cython --no-cache-dir
 RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
 
+RUN pip install --no-cache-dir -e .
+
 COPY ./esg_data_pipeline /app/code/esg_data_pipeline
 
 RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
