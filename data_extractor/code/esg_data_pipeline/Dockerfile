@@ -45,6 +45,5 @@ RUN pip install -e .
 RUN mkdir -p /app/server_logs
 
 USER 1234
-usermod -aG sudo 1234
 
 CMD ./entry.sh
