@@ -27,7 +27,10 @@ WORKDIR /mmdetection
 ENV FORCE_CUDA="1"
 RUN pip install cython --no-cache-dir
 RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
-##RUN pip install --no-cache-dir -e .
+# THE FOLLOWING MAKES ISSUES:
+# ---------------->
+RUN pip install --no-cache-dir -e .
+# <----------------
 
 # Reinstall openmm-mmcv to use the right version, somehow the above installation
 # of mmdetection installs mmcv of an updated version which is not compatible for
