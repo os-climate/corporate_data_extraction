@@ -21,10 +21,10 @@ RUN apt-get update && apt-get install -y git vim ninja-build poppler-utils defau
     && rm -rf /var/lib/apt/lists/*
 
 # Install mmdetection
-##RUN conda clean --all
-##RUN git clone --branch v1.2.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
-##WORKDIR /mmdetection
-##ENV FORCE_CUDA="1"
+RUN conda clean --all
+RUN git clone --branch v1.2.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
+WORKDIR /mmdetection
+ENV FORCE_CUDA="1"
 ##RUN pip install cython --no-cache-dir
 ##RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
 ##RUN pip install --no-cache-dir -e .
@@ -45,5 +45,6 @@ RUN pip install -e .
 RUN mkdir -p /app/server_logs
 
 USER 1234
+usermod -aG sudo 1234
 
 CMD ./entry.sh
