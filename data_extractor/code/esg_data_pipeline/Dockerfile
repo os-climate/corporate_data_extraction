@@ -16,17 +16,12 @@ RUN apt-key del 7fa2af80
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 # Added poppler-utils, default-jre installations
-RUN apt-get update && apt-get install -y git vim ninja-build poppler-utils default-jre \
+RUN apt-get update && apt-get install -y vim
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Install mmdetection
 RUN conda clean --all
-RUN git clone --branch v1.2.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
-WORKDIR /mmdetection
-ENV FORCE_CUDA="1"
-RUN pip install cython --no-cache-dir
-RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
 
 RUN pip install --no-cache-dir -e .
 
