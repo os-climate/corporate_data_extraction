@@ -25,8 +25,8 @@ RUN conda clean --all
 RUN git clone --branch v1.2.0 https://github.com/open-mmlab/mmdetection.git /mmdetection
 WORKDIR /mmdetection
 ENV FORCE_CUDA="1"
-##RUN pip install cython --no-cache-dir
-##RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
+RUN pip install cython --no-cache-dir
+RUN pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
 ##RUN pip install --no-cache-dir -e .
 
 # Reinstall openmm-mmcv to use the right version, somehow the above installation
@@ -44,6 +44,6 @@ WORKDIR /app/code/esg_data_pipeline
 RUN pip install -e .
 RUN mkdir -p /app/server_logs
 
-USER 1234
+#USER 1234
 
 CMD ./entry.sh
