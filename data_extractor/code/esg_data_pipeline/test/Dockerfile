@@ -12,9 +12,4 @@ WORKDIR /app/code
 
 RUN pip install -r requirements.txt
 
-RUN chgrp -R 0 /app/code && chmod g=u /app/code
-RUN chmod -R a+x /app/code
-
-USER 1234
-
 CMD python3 app.py
