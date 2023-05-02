@@ -48,6 +48,7 @@ WORKDIR /app/code/esg_data_pipeline
 
 RUN pip install -e .
 RUN mkdir -p /app/server_logs
+RUN chmod -R 777 /app/server_logs
 
 ## USER 1234
 
