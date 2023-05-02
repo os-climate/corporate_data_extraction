@@ -29,6 +29,6 @@ RUN pip install -e .
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
 
-USER 1234
+#USER 1234
 
 CMD ./entry.sh
