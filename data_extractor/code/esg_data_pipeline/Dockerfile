@@ -42,6 +42,8 @@ COPY ./esg_data_pipeline /app/code/esg_data_pipeline
 RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
 RUN chmod -R a+x /app/code/esg_data_pipeline
 
+RUN chmod -R 777 /app/server_logs
+
 WORKDIR /app/code/esg_data_pipeline
 
 RUN pip install -e .
