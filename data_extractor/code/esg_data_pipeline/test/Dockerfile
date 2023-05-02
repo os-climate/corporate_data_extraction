@@ -4,11 +4,9 @@ FROM ubuntu:20.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
-RUN apt-get install -y apt-utils wget python3 python3-pip vim libcurl3-gnutls
+RUN apt-get install -y apt-utils wget python3 python3-pip vim
 
-COPY app.py /app/code/app.py
-COPY requirements.txt /app/code/requirements.txt
-COPY entry.sh /app/code/entry.sh
+COPY . /app/code
 
 WORKDIR /app/code
 
@@ -19,4 +17,4 @@ RUN chmod -R a+x /app/code
 
 USER 1234
 
-CMD ./entry.sh
+CMD python3 app.py
