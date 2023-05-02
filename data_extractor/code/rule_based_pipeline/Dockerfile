@@ -9,10 +9,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
-#RUN add-apt-repository -E --yes ppa:linuxuprising/libpng12
 RUN apt-get update
-#RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libpng12-0 libfontconfig
-RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
+RUN apt-get install -y python3 python3-pip wget gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
 
 COPY ./rule_based_pipeline /app/code/rule_based_pipeline
 
