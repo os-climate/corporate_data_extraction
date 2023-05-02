@@ -17,15 +17,13 @@ COPY ./rule_based_pipeline /app/code/rule_based_pipeline
 RUN chgrp -R 0 /app/code/rule_based_pipeline && chmod g=u /app/code/rule_based_pipeline
 RUN chmod -R a+x /app/code/rule_based_pipeline
 
-RUN chgrp -R 0 /app/server_logs && chmod g=u /app/server_logs
-RUN chmod -R a+x /app/server_logs
-
 WORKDIR /app/code/rule_based_pipeline
 
 RUN dpkg -i libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb
 RUN pip install -e .
 RUN mkdir -p /app/server_logs
+RUN chmod -R 777 /app/server_logs
 
-USER 1234
+#USER 1234
 
 CMD ./entry.sh
