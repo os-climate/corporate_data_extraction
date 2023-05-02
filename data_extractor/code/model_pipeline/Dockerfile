@@ -20,9 +20,6 @@ COPY ./kpi_inference_data_pipeline /app/code/kpi_inference_data_pipeline
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
 RUN chmod -R a+x /app/code
 
-RUN chgrp -R 0 /app/server_logs && chmod g=u /app/server_logs
-RUN chmod -R a+x /app/server_logs
-
 WORKDIR /app/code/kpi_inference_data_pipeline
 RUN pip install -e .
 
@@ -30,6 +27,7 @@ WORKDIR /app/code/model_pipeline
 RUN pip install -e .
 
 RUN mkdir -p /app/server_logs
+RUN chmod -R 777 /app/server_logs
 
 USER 1234
 
