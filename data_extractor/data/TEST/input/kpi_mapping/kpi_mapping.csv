@@ -1,0 +1,8 @@
+kpi_id,question,sectors,add_year,kpi_category,,
+1,In which year was the annual report or the sustainability report published?,"OG, CM, CU",FALSE,TEXT,,
+2,What is the total volume of proven and probable hydrocarbons reserves?,OG,TRUE,"TEXT, TABLE",,
+6,What is the total amount of direct greenhouse gases emissions referred to as scope 1 emissions?,"CU, OG",TRUE,"TEXT, TABLE",,
+7,What is the total amount of energy indirect greenhouse gases emissions referred to as scope 2 emissions?,"CU, OG",TRUE,"TEXT, TABLE",,
+9,What is the base year for carbon reduction commitment?,"OG, CM, CU",FALSE,"TEXT, TABLE",,
+11,What is the target year for climate commitment?,"OG, CM, CU",FALSE,TEXT,,
+12,What is the target carbon reduction in percentage?,"OG, CM, CU",TRUE,TEXT,,
