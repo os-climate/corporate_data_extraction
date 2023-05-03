@@ -1,0 +1,30 @@
+FROM ubuntu:20.04
+
+# no prompt during installation:
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install -y apt-utils wget python3 python3-pip vim
+
+COPY . /app/code
+
+WORKDIR /app/code
+
+RUN pip install -r requirements.txt
+
+CMD python3 app.py
+
+COPY ./esg_data_pipeline /app/code/esg_data_pipeline
+
+RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
+RUN chmod -R a+x /app/code/esg_data_pipeline
+
+WORKDIR /app/code/esg_data_pipeline
+
+RUN pip install -e .
+RUN mkdir -p /app/server_logs
+RUN chmod -R 777 /app/server_logs
+
+## USER 1234
+
+CMD ./entry.sh
