@@ -19,7 +19,7 @@ WORKDIR /app/code
 # No requirements up to now. If so include the following:
 # RUN pip install -r requirements.txt
 
-RUN chgrp -R 0 /app/code && chmod g=u /app/code
+RUN chgrp -R 0 /app/code && chmod -R g=u /app/code
 RUN chmod -R a+x /app/code
 
 RUN mkdir -p /app/server_logs
