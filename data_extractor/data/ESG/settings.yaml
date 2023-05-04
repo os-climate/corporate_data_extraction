@@ -1,7 +1,10 @@
 # SETTINGS FILE FOR PROJECT ESG
 general:
-  infer_port: 6000
+  ext_ip: 0.0.0.0
   ext_port: 4000
+  infer_ip: 0.0.0.0
+  infer_port: 6000
+  rb_ip: 0.0.0.0
   rb_port: 8000
   delete_interim_files: false
 #All the parameters for exporting data
