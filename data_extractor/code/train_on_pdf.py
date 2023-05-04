@@ -124,20 +124,22 @@ def save_train_info(project_name):
         return None
 
 
-def run_router(ext_port, infer_port, project_name):
+def run_router(ext_port, infer_ip, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
     """
     Router function
     It fist sends a command to the extraction server to beging extraction.
     If done successfully, it will send a commnad to the inference server to start inference.
     :param ext_port (int): The port that the extraction server is listening on
     :param infer_port (int): The port that the inference server is listening on
+    :param ext_ip (int): The ip that the extraction server is listening on
+    :param infer_ip (int): The ip that the inference server is listening on
     :return: A boolean, indicating success
     """
 
     convert_xls_to_csv(project_name)
 
     # Check if the extraction server is live
-    ext_live = requests.get("http://0.0.0.0:{}/liveness".format(ext_port))
+    ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
     if ext_live.status_code == 200:
         print("Extraction server is up. Proceeding to extraction.")
     else:
@@ -149,19 +151,19 @@ def run_router(ext_port, infer_port, project_name):
     payload = {'payload': json.dumps(payload)}
 
     # Sending an execution request to the extraction server for extraction
-    ext_resp = requests.get("http://0.0.0.0:{}/extract".format(ext_port), params=payload)
+    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/extract", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
 
     # Sending an execution request to the extraction server for curation
-    ext_resp = requests.get("http://0.0.0.0:{}/curate".format(ext_port), params=payload)
+    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/curate", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
 
     # Check if the inference server is live
-    infer_live = requests.get("http://0.0.0.0:{}/liveness".format(infer_port))
+    infer_live = requests.get(f"http://{infer_ip}:{infer_port}/liveness")
     if infer_live.status_code == 200:
         print("Inference server is up. Proceeding to Inference.")
     else:
@@ -171,7 +173,7 @@ def run_router(ext_port, infer_port, project_name):
     if project_settings['train_relevance']['train']:
         print("Relevance training will be started.")
         # Requesting the inference server to start the relevance stage
-        train_resp = requests.get("http://0.0.0.0:{}/train_relevance".format(infer_port), params=payload)
+        train_resp = requests.get(f"http://{infer_ip}:{infer_port}/train_relevance", params=payload)
         print(train_resp.text)
         if train_resp.status_code != 200:
             return False
@@ -180,7 +182,7 @@ def run_router(ext_port, infer_port, project_name):
     
     if project_settings['train_kpi']['train']:
         # Requesting the inference server to start the relevance stage
-        infer_resp = requests.get("http://0.0.0.0:{}/infer_relevance".format(infer_port), params=payload)
+        infer_resp = requests.get(f"http://{infer_ip}:{infer_port}/infer_relevance", params=payload)
         print(infer_resp.text)
         if infer_resp.status_code != 200:
             return False
@@ -193,7 +195,7 @@ def run_router(ext_port, infer_port, project_name):
             print(traceback.format_exc())
         
         # Requesting the inference server to start the kpi extraction stage
-        infer_resp_kpi = requests.get("http://0.0.0.0:{}/train_kpi".format(infer_port), params=payload)
+        infer_resp_kpi = requests.get(f"http://{infer_ip}:{infer_port}/train_kpi", params=payload)
         print(infer_resp_kpi.text)
         if infer_resp_kpi.status_code != 200:
             return False
@@ -276,6 +278,8 @@ def main():
     project_model_dir = config_path.MODEL_DIR + r'/' + project_name
     ext_port = project_settings['general']['ext_port']
     infer_port = project_settings['general']['infer_port']
+    ext_ip = project_settings['general']['ext_ip']
+    infer_ip = project_settings['general']['infer_ip']
     relevance_training_output_model_name = project_settings['train_relevance']['output_model_name']
     kpi_inference_training_output_model_name = project_settings['train_kpi']['output_model_name']
     
@@ -295,7 +299,6 @@ def main():
         folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
-        #os.system("sudo "+config_path.NLP_DIR+r"/rewrite_ownership.sh")
         create_directory(folder_text_3434)
         create_directory(destination_pdf)
         create_directory(destination_annotation)
@@ -316,7 +319,7 @@ def main():
             source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
             if os.path.exists(source_extraction):
                 link_extracted_files(source_extraction, source_pdf, destination_extraction)
-        end_to_end_response = run_router(ext_port, infer_port, project_name)
+        end_to_end_response = run_router(ext_port, infer_port, project_name, ext_ip, infer_ip)
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:
                 print("Finally we transfer the text extraction to the output folder")
@@ -344,4 +347,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
