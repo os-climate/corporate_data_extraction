@@ -13,12 +13,10 @@ COPY ./code/train_on_pdf.py /app/code/train_on_pdf.py
 COPY ./code/kpi_mapping.csv /app/code/kpi_mapping.csv
 COPY ./code/setup_project.py /app/code/setup_project.py
 COPY ./code/config_path.py /app/code/config_path.py
-
 COPY ./data /app/data
 
-WORKDIR /app/code
-
 # No requirements up to now. If so include the following:
+# WORKDIR /app/code
 # RUN pip install -r requirements.txt
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
@@ -27,4 +25,4 @@ RUN chmod -R a+x /app/code
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
 
-CMD ./entry.sh
+CMD /app/code/entry.sh
