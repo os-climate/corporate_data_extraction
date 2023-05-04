@@ -14,6 +14,8 @@ COPY ./data_extractor/code/kpi_mapping.csv /app/code/kpi_mapping.csv
 COPY ./data_extractor/code/setup_project.py /app/code/setup_project.py
 COPY ./data_extractor/code/config_path.py /app/code/config_path.py
 
+COPY ./data_extractor/data /app/data
+
 WORKDIR /app/code
 
 RUN pip install -r requirements.txt
