@@ -6,25 +6,22 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y apt-utils wget python3 python3-pip vim
 
-COPY . /app/code
+COPY ./docs/TEST_SETUP/entry.sh /app/code/entry.sh
+COPY ./docs/TEST_SETUP/entry.sh /app/code/requirements.txt
+COPY ./data_extractor/code/infer_on_pdf.py /app/code/infer_on_pdf.py
+COPY ./data_extractor/code/train_on_pdf.py /app/code/train_on_pdf.py
+COPY ./data_extractor/code/kpi_mapping.csv /app/code/kpi_mapping.csv
+COPY ./data_extractor/code/setup_project.py /app/code/setup_project.py
+COPY ./data_extractor/code/config_path.py /app/code/config_path.py
 
 WORKDIR /app/code
 
 RUN pip install -r requirements.txt
 
-CMD python3 app.py
+RUN chgrp -R 0 /app/code && chmod g=u /app/code
+RUN chmod -R a+x /app/code
 
-COPY ./esg_data_pipeline /app/code/esg_data_pipeline
-
-RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
-RUN chmod -R a+x /app/code/esg_data_pipeline
-
-WORKDIR /app/code/esg_data_pipeline
-
-RUN pip install -e .
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
-
-## USER 1234
 
 CMD ./entry.sh
