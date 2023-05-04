@@ -25,4 +25,4 @@ RUN chmod -R a+x /app/code
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
 
-CMD ./docs/TEST_SETUP/entry.sh
+CMD ./entry.sh
