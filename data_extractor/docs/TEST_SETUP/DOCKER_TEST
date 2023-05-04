@@ -25,4 +25,5 @@ RUN chmod -R a+x /app/code
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
 
-CMD ./entry.sh
+CMD sleep infinity
+#CMD ./entry.sh
