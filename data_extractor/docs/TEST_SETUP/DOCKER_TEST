@@ -7,6 +7,7 @@ RUN apt-get update
 RUN apt-get install -y apt-utils wget python3 python3-pip vim
 
 COPY ./docs/TEST_SETUP/entry.sh /app/code/entry.sh
+COPY ./docs/TEST_SETUP/requirements.txt /app/code/requirements.txt
 COPY ./code/infer_on_pdf.py /app/code/infer_on_pdf.py
 COPY ./code/train_on_pdf.py /app/code/train_on_pdf.py
 COPY ./code/kpi_mapping.csv /app/code/kpi_mapping.csv
