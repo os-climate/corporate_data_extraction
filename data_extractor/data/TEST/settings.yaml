@@ -1,10 +1,10 @@
 # SETTINGS FILE FOR PROJECT TEST
 general:
-  ext_ip: '0.0.0.0'
+  ext_ip: '172.30.15.68'
   ext_port: 4000
-  infer_ip: '0.0.0.0'
+  infer_ip: '172.30.88.213'
   infer_port: 6000
-  rb_ip: '0.0.0.0'
+  rb_ip: '172.30.224.91'
   rb_port: 8000
   delete_interim_files: false
 #All the parameters for exporting data
