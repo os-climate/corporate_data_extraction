@@ -124,7 +124,7 @@ def save_train_info(project_name):
         return None
 
 
-def run_router(ext_port, infer_ip, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
+def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
     """
     Router function
     It fist sends a command to the extraction server to beging extraction.
