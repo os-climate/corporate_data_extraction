@@ -351,7 +351,7 @@ def main():
                               project_name=project_name, \
                               verbosity=rb_verbosity, \
                               use_docker=rb_use_docker, \
-                              rb_port=rb_port
+                              rb_port=rb_port, \
                               rb_ip=rb_ip)
         
         if(mode in ('ML', 'both')):
