@@ -14,6 +14,7 @@ COPY ./code/kpi_mapping.csv /app/code/kpi_mapping.csv
 COPY ./code/setup_project.py /app/code/setup_project.py
 COPY ./code/config_path.py /app/code/config_path.py
 COPY ./data /app/data
+COPY ./models /app/models
 
 WORKDIR /app/code
 
