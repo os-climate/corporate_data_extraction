@@ -5,7 +5,7 @@ xlrd==1.2.0
 pandas==1.0.5
 farm==0.5.0
 optuna==2.0.0
-Flask==2.3.2
+Flask==2.2.5
 pyspellchecker==0.5.5
 spacy==2.3.2
 MarkupSafe==2.0.1
