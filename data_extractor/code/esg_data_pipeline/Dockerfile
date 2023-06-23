@@ -38,9 +38,10 @@ RUN apt-get update && apt-get install -y git wget vim ninja-build poppler-utils 
 ## RUN pip install mmcv==0.5.7
 
 COPY ./esg_data_pipeline /app/code/esg_data_pipeline
+COPY ./s3_communication.py /app/code/s3_communication.py
 
-RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
-RUN chmod -R a+x /app/code/esg_data_pipeline
+RUN chgrp -R 0 /app/code && chmod g=u /app/code
+RUN chmod -R a+x /app/code
 
 WORKDIR /app/code/esg_data_pipeline
 
