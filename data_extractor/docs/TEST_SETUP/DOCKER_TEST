@@ -31,5 +31,11 @@ RUN chmod -R 777 /app/server_logs
 RUN chmod -R 777 /app/data
 RUN chmod -R 777 /app/models
 
+# Adding vs code server
+RUN mkdir -p /.vscode-server
+RUN mkdir -p /.vscode-remote
+RUN chmod -R 777 /.vscode-server
+RUN chmod -R 777 /.vscode-remote
+
 CMD sleep infinity
 #CMD ./entry.sh
