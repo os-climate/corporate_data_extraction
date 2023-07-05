@@ -61,7 +61,7 @@ def run_extraction():
             aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
             s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
         )
-        s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
+        s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/annotations', 
                                             config.ANNOTATION_FOLDER)
         if args['mode'] == 'train':
             s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/training', 
