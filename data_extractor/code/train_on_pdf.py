@@ -295,7 +295,7 @@ def main():
             s3_bucket=os.getenv('LANDING_AWS_BUCKET_NAME'),
         )
         settings_path = project_data_dir + "/settings_test.yaml"
-        s3c.download_file_from_s3(filepath=settings_path),
+        s3c.download_file_from_s3(filepath=settings_path,
                                   s3_prefix=prefix,
                                   s3_key='settings.yaml')
 
