@@ -48,23 +48,25 @@ def run_extraction():
         s3_settings = args["s3_settings"]
         project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
         # init s3 connector
-        s3c = S3Communication(
+        s3c_main = S3Communication(
             s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
             aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
             aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
             s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
         )
-        input_files = []
-        my_bucket = s3c.s3_resource.Bucket(name=s3c.bucket)
-        for objects in my_bucket.objects.filter(Prefix=prefix):
-            input_files.append(objects.key)
-        s3c.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
+        s3c_interim = S3Communication(
+            s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+            aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+            aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+            s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+        )
+        s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
                                             config.ANNOTATION_FOLDER)
         if args['mode'] == 'train':
-            s3c.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/training', 
+            s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/training', 
                                                 config.PDF_FOLDER)
         else:
-            s3c.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/inference', 
+            s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/inference', 
                                                 config.PDF_FOLDER)
     
     pdfs = glob.glob(os.path.join(config.PDF_FOLDER, "*.pdf"))
@@ -111,6 +113,10 @@ def run_extraction():
     msg = "Extraction finished successfully."
     if len(failed_to_extract) > 0:
         msg += "The following pdf files, however,  did not get extracted:\n" + failed_to_extract
+        
+    if s3_usage:
+        s3c.upload_files_in_dir_to_prefix(config.EXTRACTION_FOLDER, 
+                                          project_prefix + '/interim/ml/extraction')
     time_elapsed = str(timedelta(seconds=t2 - t1))
     msg += "\nTime elapsed:{}".format(time_elapsed)
     return Response(msg, status=200)
