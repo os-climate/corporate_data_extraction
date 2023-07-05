@@ -87,7 +87,7 @@ def convert_xls_to_csv(project_name):
     """
     source_dir = source_annotation
     dest_dir = destination_annotation
-    s3c.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
+    s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
                                         source_dir)
     first = True
     for filename in os.listdir(source_dir):
@@ -99,7 +99,7 @@ def convert_xls_to_csv(project_name):
             read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl') #only reads first sheet in excel file
             read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index = None, header=True)
             if s3_usage:
-                s3c.upload_files_in_dir_to_prefix(dest_dir, 
+                s3c_interim.upload_files_in_dir_to_prefix(dest_dir, 
                                                   project_prefix + '/interim/ml/annotations')
             first = False         
     if(first):
@@ -324,7 +324,7 @@ def main():
                                     s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
         )
         settings_path = project_data_dir + "/settings.yaml"
-        s3c.download_file_from_s3(filepath=settings_path,
+        s3c_main.download_file_from_s3(filepath=settings_path,
                                   s3_prefix=project_prefix,
                                   s3_key='settings.yaml')
     
