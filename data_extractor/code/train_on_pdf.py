@@ -10,6 +10,7 @@ import config_path
 import traceback
 import pickle
 import datetime
+from s3_communication import S3Communication
 
 FILE_RUNNING = config_path.NLP_DIR+r'/data/running'
 
@@ -259,7 +260,12 @@ def main():
                         type=str,
                         default=None,
                         help='Name of the Project')
-  
+
+    parser.add_argument('--s3_usage',
+                        type=str,
+                        default=None,
+                        help='Do you want to use S3? Type either Y or N.')
+     
     args = parser.parse_args()
     project_name = args.project_name
     if project_name is None:
@@ -267,13 +273,38 @@ def main():
     if(project_name is None or project_name==""):
         print("project name must not be empty")
         return
-        
+
+    s3_usage = args.s3_usage
+    if s3_usage is None:
+        s3_usage = input('Do you want to use S3? Type either Y or N.')
+    if (s3_usage is None or str(s3_usage) not in ['Y', 'N']):
+        print("Answer to S3 usage must by Y or N. Stop program. Please restart.")
+        return None
+    else:
+	    s3_usage = s3_usage == 'Y'
+
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
+	
+    if s3_usage:
+        prefix = 'corporate_data_extraction_projects/' + project_name + '/data'
+        # init s3 connector
+	   s3c = S3Communication(
+            s3_endpoint_url=os.getenv('LANDING_AWS_ENDPOINT'),
+            aws_access_key_id=os.getenv('LANDING_AWS_ACCESS_KEY'),
+            aws_secret_access_key=os.getenv('LANDING_AWS_SECRET_KEY'),
+            s3_bucket=os.getenv('LANDING_AWS_BUCKET_NAME'),
+        )
+        settings_path = project_data_dir + "/settings_test.yaml"
+        s3c.download_file_from_s3(filepath=settings_path),
+                                  s3_prefix=prefix,
+                                  s3_key='settings.yaml')    
 
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
     project_settings = yaml.safe_load(f)
     f.close()
+
+    print(project_settings)
 
     project_model_dir = config_path.MODEL_DIR + r'/' + project_name
     ext_port = project_settings['general']['ext_port']
