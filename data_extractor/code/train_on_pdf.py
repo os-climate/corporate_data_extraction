@@ -266,6 +266,10 @@ def main():
     global project_model_dir
     global folder_text_3434
     global folder_relevance
+    global s3_usage
+    global s3c_main
+    global s3c_interim
+    global project_prefix
 
     if(check_running()):
         print("Another training or inference process is currently running.")
