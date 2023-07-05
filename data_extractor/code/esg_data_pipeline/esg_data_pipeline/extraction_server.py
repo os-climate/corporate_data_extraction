@@ -75,7 +75,7 @@ def run_extraction():
         msg = "No pdf files found in the pdf directory ({})".format(config.PDF_FOLDER)
         return Response(msg, status=500)
     
-    annotation_files = glob.glob(os.path.join(config.ANNOTATION_FOLDER), "*.csv")
+    annotation_files = glob.glob(os.path.join(config.ANNOTATION_FOLDER, "*.csv"))
     if len(annotation_files) == 0:
         msg = "No annotations.csv file found on S3."
         return Response(msg, status=500)
