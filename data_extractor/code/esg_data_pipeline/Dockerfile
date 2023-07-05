@@ -41,7 +41,7 @@ COPY ./esg_data_pipeline /app/code/esg_data_pipeline
 COPY ./s3_communication.py /app/code/s3_communication.py
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
-RUN chmod -R a+x /app/code
+RUN chmod -R 777 /app/code
 
 WORKDIR /app/code/esg_data_pipeline
 
