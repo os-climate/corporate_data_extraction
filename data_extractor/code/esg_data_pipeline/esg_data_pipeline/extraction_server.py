@@ -115,7 +115,7 @@ def run_extraction():
         msg += "The following pdf files, however,  did not get extracted:\n" + failed_to_extract
         
     if s3_usage:
-        s3c.upload_files_in_dir_to_prefix(config.EXTRACTION_FOLDER, 
+        s3c_interim.upload_files_in_dir_to_prefix(config.EXTRACTION_FOLDER, 
                                           project_prefix + '/interim/ml/extraction')
     time_elapsed = str(timedelta(seconds=t2 - t1))
     msg += "\nTime elapsed:{}".format(time_elapsed)
