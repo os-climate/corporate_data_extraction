@@ -286,26 +286,33 @@ def main():
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
 
     if s3_usage:
-        prefix = 'corporate_data_extraction_projects/' + project_name + '/data'
+        # Opening s3 settings file
+        s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'        
+        f = open(s3_settings_path, 'r')
+        s3_settings = yaml.safe_load(f)
+        f.close()
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
         # init s3 connector
         s3c = S3Communication(
-            s3_endpoint_url=os.getenv('LANDING_AWS_ENDPOINT'),
-            aws_access_key_id=os.getenv('LANDING_AWS_ACCESS_KEY'),
-            aws_secret_access_key=os.getenv('LANDING_AWS_SECRET_KEY'),
-            s3_bucket=os.getenv('LANDING_AWS_BUCKET_NAME'),
+            s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+            aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+            aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+            s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
         )
-        settings_path = project_data_dir + "/settings_test.yaml"
+        settings_path = project_data_dir + "/settings.yaml"
         s3c.download_file_from_s3(filepath=settings_path,
-                                  s3_prefix=prefix,
+                                  s3_prefix=project_prefix,
                                   s3_key='settings.yaml')
-
+    
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
     project_settings = yaml.safe_load(f)
     f.close()
-
-    print(project_settings)
-
+    
+    project_settings.update({'s3_usage': s3_usage})
+    if s3_usage:
+        project_settings.update({'s3_settings': s3_settings})
+    
     project_model_dir = config_path.MODEL_DIR + r'/' + project_name
     ext_port = project_settings['general']['ext_port']
     infer_port = project_settings['general']['infer_port']
