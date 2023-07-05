@@ -33,19 +33,53 @@ def liveness():
 def run_extraction():
     args = json.loads(request.args['payload'])
     project_name = args["project_name"]
+    
     extraction_settings = args['extraction']
-
+    
     BASE_DATA_PROJECT_FOLDER =  config.DATA_FOLDER / project_name    
     config.PDF_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'pdfs'    
     BASE_INTERIM_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'ml'
     config.EXTRACTION_FOLDER = BASE_INTERIM_FOLDER / 'extraction'
     config.ANNOTATION_FOLDER = BASE_INTERIM_FOLDER / 'annotations'
     config.STAGE = 'extract'
+    
+    s3_usage = args["s3_usage"]
+    if s3_usage:
+        s3_settings = args["s3_settings"]
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+        # init s3 connector
+        s3c = S3Communication(
+            s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+            aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+            aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+            s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        input_files = []
+        my_bucket = s3c.s3_resource.Bucket(name=s3c.bucket)
+        for objects in my_bucket.objects.filter(Prefix=prefix):
+            input_files.append(objects.key)
+        s3c.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
+                                            config.ANNOTATION_FOLDER)
+        if args['mode'] == 'train':
+            s3c.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/training', 
+                                                config.PDF_FOLDER)
+        else:
+            s3c.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/inference', 
+                                                config.PDF_FOLDER)
+    
     pdfs = glob.glob(os.path.join(config.PDF_FOLDER, "*.pdf"))
     if len(pdfs) == 0:
         msg = "No pdf files found in the pdf directory ({})".format(config.PDF_FOLDER)
         return Response(msg, status=500)
-
+    
+    annotation_files = glob.glob(os.path.join(config.ANNOTATION_FOLDER), "*.csv")
+    if len(annotation_files) == 0:
+        msg = "No annotations.csv file found on S3."
+        return Response(msg, status=500)
+    elif len(annotation_files) > 2:
+        msg = "Multiple annotations.csv files found on S3."
+        return Response(msg, status=500)
+    
     config.SEED = extraction_settings["seed"]
     config.PDFTextExtractor_kwargs['min_paragraph_length'] = extraction_settings["min_paragraph_length"]
     config.PDFTextExtractor_kwargs['annotation_folder'] = extraction_settings["annotation_folder"]
