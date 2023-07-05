@@ -29,6 +29,11 @@ destination_saved_models_inference = None
 folder_text_3434 = None
 folder_relevance = None
 
+s3_usage = None
+s3c_main = None
+s3c_interim = None
+project_prefix = None
+
 def set_running():
      with open(FILE_RUNNING, 'w'):
           pass
@@ -72,8 +77,18 @@ def generate_text_3434(project_name):
 
 
 def convert_xls_to_csv(project_name):
+    """
+    This function transforms the annotations.xlsx file into annotations.csv.
+    
+    :param project_name: str, representing the project we currently work on
+    :param s3_usage: boolean, if we use s3 as we then have to upload the new csv file to s3
+    :param s3_settings: dictionary, containing information in case of s3 usage
+    return None
+    """
     source_dir = source_annotation
     dest_dir = destination_annotation
+    s3c.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
+                                        source_dir)
     first = True
     for filename in os.listdir(source_dir):
         if(filename[-5:]=='.xlsx'):
@@ -83,6 +98,9 @@ def convert_xls_to_csv(project_name):
             #read_file = pd.read_excel(source_dir + r'/' + filename, sheet_name = 'data_ex_in_xls', engine='openpyxl')
             read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl') #only reads first sheet in excel file
             read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index = None, header=True)
+            if s3_usage:
+                s3c.upload_files_in_dir_to_prefix(dest_dir, 
+                                                  project_prefix + '/interim/ml/annotations')
             first = False         
     if(first):
         raise ValueError('No annotation excel sheet found')
@@ -293,11 +311,17 @@ def main():
         f.close()
         project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
         # init s3 connector
-        s3c = S3Communication(
-            s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
-            aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
-            aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
-            s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        s3c_main = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        s3c_interim = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
         )
         settings_path = project_data_dir + "/settings.yaml"
         s3c.download_file_from_s3(filepath=settings_path,
