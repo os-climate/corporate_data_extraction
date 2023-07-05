@@ -5,9 +5,9 @@ main_bucket:
   s3_secret_key: LANDING_AWS_SECRET_KEY
   s3_bucket_name: LANDING_AWS_BUCKET_NAME
 interim_bucket:
-  s3_endpoint: LANDING_AWS_ENDPOINT
-  s3_access_key: LANDING_AWS_ACCESS_KEY
-  s3_secret_key: LANDING_AWS_SECRET_KEY
-  s3_bucket_name: LANDING_AWS_BUCKET_NAME
+  s3_endpoint: INTERIM_AWS_ENDPOINT
+  s3_access_key: INTERIM_AWS_ACCESS_KEY
+  s3_secret_key: INTERIM_AWS_SECRET_KEY
+  s3_bucket_name: INTERIM_AWS_BUCKET_NAME
 # variables necessary to find the files in s3 bucket
 prefix: corporate_data_extraction_projects
