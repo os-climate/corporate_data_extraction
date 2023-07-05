@@ -10,6 +10,7 @@ import config_path
 import traceback
 import pickle
 import datetime
+from s3_communication import S3Communication
 
 FILE_RUNNING = config_path.NLP_DIR+r'/data/running'
 
@@ -27,6 +28,11 @@ destination_saved_models_relevance = None
 destination_saved_models_inference = None
 folder_text_3434 = None
 folder_relevance = None
+
+s3_usage = None
+s3c_main = None
+s3c_interim = None
+project_prefix = None
 
 def set_running():
      with open(FILE_RUNNING, 'w'):
@@ -71,8 +77,18 @@ def generate_text_3434(project_name):
 
 
 def convert_xls_to_csv(project_name):
+    """
+    This function transforms the annotations.xlsx file into annotations.csv.
+    
+    :param project_name: str, representing the project we currently work on
+    :param s3_usage: boolean, if we use s3 as we then have to upload the new csv file to s3
+    :param s3_settings: dictionary, containing information in case of s3 usage
+    return None
+    """
     source_dir = source_annotation
     dest_dir = destination_annotation
+    s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
+                                        source_dir)
     first = True
     for filename in os.listdir(source_dir):
         if(filename[-5:]=='.xlsx'):
@@ -82,6 +98,9 @@ def convert_xls_to_csv(project_name):
             #read_file = pd.read_excel(source_dir + r'/' + filename, sheet_name = 'data_ex_in_xls', engine='openpyxl')
             read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl') #only reads first sheet in excel file
             read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index = None, header=True)
+            if s3_usage:
+                s3c_interim.upload_files_in_dir_to_prefix(dest_dir, 
+                                                  project_prefix + '/interim/ml/annotations')
             first = False         
     if(first):
         raise ValueError('No annotation excel sheet found')
@@ -124,20 +143,22 @@ def save_train_info(project_name):
         return None
 
 
-def run_router(ext_port, infer_port, project_name):
+def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
     """
     Router function
     It fist sends a command to the extraction server to beging extraction.
     If done successfully, it will send a commnad to the inference server to start inference.
     :param ext_port (int): The port that the extraction server is listening on
     :param infer_port (int): The port that the inference server is listening on
+    :param ext_ip (int): The ip that the extraction server is listening on
+    :param infer_ip (int): The ip that the inference server is listening on
     :return: A boolean, indicating success
     """
 
     convert_xls_to_csv(project_name)
 
     # Check if the extraction server is live
-    ext_live = requests.get("http://0.0.0.0:{}/liveness".format(ext_port))
+    ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
     if ext_live.status_code == 200:
         print("Extraction server is up. Proceeding to extraction.")
     else:
@@ -149,19 +170,19 @@ def run_router(ext_port, infer_port, project_name):
     payload = {'payload': json.dumps(payload)}
 
     # Sending an execution request to the extraction server for extraction
-    ext_resp = requests.get("http://0.0.0.0:{}/extract".format(ext_port), params=payload)
+    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/extract", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
 
     # Sending an execution request to the extraction server for curation
-    ext_resp = requests.get("http://0.0.0.0:{}/curate".format(ext_port), params=payload)
+    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/curate", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
 
     # Check if the inference server is live
-    infer_live = requests.get("http://0.0.0.0:{}/liveness".format(infer_port))
+    infer_live = requests.get(f"http://{infer_ip}:{infer_port}/liveness")
     if infer_live.status_code == 200:
         print("Inference server is up. Proceeding to Inference.")
     else:
@@ -171,7 +192,7 @@ def run_router(ext_port, infer_port, project_name):
     if project_settings['train_relevance']['train']:
         print("Relevance training will be started.")
         # Requesting the inference server to start the relevance stage
-        train_resp = requests.get("http://0.0.0.0:{}/train_relevance".format(infer_port), params=payload)
+        train_resp = requests.get(f"http://{infer_ip}:{infer_port}/train_relevance", params=payload)
         print(train_resp.text)
         if train_resp.status_code != 200:
             return False
@@ -180,7 +201,7 @@ def run_router(ext_port, infer_port, project_name):
     
     if project_settings['train_kpi']['train']:
         # Requesting the inference server to start the relevance stage
-        infer_resp = requests.get("http://0.0.0.0:{}/infer_relevance".format(infer_port), params=payload)
+        infer_resp = requests.get(f"http://{infer_ip}:{infer_port}/infer_relevance", params=payload)
         print(infer_resp.text)
         if infer_resp.status_code != 200:
             return False
@@ -193,7 +214,7 @@ def run_router(ext_port, infer_port, project_name):
             print(traceback.format_exc())
         
         # Requesting the inference server to start the kpi extraction stage
-        infer_resp_kpi = requests.get("http://0.0.0.0:{}/train_kpi".format(infer_port), params=payload)
+        infer_resp_kpi = requests.get(f"http://{infer_ip}:{infer_port}/train_kpi", params=payload)
         print(infer_resp_kpi.text)
         if infer_resp_kpi.status_code != 200:
             return False
@@ -245,6 +266,10 @@ def main():
     global project_model_dir
     global folder_text_3434
     global folder_relevance
+    global s3_usage
+    global s3c_main
+    global s3c_interim
+    global project_prefix
 
     if(check_running()):
         print("Another training or inference process is currently running.")
@@ -257,7 +282,12 @@ def main():
                         type=str,
                         default=None,
                         help='Name of the Project')
-  
+
+    parser.add_argument('--s3_usage',
+                        type=str,
+                        default=None,
+                        help='Do you want to use S3? Type either Y or N.')
+     
     args = parser.parse_args()
     project_name = args.project_name
     if project_name is None:
@@ -265,17 +295,57 @@ def main():
     if(project_name is None or project_name==""):
         print("project name must not be empty")
         return
-        
+
+    s3_usage = args.s3_usage
+    if s3_usage is None:
+        s3_usage = input('Do you want to use S3? Type either Y or N.')
+    if (s3_usage is None or str(s3_usage) not in ['Y', 'N']):
+        print("Answer to S3 usage must by Y or N. Stop program. Please restart.")
+        return None
+    else:
+        s3_usage = s3_usage == 'Y'
+
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
 
+    if s3_usage:
+        # Opening s3 settings file
+        s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'        
+        f = open(s3_settings_path, 'r')
+        s3_settings = yaml.safe_load(f)
+        f.close()
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+        # init s3 connector
+        s3c_main = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        s3c_interim = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+        )
+        settings_path = project_data_dir + "/settings.yaml"
+        s3c_main.download_file_from_s3(filepath=settings_path,
+                                  s3_prefix=project_prefix,
+                                  s3_key='settings.yaml')
+    
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
     project_settings = yaml.safe_load(f)
     f.close()
-
+    
+    project_settings.update({'s3_usage': s3_usage})
+    if s3_usage:
+        project_settings.update({'s3_settings': s3_settings})
+    
     project_model_dir = config_path.MODEL_DIR + r'/' + project_name
     ext_port = project_settings['general']['ext_port']
     infer_port = project_settings['general']['infer_port']
+    ext_ip = project_settings['general']['ext_ip']
+    infer_ip = project_settings['general']['infer_ip']
     relevance_training_output_model_name = project_settings['train_relevance']['output_model_name']
     kpi_inference_training_output_model_name = project_settings['train_kpi']['output_model_name']
     
@@ -295,7 +365,6 @@ def main():
         folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
-        #os.system("sudo "+config_path.NLP_DIR+r"/rewrite_ownership.sh")
         create_directory(folder_text_3434)
         create_directory(destination_pdf)
         create_directory(destination_annotation)
@@ -316,7 +385,7 @@ def main():
             source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
             if os.path.exists(source_extraction):
                 link_extracted_files(source_extraction, source_pdf, destination_extraction)
-        end_to_end_response = run_router(ext_port, infer_port, project_name)
+        end_to_end_response = run_router(ext_port, infer_port, project_name, ext_ip, infer_ip)
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:
                 print("Finally we transfer the text extraction to the output folder")
@@ -344,4 +413,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
