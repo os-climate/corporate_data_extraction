@@ -3,7 +3,7 @@ from esg_data_pipeline.config import config
 import os
 
 try:
-    df = pd.read_csv("/kpi_mapping.csv", header=0)
+    df = pd.read_csv("/app/code/kpi_mapping.csv", header=0)
     _KPI_MAPPING = {str(i[0]): i[1] for i in df[['kpi_id', 'question']].values}
     KPI_MAPPING = {(float(key)): value for key, value in _KPI_MAPPING.items()}
 
