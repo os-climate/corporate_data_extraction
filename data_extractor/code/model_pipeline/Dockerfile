@@ -18,7 +18,7 @@ COPY ./model_pipeline /app/code/model_pipeline
 COPY ./kpi_inference_data_pipeline /app/code/kpi_inference_data_pipeline
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
-RUN chmod -R a+x /app/code
+RUN chmod -R 777 /app/code
 
 WORKDIR /app/code/kpi_inference_data_pipeline
 RUN pip install -e .
@@ -28,7 +28,5 @@ RUN pip install -e .
 
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
-
-#USER 1234
 
 CMD ./entry.sh
