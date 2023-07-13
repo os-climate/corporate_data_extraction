@@ -3,10 +3,12 @@ import os
 import traceback
 import yaml
 from config import get_config
+from pathlib import Path
 from s3_communication import S3Communication
-from utils import check_running, create_directory, link_files, set_running, \
+from utils import check_running, set_running, \
     clear_running, save_train_info, run_router, link_extracted_files, \
-    copy_file_without_overwrite
+    copy_file_without_overwrite, setup_directories, setup_file_links
+
 
 project_settings = None
 source_pdf = None
@@ -66,7 +68,8 @@ def main():
 
     parser.add_argument('--s3_usage',
                         type=str,
-                        default=None,
+                        default='Y',
+                        choices=['Y', 'N'],
                         help='Do you want to use S3? Type either Y or N.')
      
     args = parser.parse_args()
@@ -98,10 +101,10 @@ def main():
         project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
         # init s3 connector
         s3c_main = S3Communication(
-                                    s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
-                                    aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
-                                    aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
-                                    s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+            s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+            aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+            aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+            s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
         )
         s3c_interim = S3Communication(
                                     s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
@@ -133,41 +136,14 @@ def main():
     
     set_running()
     try:
-        source_pdf = project_data_dir + r'/input/pdfs/training'
-        source_annotation = project_data_dir + r'/input/annotations'
-        source_mapping = project_data_dir + r'/input/kpi_mapping'
-        destination_pdf = project_data_dir + r'/interim/pdfs/'
-        destination_annotation = project_data_dir + r'/interim/ml/annotations/' 
-        destination_mapping = project_data_dir + r'/interim/kpi_mapping/' 
-        destination_extraction = project_data_dir + r'/interim/ml/extraction/' 
-        destination_curation = project_data_dir + r'/interim/ml/curation/' 
-        destination_training = project_data_dir + r'/interim/ml/training/'  
-        destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + relevance_training_output_model_name 
-        destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + kpi_inference_training_output_model_name 
-        folder_text_3434 = project_data_dir + r'/interim/ml'
-        folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
-
-        create_directory(folder_text_3434)
-        create_directory(destination_pdf)
-        create_directory(destination_annotation)
-        create_directory(destination_mapping)
-        create_directory(destination_extraction)
-        create_directory(destination_training)
-        create_directory(destination_curation)
-        if project_settings['train_relevance']['train']:
-            create_directory(destination_saved_models_relevance)
-        if project_settings['train_kpi']['train']:
-            create_directory(destination_saved_models_inference)
-        create_directory(folder_relevance)
-
-        link_files(source_pdf,destination_pdf)
-        link_files(source_annotation,destination_annotation)
-        link_files(source_mapping,destination_mapping)
-        if project_settings['extraction']['use_extractions']:
-            source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
-            if os.path.exists(source_extraction):
-                link_extracted_files(source_extraction, source_pdf, destination_extraction)
-        end_to_end_response = run_router(ext_port, infer_port, project_name, ext_ip, infer_ip)
+        path_project_data_dir = Path(project_data_dir)
+        # create all required directories
+        setup_directories(path_project_data_dir, project_settings)
+        # create all required symlinks between directories
+        setup_file_links(path_project_data_dir, project_settings)
+        
+        
+        end_to_end_response = run_router(project_name, project_settings, ext_port, infer_port, ext_ip, infer_ip)
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:
                 print("Finally we transfer the text extraction to the output folder")
