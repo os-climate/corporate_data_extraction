@@ -4,7 +4,6 @@ import glob
 import os
 import time
 from datetime import timedelta
-import logging
 from flask import Flask, Response, request
 import shutil
 import traceback
@@ -16,6 +15,7 @@ from esg_data_pipeline.components import Curator
 
 app = Flask(__name__)
 
+
 def create_directory(directory_name):
     os.makedirs(directory_name, exist_ok=True)
     for filename in os.listdir(directory_name):
@@ -24,6 +24,7 @@ def create_directory(directory_name):
             os.unlink(file_path)
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
+
 
 @app.route("/liveness")
 def liveness():
@@ -130,14 +131,38 @@ def run_curation():
     curation_settings = args["curation"]
 
     BASE_DATA_PROJECT_FOLDER =  config.DATA_FOLDER / project_name    
-    config.PDF_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'pdfs'    
     BASE_INTERIM_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'ml'
     config.EXTRACTION_FOLDER = BASE_INTERIM_FOLDER / 'extraction'
     config.CURATION_FOLDER = BASE_INTERIM_FOLDER / 'curation'
     config.ANNOTATION_FOLDER = BASE_INTERIM_FOLDER / 'annotations'
     config.KPI_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'kpi_mapping'
-        
-    shutil.copyfile(os.path.join(config.KPI_FOLDER, "kpi_mapping.csv"), "/kpi_mapping.csv")
+    
+    create_directory(config.EXTRACTION_FOLDER)
+    create_directory(config.CURATION_FOLDER)
+    create_directory(config.ANNOTATION_FOLDER)
+    
+    s3_usage = args["s3_usage"]
+    if s3_usage:
+        s3_settings = args["s3_settings"]
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+        # init s3 connector
+        s3c_main = S3Communication(
+            s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+            aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+            aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+            s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        s3c_interim = S3Communication(
+            s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+            aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+            aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+            s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+        )
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/kpi_mapping', config.KPI_FOLDER)
+        s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', config.EXTRACTION_FOLDER)
+        s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/annotations', config.ANNOTATION_FOLDER)
+
+    shutil.copyfile(os.path.join(config.KPI_FOLDER, "kpi_mapping.csv"), "/app/code/kpi_mapping.csv")
 
     config.STAGE = 'curate'
     config.TextCurator_kwargs['retrieve_paragraph'] = curation_settings['retrieve_paragraph']
@@ -154,7 +179,11 @@ def run_curation():
     except Exception as e:
         msg = "Error during curation\nException:" + str(repr(e)) + traceback.format_exc()
         return Response(msg, status=500)
-        
+    
+    if s3_usage:
+        s3c_interim.upload_files_in_dir_to_prefix(config.CURATION_FOLDER, 
+                                          project_prefix + '/interim/ml/curation')
+    
     return Response("Curation OK", status=200)
 
 
