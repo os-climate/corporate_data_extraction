@@ -119,6 +119,10 @@ def run_extraction():
     if s3_usage:
         s3c_interim.upload_files_in_dir_to_prefix(config.EXTRACTION_FOLDER, 
                                           project_prefix + '/interim/ml/extraction')
+        # clear folder
+        create_directory(config.EXTRACTION_FOLDER)
+        create_directory(config.ANNOTATION_FOLDER)
+        create_directory(config.PDF_FOLDER)
     time_elapsed = str(timedelta(seconds=t2 - t1))
     msg += "\nTime elapsed:{}".format(time_elapsed)
     return Response(msg, status=200)
@@ -183,6 +187,11 @@ def run_curation():
     if s3_usage:
         s3c_interim.upload_files_in_dir_to_prefix(config.CURATION_FOLDER, 
                                           project_prefix + '/interim/ml/curation')
+        # clear folder
+        create_directory(config.KPI_FOLDER)
+        create_directory(config.EXTRACTION_FOLDER)
+        create_directory(config.ANNOTATION_FOLDER)
+        create_directory(config.CURATION_FOLDER)
     
     return Response("Curation OK", status=200)
 
