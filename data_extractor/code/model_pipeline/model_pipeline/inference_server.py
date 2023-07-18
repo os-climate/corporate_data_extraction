@@ -8,6 +8,7 @@ import pathlib
 import shutil
 import traceback
 from s3_communication import S3Communication
+import zipfile
 
 from flask import Flask, Response, request
 from model_pipeline.config_farm_train import InferConfig
@@ -50,6 +51,15 @@ def create_directory(directory_name):
                 os.unlink(file_path)
         except Exception as e:
             print('Failed to delete %s. Reason: %s' % (file_path, e))
+
+
+def zipdir(path, ziph):
+    # ziph is zipfile handle
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            ziph.write(os.path.join(root, file),
+                       os.path.relpath(os.path.join(root, file),
+                                       os.path.join(path, '..')))
 
 
 @app.route("/liveness")
@@ -111,10 +121,9 @@ def run_train_relevance():
         
         training_folder = DATA_FOLDER / project_name / 'interim/ml/training'
         create_directory(training_folder)
-        
-        
-        create_directory(os.path.join(str(MODEL_FOLDER), file_config.experiment_name, file_config.experiment_type, 
-                         file_config.data_type, file_config.output_model_name))
+        output_model_folder = os.path.join(str(MODEL_FOLDER), file_config.experiment_name, file_config.experiment_type, 
+                         file_config.data_type, file_config.output_model_name)
+        create_directory(output_model_folder)
         
         if relevance_training_settings["input_model_name"] is not None:
             model_dir = os.path.join(str(MODEL_FOLDER), project_name, 
@@ -161,7 +170,23 @@ def run_train_relevance():
         name_out = os.path.join(str(MODEL_FOLDER), project_name, "result_rel_" + relevance_training_settings['output_model_name'] + ".json")
         with open(name_out, 'w') as f:
             json.dump(result, f)
-
+        
+        if s3_usage:
+            train_rel_prefix = os.path.join(project_prefix_project_models, file_config.experiment_type, file_config.data_type)
+            output_model_zip = os.path.join(str(MODEL_FOLDER), file_config.experiment_name, file_config.experiment_type, 
+                 file_config.data_type, file_config.output_model_name + ".zip")
+            with zipfile.ZipFile(output_model_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                zipdir(output_model_folder, zipf)            
+            response = s3c_main.upload_file_to_s3(filepath=output_model_zip,
+                                             s3_prefix=train_rel_prefix,
+                                             s3_key=file_config.output_model_name + ".zip")
+            response_2 = s3c_main.upload_file_to_s3(filepath=name_out,
+                                 s3_prefix=train_rel_prefix,
+                                 s3_key="result_rel_" + file_config.output_model_name + ".json")
+            create_directory(output_model_folder)
+            create_directory(training_folder)
+            create_directory(os.path.dirname(file_config.curated_data))
+            
         t2 = time.time()
     except Exception as e:
         msg = "Error during kpi infer stage\nException:" + str(repr(e) + traceback.format_exc())
