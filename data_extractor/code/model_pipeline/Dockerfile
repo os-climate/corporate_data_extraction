@@ -16,6 +16,7 @@ RUN apt-get install -y unzip vim wget
 
 COPY ./model_pipeline /app/code/model_pipeline
 COPY ./kpi_inference_data_pipeline /app/code/kpi_inference_data_pipeline
+COPY ./s3_communication.py /app/code/model_pipeline/model_pipeline/s3_communication.py
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
 RUN chmod -R 777 /app/code
