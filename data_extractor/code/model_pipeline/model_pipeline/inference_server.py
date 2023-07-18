@@ -90,7 +90,8 @@ def run_train_relevance():
         if s3_usage:
             s3_settings = args["s3_settings"]
             project_prefix_data = s3_settings['prefix'] + "/" + project_name + '/data'
-            project_prefix_models = s3_settings['prefix'] + "/" + project_name + '/models'
+            project_prefix_project_models = s3_settings['prefix'] + "/" + project_name + '/models'
+            project_prefix_base_models = s3_settings['prefix'] + '/base_model'
             # init s3 connector
             s3c_main = S3Communication(
                 s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
@@ -109,7 +110,11 @@ def run_train_relevance():
                                     os.path.dirname(file_config.curated_data))
         
         training_folder = DATA_FOLDER / project_name / 'interim/ml/training'
-        create_directory(training_folder)        
+        create_directory(training_folder)
+        
+        
+        create_directory(os.path.join(str(MODEL_FOLDER), file_config.experiment_name, file_config.experiment_type, 
+                         file_config.data_type, file_config.output_model_name))
         
         if relevance_training_settings["input_model_name"] is not None:
             model_dir = os.path.join(str(MODEL_FOLDER), project_name, 
@@ -119,7 +124,7 @@ def run_train_relevance():
             model_config.lang_model = model_dir
             processor_config.load_dir = model_dir
         else:
-            model_dir = relevance_training_settings["base_model"]
+            model_config.lang_model = relevance_training_settings["base_model"]
             model_config.load_dir = None
             tokenizer_config.pretrained_model_name_or_path = relevance_training_settings["base_model"]
             processor_config.load_dir = None
