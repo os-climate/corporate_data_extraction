@@ -7,6 +7,7 @@ import collections
 import pathlib
 import shutil
 import traceback
+from s3_communication import S3Communication
 
 from flask import Flask, Response, request
 from model_pipeline.config_farm_train import InferConfig
@@ -38,6 +39,17 @@ app = Flask(__name__)
 def free_memory():
     gc.collect()
     torch.cuda.empty_cache()
+
+
+def create_directory(directory_name):
+    os.makedirs(directory_name, exist_ok=True)
+    for filename in os.listdir(directory_name):
+        file_path = os.path.join(directory_name, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
 @app.route("/liveness")
@@ -73,7 +85,32 @@ def run_train_relevance():
         
         model_config.layer_dims = relevance_training_settings["model"]["model_layer_dims"]
         model_config.layer_dims = relevance_training_settings["model"]["model_lm_output_types"]
-
+        
+        s3_usage = args["s3_usage"]
+        if s3_usage:
+            s3_settings = args["s3_settings"]
+            project_prefix_data = s3_settings['prefix'] + "/" + project_name + '/data'
+            project_prefix_models = s3_settings['prefix'] + "/" + project_name + '/models'
+            # init s3 connector
+            s3c_main = S3Communication(
+                s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+            )
+            s3c_interim = S3Communication(
+                s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+            )
+            create_directory(os.path.dirname(file_config.curated_data))
+            s3c_interim.download_files_in_prefix_to_dir(project_prefix_data + '/interim/ml/curation', 
+                                    os.path.dirname(file_config.curated_data))
+        
+        training_folder = DATA_FOLDER / project_name / 'interim/ml/training'
+        create_directory(training_folder)        
+        
         if relevance_training_settings["input_model_name"] is not None:
             model_dir = os.path.join(str(MODEL_FOLDER), project_name, 
                                      "RELEVANCE", "Text", relevance_training_settings["input_model_name"])
@@ -85,7 +122,7 @@ def run_train_relevance():
             model_dir = relevance_training_settings["base_model"]
             model_config.load_dir = None
             tokenizer_config.pretrained_model_name_or_path = relevance_training_settings["base_model"]
-            processor_config.load_dir = None        
+            processor_config.load_dir = None
         
         train_config.n_epochs = relevance_training_settings["training"]["n_epochs"]
         train_config.run_hyp_tuning = relevance_training_settings["training"]["run_hyp_tuning"]
