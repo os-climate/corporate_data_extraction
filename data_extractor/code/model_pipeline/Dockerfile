@@ -21,6 +21,8 @@ COPY ./s3_communication.py /app/code/model_pipeline/model_pipeline/s3_communicat
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
 RUN chmod -R 777 /app/code
 
+ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
+
 WORKDIR /app/code/kpi_inference_data_pipeline
 RUN pip install -e .
 
