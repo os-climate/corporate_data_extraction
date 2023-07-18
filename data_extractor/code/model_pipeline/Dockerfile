@@ -5,6 +5,9 @@ ARG CUDNN="7"
 FROM pytorch/pytorch:${PYTORCH}-cuda${CUDA}-cudnn${CUDNN}-devel
 ENV TORCH_CUDA_ARCH_LIST="3.7 6.0 6.1 7.0+PTX"
 
+RUN mkdir -p /.cache
+RUN chmod -R 777 /.cache
+
 RUN apt-key del 3bf863cc
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
 
