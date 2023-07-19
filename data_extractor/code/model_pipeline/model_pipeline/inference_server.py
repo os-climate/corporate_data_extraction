@@ -294,7 +294,7 @@ def run_infer_relevance():
 
 @app.route('/train_kpi/')
 def run_train_kpi():
-    args = json.loads(request.args['payload'])
+args = json.loads(request.args['payload'])
     project_name = args["project_name"]
     kpi_inference_training_settings = args["train_kpi"]
 
@@ -308,7 +308,7 @@ def run_train_kpi():
         "relevant_text_path": DATA_FOLDER / project_name / "interim" / "ml" / "text_3434.csv"
     }
     config.seed = kpi_inference_training_settings['seed']
-
+    
     free_memory()
     try:
         t1 = time.time()
@@ -319,6 +319,40 @@ def run_train_kpi():
         tkpi.output_squad_folder = file_config.training_dir
         tkpi.relevant_text_path = os.path.join(file_config.data_dir, project_name, "interim", "ml", "text_3434.csv")
         curation_input = kpi_inference_training_settings["curation"]
+        
+        if args['s3_usage']:
+            s3c_main = S3Communication(
+                    s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                    aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                    aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                    s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+                )
+            s3c_interim = S3Communication(
+                    s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                    aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                    aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                    s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+                )
+            project_prefix_data = pathlib.Path(s3_settings['prefix']) / project_name / 'data'
+            project_prefix_agg_annotations = str(project_prefix_data / 'interim' / 'ml' / 'annotations')
+            
+            create_directory(tkpi.annotation_folder)
+            create_directory(str(pathlib.Path(file_config.data_dir) / project_name / "interim" / "ml"))
+            
+            s3c_interim.download_file_from_s3(filepath=tkpi.agg_annotation,
+                          s3_prefix=project_prefix_agg_annotations,
+                          s3_key='aggregated_annotation.csv')
+            
+            # Download kpi file
+            s3c_main.download_file_from_s3('/app/code/kpi_mapping.csv', s3_prefix=str(project_prefix_data / 'input' / 'kpi_mapping'), s3_key='kpi_mapping.csv')
+            
+            # Download text_3434 file
+            s3c_interim.download_file_from_s3(tkpi.relevant_text_path, s3_prefix=str(project_prefix_data / 'interim' / 'ml'), s3_key='text_3434.csv')
+            
+            # Download extractions
+            s3c_interim.download_files_in_prefix_to_dir(str(project_prefix_data / 'interim' / 'ml' / 'extraction'), 
+                        str(config.TextKPIInferenceCurator_kwargs['extracted_text_json_folder']))
+        
         _, _ = tkpi.curate(curation_input["val_ratio"], curation_input["seed"], curation_input["find_new_answerable"], curation_input["create_unanswerable"])
 
         print('Curation step in train_kpi done.')
@@ -384,7 +418,24 @@ def run_train_kpi():
         name_out = os.path.join(str(MODEL_FOLDER), project_name, "result_kpi_" + kpi_inference_training_settings['output_model_name'] + ".json")
         with open(name_out, 'w') as f:
             json.dump(result, f)
-            
+        
+        if s3_usage:
+            print("Nothing saved yet")
+            # train_rel_prefix = os.path.join(project_prefix_project_models, file_config.experiment_type, file_config.data_type)
+            # output_model_zip = os.path.join(str(MODEL_FOLDER), file_config.experiment_name, file_config.experiment_type, 
+            #      file_config.data_type, file_config.output_model_name + ".zip")
+            # with zipfile.ZipFile(output_model_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            #     zipdir(output_model_folder, zipf)            
+            # response = s3c_main.upload_file_to_s3(filepath=output_model_zip,
+            #                                  s3_prefix=train_rel_prefix,
+            #                                  s3_key=file_config.output_model_name + ".zip")
+            # response_2 = s3c_main.upload_file_to_s3(filepath=name_out,
+            #                      s3_prefix=train_rel_prefix,
+            #                      s3_key="result_rel_" + file_config.output_model_name + ".json")
+            # create_directory(output_model_folder)
+            # create_directory(training_folder)
+            # create_directory(os.path.dirname(file_config.curated_data))
+        
         t2 = time.time()
 
     except Exception as e:
