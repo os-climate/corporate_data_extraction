@@ -212,21 +212,81 @@ def run_infer_relevance():
     relevance_infer_config.kpi_questions = infer_relevance_settings['kpi_questions']
     relevance_infer_config.sectors = infer_relevance_settings['sectors']
     relevance_infer_config.return_class_probs = infer_relevance_settings['return_class_probs']
+    
+    BASE_DATA_PROJECT_FOLDER =  DATA_FOLDER / project_name
+    BASE_INTERIM_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'ml'
+    BASE_OUTPUT_FOLDER = BASE_DATA_PROJECT_FOLDER / 'output' / relevance_infer_config.experiment_type / relevance_infer_config.data_type
+    ANNOTATION_FOLDER = BASE_INTERIM_FOLDER / 'annotations'
+    EXTRACTION_FOLDER = BASE_INTERIM_FOLDER / 'extraction'
 
-    shutil.copyfile(os.path.join(DATA_FOLDER, project_name, "input", "kpi_mapping", "kpi_mapping.csv"), "/kpi_mapping.csv")
+    kpi_folder = os.path.join(DATA_FOLDER, project_name, "input", "kpi_mapping")
+
+    output_model_folder = os.path.join(str(MODEL_FOLDER), project_name, relevance_infer_config.experiment_type, 
+                                       relevance_infer_config.data_type)
+
+    create_directory(kpi_folder)
+    create_directory(output_model_folder)
+    create_directory(BASE_OUTPUT_FOLDER)
+    create_directory(ANNOTATION_FOLDER)
+    create_directory(EXTRACTION_FOLDER)
+    
+    s3_usage = args["s3_usage"]
+    if s3_usage:
+        s3_settings = args["s3_settings"]
+        project_prefix_data = s3_settings['prefix'] + "/" + project_name + '/data'
+        project_prefix_project_models = s3_settings['prefix'] + "/" + project_name + '/models'
+        # init s3 connector
+        s3c_main = S3Communication(
+            s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+            aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+            aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+            s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        s3c_interim = S3Communication(
+                s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+        )
+        # Download kpi file
+        s3c_main.download_files_in_prefix_to_dir(project_prefix_data + '/input/kpi_mapping', kpi_folder)
+        # Download model
+        train_rel_prefix = os.path.join(project_prefix_project_models, relevance_infer_config.experiment_type, relevance_infer_config.data_type)
+        output_model_zip = os.path.join(output_model_folder, args["train_relevance"]['output_model_name'] + ".zip")
+        s3c_main.download_file_from_s3(output_model_zip, train_rel_prefix, args["train_relevance"]['output_model_name'] + ".zip")
+        with zipfile.ZipFile(output_model_zip, 'r') as zip_ref:
+            zip_ref.extractall(output_model_folder)
+        # Download extraction files
+        s3c_interim.download_files_in_prefix_to_dir(project_prefix_data + '/interim/ml/extraction', 
+                            EXTRACTION_FOLDER)
+        # Download annotation files        
+        s3c_interim.download_files_in_prefix_to_dir(project_prefix_data + '/interim/ml/annotations', 
+                                    ANNOTATION_FOLDER)
+        
+    shutil.copyfile(os.path.join(kpi_folder, "kpi_mapping.csv"), "/app/code/kpi_mapping.csv")
     free_memory()
 
     try:
         t1 = time.time()
         for data_type in relevance_infer_config.data_types:
-            rel_infer_component_class = CLASS_DATA_TYPE_RELEVANCE[data_type]
-            rel_infer_component_obj = rel_infer_component_class(relevance_infer_config)
+        rel_infer_component_class = CLASS_DATA_TYPE_RELEVANCE[data_type]
+        rel_infer_component_obj = rel_infer_component_class(relevance_infer_config)
             result_rel = rel_infer_component_obj.run_folder()
         t2 = time.time()
     except Exception as e:
         msg = "Error during kpi infer stage\nException:" + str(repr(e) + traceback.format_exc())
         return Response(msg, status=500)
-
+    
+    if s3_usage:
+        project_prefix_project_output = pathlib.Path(s3_settings['prefix'] + "/" + project_name + '/output') \
+                / relevance_infer_config.experiment_type / relevance_infer_config.data_type
+        s3c_main.upload_files_in_dir_to_prefix(BASE_OUTPUT_FOLDER,  project_prefix_project_output)
+        create_directory(kpi_folder)
+        create_directory(output_model_folder)
+        create_directory(BASE_OUTPUT_FOLDER)
+        create_directory(ANNOTATION_FOLDER)
+        create_directory(EXTRACTION_FOLDER)
+    
     time_elapsed = str(timedelta(seconds=t2-t1))
     msg = "Inference for the relevance stage finished successfully!\nTime elapsed:{}".format(time_elapsed)
     return Response(msg, status=200)
