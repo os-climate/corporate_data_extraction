@@ -269,8 +269,8 @@ def run_infer_relevance():
     try:
         t1 = time.time()
         for data_type in relevance_infer_config.data_types:
-        rel_infer_component_class = CLASS_DATA_TYPE_RELEVANCE[data_type]
-        rel_infer_component_obj = rel_infer_component_class(relevance_infer_config)
+            rel_infer_component_class = CLASS_DATA_TYPE_RELEVANCE[data_type]
+            rel_infer_component_obj = rel_infer_component_class(relevance_infer_config)
             result_rel = rel_infer_component_obj.run_folder()
         t2 = time.time()
     except Exception as e:
