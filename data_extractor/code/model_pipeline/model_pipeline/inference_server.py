@@ -512,6 +512,7 @@ def run_infer_kpi():
         project_prefix_project_models = s3_settings['prefix'] + "/" + project_name + '/models'
         train_inf_prefix = os.path.join(project_prefix_project_models, 'KPI_EXTRACTION', qa_infer_config.data_type)
         output_model_folder = str(MODEL_FOLDER / project_name / 'KPI_EXTRACTION' / qa_infer_config.data_type)
+        create_directory(output_model_folder)
         output_model_zip = os.path.join(output_model_folder, args["train_kpi"]['output_model_name'] + ".zip")
         s3c_main.download_file_from_s3(output_model_zip, train_inf_prefix, args["train_kpi"]['output_model_name'] + ".zip")
         with zipfile.ZipFile(output_model_zip, 'r') as zip_ref:
