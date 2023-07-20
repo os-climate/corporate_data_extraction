@@ -178,10 +178,10 @@ def save_train_info(project_name):
                 dir_train.update({'annotations': pd.read_excel(source_annotation + r'/' + filename, engine='openpyxl') })
                 first = False
     dir_train.update({'kpis': pd.read_csv(source_mapping + '/kpi_mapping.csv')})
-
+    
     relevance_model = project_settings['train_relevance']['output_model_name']
     kpi_model = project_settings['train_kpi']['output_model_name']
-
+    
     name_out = project_model_dir
     name_out = name_out + '/rel_text_' + relevance_model + '_kpi_text_' + kpi_model + '.pickle'
         
@@ -201,9 +201,9 @@ def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0
     :param infer_ip (int): The ip that the inference server is listening on
     :return: A boolean, indicating success
     """
-
+    
     convert_xls_to_csv(project_name)
-
+    
     # Check if the extraction server is live
     ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
     if ext_live.status_code == 200:
@@ -211,23 +211,23 @@ def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0
     else:
         print("Extraction server is not responding.")
         return False
-
+    
     payload = {'project_name': project_name, 'mode': 'train'}
     payload.update(project_settings)
     payload = {'payload': json.dumps(payload)}
-
+    
     # Sending an execution request to the extraction server for extraction
     ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/extract", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
-
+    
     # Sending an execution request to the extraction server for curation
     ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/curate", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
-
+    
     # Check if the inference server is live
     infer_live = requests.get(f"http://{infer_ip}:{infer_port}/liveness")
     if infer_live.status_code == 200:
@@ -381,7 +381,7 @@ def main():
         s3c_main.download_file_from_s3(filepath=settings_path,
                                   s3_prefix=project_prefix,
                                   s3_key='settings.yaml')
-    
+
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
     project_settings = yaml.safe_load(f)
@@ -435,14 +435,24 @@ def main():
             source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
             if os.path.exists(source_extraction):
                 link_extracted_files(source_extraction, source_pdf, destination_extraction)
+        
         end_to_end_response = run_router(ext_port, infer_port, project_name, ext_ip, infer_ip)
+        
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:
                 print("Finally we transfer the text extraction to the output folder")
                 source_extraction_data = destination_extraction
                 destination_extraction_data = project_data_dir + r'/output/TEXT_EXTRACTION'
-                os.makedirs(destination_extraction_data, exist_ok=True)
-                end_to_end_response = copy_file_without_overwrite(source_extraction_data, destination_extraction_data)
+                if s3_usage:
+                    s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', 
+                                  source_extraction_data)
+                    s3c_main.upload_files_in_dir_to_prefix(source_extraction_data, 
+                                  project_prefix + '/output/TEXT_EXTRACTION')
+                else:
+                    os.makedirs(destination_extraction_data, exist_ok=True)
+                    end_to_end_response = copy_file_without_overwrite(source_extraction_data, destination_extraction_data)
+
+                
             if project_settings['general']['delete_interim_files']:
                 create_directory(destination_pdf)
                 create_directory(destination_mapping)
@@ -451,6 +461,12 @@ def main():
                 create_directory(destination_training)
                 create_directory(destination_curation)
                 create_directory(folder_text_3434)
+                if s3_usage:
+                    # Show only objects which satisfy our prefix
+                    my_bucket = s3c_interim.s3_resource.Bucket(name=s3c_interim.bucket)
+                    for objects in my_bucket.objects.filter(Prefix=project_prefix+'/interim'):
+                        _ = objects.delete()
+                
             if end_to_end_response:
                 save_train_info(project_name)
                 print("End-to-end inference complete")
