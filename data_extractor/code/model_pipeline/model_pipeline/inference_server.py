@@ -101,7 +101,6 @@ def run_train_relevance():
             s3_settings = args["s3_settings"]
             project_prefix_data = s3_settings['prefix'] + "/" + project_name + '/data'
             project_prefix_project_models = s3_settings['prefix'] + "/" + project_name + '/models'
-            project_prefix_base_models = s3_settings['prefix'] + '/base_model'
             # init s3 connector
             s3c_main = S3Communication(
                 s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
@@ -294,7 +293,7 @@ def run_infer_relevance():
 
 @app.route('/train_kpi/')
 def run_train_kpi():
-args = json.loads(request.args['payload'])
+    args = json.loads(request.args['payload'])
     project_name = args["project_name"]
     kpi_inference_training_settings = args["train_kpi"]
 
@@ -420,21 +419,22 @@ args = json.loads(request.args['payload'])
             json.dump(result, f)
         
         if s3_usage:
-            print("Nothing saved yet")
-            # train_rel_prefix = os.path.join(project_prefix_project_models, file_config.experiment_type, file_config.data_type)
-            # output_model_zip = os.path.join(str(MODEL_FOLDER), file_config.experiment_name, file_config.experiment_type, 
-            #      file_config.data_type, file_config.output_model_name + ".zip")
-            # with zipfile.ZipFile(output_model_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            #     zipdir(output_model_folder, zipf)            
-            # response = s3c_main.upload_file_to_s3(filepath=output_model_zip,
-            #                                  s3_prefix=train_rel_prefix,
-            #                                  s3_key=file_config.output_model_name + ".zip")
-            # response_2 = s3c_main.upload_file_to_s3(filepath=name_out,
-            #                      s3_prefix=train_rel_prefix,
-            #                      s3_key="result_rel_" + file_config.output_model_name + ".json")
-            # create_directory(output_model_folder)
-            # create_directory(training_folder)
-            # create_directory(os.path.dirname(file_config.curated_data))
+            train_inf_prefix = str(pathlib.Path(s3_settings['prefix']) / project_name / 'models' / 'KPI_EXTRACTION' / 'Text')
+            output_model_folder = str(pathlib.Path(MODEL_FOLDER) / project_name / "KPI_EXTRACTION" / "Text" / kpi_inference_training_settings['output_model_name'])
+            with zipfile.ZipFile(output_model_folder + ".zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
+                zipdir(output_model_folder, zipf)            
+            response = s3c_main.upload_file_to_s3(filepath=output_model_folder + ".zip",
+                                              s3_prefix=train_inf_prefix,
+                                              s3_key=kpi_inference_training_settings['output_model_name'] + ".zip")
+            response_2 = s3c_main.upload_file_to_s3(filepath=name_out,
+                                  s3_prefix=train_inf_prefix,
+                                  s3_key="result_kpi_" + kpi_inference_training_settings['output_model_name'] + ".json")
+            print("TODO OTHER FILES TO STORE?")
+            create_directory(output_model_folder)
+            create_directory(os.path.join(str(MODEL_FOLDER), project_name))
+            create_directory(tkpi.annotation_folder)
+            create_directory(str(pathlib.Path(file_config.data_dir) / project_name / "interim" / "ml"))
+            create_directory(str(project_prefix_data / 'input'))
         
         t2 = time.time()
 
