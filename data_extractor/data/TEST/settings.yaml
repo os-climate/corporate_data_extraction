@@ -37,11 +37,10 @@ curation:
   seed: 41
 # All the input parameters for the relevance training stage
 train_relevance: 
-  # The base name should match a FARM base name (see "_infer_tokenizer_class_from_string" on https://farm.deepset.ai/_modules/farm/modeling/tokenization.html#Tokenizer)
-  base_model: roberta-base
+  base_model: roberta-test-12412412455123463
   input_model_name:
-  output_model_name: TEST_1
-  train: true
+  output_model_name: TEST_11
+  train: false
   seed: 42
   processor: # farm.processor TextPairClassificationProcessor input
     proc_max_seq_len: 512
@@ -79,8 +78,9 @@ infer_relevance:
 # All the input parameters for the kpi training stage
 train_kpi:
   input_model_name: 
-  output_model_name: TEST_1
-  base_model: a-ware/roberta-large-squadv2
+  output_model_name: TEST_11
+  #a-ware/roberta-large-squadv2
+  base_model: roberta-test-12312341098724102
   train: true
   seed: 42
   curation:
