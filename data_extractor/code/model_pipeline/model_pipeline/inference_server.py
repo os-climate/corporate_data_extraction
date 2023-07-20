@@ -125,12 +125,20 @@ def run_train_relevance():
         create_directory(output_model_folder)
         
         if relevance_training_settings["input_model_name"] is not None:
-            model_dir = os.path.join(str(MODEL_FOLDER), project_name, 
-                                     "RELEVANCE", "Text", relevance_training_settings["input_model_name"])
+            base_model_dir = os.path.join(str(MODEL_FOLDER), project_name, "RELEVANCE", "Text")
+            model_dir = os.path.join(base_model_dir, relevance_training_settings["input_model_name"])
             model_config.load_dir = model_dir
             tokenizer_config.pretrained_model_name_or_path = model_dir
             model_config.lang_model = model_dir
             processor_config.load_dir = model_dir
+            if args['s3_usage']:
+                # Download model
+                model_rel_prefix = str(pathlib.Path(s3_settings['prefix']) / project_name / 'models' / 'RELEVANCE' / 'Text')
+                output_model_zip = model_dir + ".zip"
+                s3c_main.download_file_from_s3(output_model_zip, model_inf_prefix, relevance_training_settings["input_model_name"] + ".zip")
+                with zipfile.ZipFile(output_model_zip, 'r') as zip_ref:
+                    zip_ref.extractall(base_model_dir)
+                os.remove(output_model_zip)
         else:
             model_config.lang_model = relevance_training_settings["base_model"]
             model_config.load_dir = None
@@ -185,7 +193,8 @@ def run_train_relevance():
             create_directory(output_model_folder)
             create_directory(training_folder)
             create_directory(os.path.dirname(file_config.curated_data))
-            
+            if relevance_training_settings["input_model_name"] is not None:
+                create_directory(model_dir)
         t2 = time.time()
     except Exception as e:
         msg = "Error during kpi infer stage\nException:" + str(repr(e) + traceback.format_exc())
@@ -255,6 +264,7 @@ def run_infer_relevance():
         s3c_main.download_file_from_s3(output_model_zip, train_rel_prefix, args["train_relevance"]['output_model_name'] + ".zip")
         with zipfile.ZipFile(output_model_zip, 'r') as zip_ref:
             zip_ref.extractall(output_model_folder)
+        os.remove(output_model_zip)
         # Download extraction files
         s3c_interim.download_files_in_prefix_to_dir(project_prefix_data + '/interim/ml/extraction', 
                             EXTRACTION_FOLDER)
@@ -281,7 +291,7 @@ def run_infer_relevance():
                 / relevance_infer_config.experiment_type / relevance_infer_config.data_type
         s3c_main.upload_files_in_dir_to_prefix(BASE_OUTPUT_FOLDER,  project_prefix_project_output)
         create_directory(kpi_folder)
-        create_directory(output_model_folder)
+        create_directory(str(pathlib.Path(output_model_folder) / args["train_relevance"]['output_model_name']))
         create_directory(BASE_OUTPUT_FOLDER)
         create_directory(ANNOTATION_FOLDER)
         create_directory(EXTRACTION_FOLDER)
@@ -319,7 +329,12 @@ def run_train_kpi():
         tkpi.relevant_text_path = os.path.join(file_config.data_dir, project_name, "interim", "ml", "text_3434.csv")
         curation_input = kpi_inference_training_settings["curation"]
         
+        create_directory(tkpi.annotation_folder)
+        create_directory(str(pathlib.Path(file_config.data_dir) / project_name / "interim" / "ml"))
+        create_directory(tkpi.output_squad_folder)
+        
         if args['s3_usage']:
+            s3_settings = args["s3_settings"]
             s3c_main = S3Communication(
                     s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
                     aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
@@ -335,9 +350,7 @@ def run_train_kpi():
             project_prefix_data = pathlib.Path(s3_settings['prefix']) / project_name / 'data'
             project_prefix_agg_annotations = str(project_prefix_data / 'interim' / 'ml' / 'annotations')
             
-            create_directory(tkpi.annotation_folder)
-            create_directory(str(pathlib.Path(file_config.data_dir) / project_name / "interim" / "ml"))
-            
+            # Download aggregated annotations file
             s3c_interim.download_file_from_s3(filepath=tkpi.agg_annotation,
                           s3_prefix=project_prefix_agg_annotations,
                           s3_key='aggregated_annotation.csv')
@@ -387,11 +400,19 @@ def run_train_kpi():
         processor_config.metric = kpi_inference_training_settings["processor"]["metric"]
         
         if kpi_inference_training_settings["input_model_name"] is not None:
-            model_dir = os.path.join(str(MODEL_FOLDER), project_name, 
-                                     "KPI_EXTRACTION", "Text", kpi_inference_training_settings["input_model_name"])
+            base_model_dir = os.path.join(str(MODEL_FOLDER), project_name, "KPI_EXTRACTION", "Text")
+            model_dir = os.path.join(base_model_dir, kpi_inference_training_settings["input_model_name"])
             model_config.load_dir = model_dir
             tokenizer_config.pretrained_model_name_or_path = model_dir
             model_config.lang_model = model_dir
+            if args['s3_usage']:
+                # Download model
+                model_inf_prefix = str(pathlib.Path(s3_settings['prefix']) / project_name / 'models' / 'KPI_EXTRACTION' / 'Text')
+                output_model_zip = model_dir + ".zip"
+                s3c_main.download_file_from_s3(output_model_zip, model_inf_prefix, kpi_inference_training_settings["input_model_name"] + ".zip")
+                with zipfile.ZipFile(output_model_zip, 'r') as zip_ref:
+                    zip_ref.extractall(base_model_dir)
+                os.remove(output_model_zip)
         else:
             tokenizer_config.pretrained_model_name_or_path = kpi_inference_training_settings["base_model"]
             model_config.load_dir = None
@@ -418,23 +439,34 @@ def run_train_kpi():
         with open(name_out, 'w') as f:
             json.dump(result, f)
         
-        if s3_usage:
+        if args['s3_usage']:
+            print('Next we store the files to S3.')
             train_inf_prefix = str(pathlib.Path(s3_settings['prefix']) / project_name / 'models' / 'KPI_EXTRACTION' / 'Text')
             output_model_folder = str(pathlib.Path(MODEL_FOLDER) / project_name / "KPI_EXTRACTION" / "Text" / kpi_inference_training_settings['output_model_name'])
+            print('First we zip the model. This can take some time.')
             with zipfile.ZipFile(output_model_folder + ".zip", 'w', zipfile.ZIP_DEFLATED) as zipf:
                 zipdir(output_model_folder, zipf)            
+            print('Next we upload the model to S3. This can take some time.')
             response = s3c_main.upload_file_to_s3(filepath=output_model_folder + ".zip",
                                               s3_prefix=train_inf_prefix,
                                               s3_key=kpi_inference_training_settings['output_model_name'] + ".zip")
+            os.remove(output_model_folder + ".zip")
+            print('Next we upload the interim training files and the statistics to S3.')
             response_2 = s3c_main.upload_file_to_s3(filepath=name_out,
                                   s3_prefix=train_inf_prefix,
                                   s3_key="result_kpi_" + kpi_inference_training_settings['output_model_name'] + ".json")
-            print("TODO OTHER FILES TO STORE?")
+            s3c_interim.upload_files_in_dir_to_prefix(source_dir=str(DATA_FOLDER / project_name / 'interim' / 'ml' / 'training'),
+                                                      s3_prefix=str(pathlib.Path(s3_settings['prefix']) / project_name / 'data' / 'interim' / 'ml' / 'training'))
+            create_directory(output_model_folder)
             create_directory(output_model_folder)
             create_directory(os.path.join(str(MODEL_FOLDER), project_name))
             create_directory(tkpi.annotation_folder)
             create_directory(str(pathlib.Path(file_config.data_dir) / project_name / "interim" / "ml"))
             create_directory(str(project_prefix_data / 'input'))
+            create_directory(tkpi.output_squad_folder)
+            create_directory(str(config.TextKPIInferenceCurator_kwargs['extracted_text_json_folder']))
+            if kpi_inference_training_settings["input_model_name"] is not None:
+                create_directory(model_dir)
         
         t2 = time.time()
 
