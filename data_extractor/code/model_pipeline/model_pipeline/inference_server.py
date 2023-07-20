@@ -536,7 +536,7 @@ def run_infer_kpi():
                 # Upload kpi inference output
                 output_results_folder = str(DATA_FOLDER / project_name / 'output' / 'KPI_EXTRACTION' / 'ml' / data_type)
                 project_prefix_output = pathlib.Path(s3_settings['prefix']) / project_name / 'data' / 'output'
-                s3c_main.upload_files_in_dir_to_prefix(output_results_folder, str(project_prefix_output / 'KPI_EXTRACTION' / data_type))
+                s3c_main.upload_files_in_dir_to_prefix(output_results_folder, str(project_prefix_output / 'KPI_EXTRACTION' / 'ml' / data_type))
                 create_directory(relevance_result_dir)
                 create_directory(output_results_folder)
         t2 = time.time()
