@@ -12,7 +12,7 @@ import pickle
 import datetime
 from s3_communication import S3Communication
 
-FILE_RUNNING = config_path.NLP_DIR+r'/data/running'
+path_file_running = config_path.NLP_DIR+r'/data/running'
 
 project_settings = None
 source_pdf = None
@@ -35,17 +35,17 @@ s3c_interim = None
 project_prefix = None
 
 def set_running():
-     with open(FILE_RUNNING, 'w'):
+     with open(path_file_running, 'w'):
           pass
 
 def clear_running():
      try:
-          os.unlink(FILE_RUNNING)
+          os.unlink(path_file_running)
      except Exception as e:
           pass
 
 def check_running():
-     return os.path.exists(FILE_RUNNING)
+     return os.path.exists(path_file_running)
 
 def create_directory(directory_name):
     os.makedirs(directory_name, exist_ok=True)
@@ -63,9 +63,11 @@ def link_files(source_dir, destination_dir):
         os.link(f"{source_dir}/{file}", f"{destination_dir}/{file}")
 
 def generate_text_3434(project_name):
-     with open(folder_text_3434 + r"/text_3434.csv", "w") as file_out:
-         very_first = True
-         for filepath in glob.iglob(folder_relevance + r'/*.csv'): 
+    """Write the contents of all the files in folder_relevance to the file
+    text_3434 and take the header only from the first file in folder_relevance"""
+    with open(folder_text_3434 + r"/text_3434.csv", "w") as file_out:
+        very_first = True
+        for filepath in glob.iglob(folder_relevance + r'/*.csv'): 
             print(filepath)
             with open(filepath) as file_in:
                 first = True

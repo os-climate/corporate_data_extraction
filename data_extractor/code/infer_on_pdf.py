@@ -9,7 +9,7 @@ import time
 import traceback
 import shutil
 
-FILE_RUNNING = config_path.NLP_DIR+r'/data/running'
+path_file_running = config_path.NLP_DIR+r'/data/running'
 
 project_settings = None
 source_pdf = None
@@ -28,19 +28,19 @@ folder_relevance = None
 
 
 def set_running():
-     with open(FILE_RUNNING, 'w'):
+     with open(path_file_running, 'w'):
           pass
 
 
 def clear_running():
      try:
-          os.unlink(FILE_RUNNING)
+          os.unlink(path_file_running)
      except Exception as e:
           pass
 
 
 def check_running():
-     return os.path.exists(FILE_RUNNING)
+     return os.path.exists(path_file_running)
 
 
 def create_directory(directory_name):
