@@ -2,7 +2,9 @@ from pathlib import Path
 import config_path
 from train_on_pdf import link_files, link_extracted_files
 import shutil
+import pytest
 
+# TODO simpler
 def test_link_files(path_temporary_folder: Path):
     """Tests if link_files creates proper hard links"""
     path_folder_source = path_temporary_folder / 'source'
