@@ -309,7 +309,9 @@ def run_db_export(project_name, settings, run_id):
 
 def main():
     global project_settings
-
+    global source_annotation
+    global destination_annotation
+    
     if(check_running()):
         print("Another training or inference process is currently running.")
         return
