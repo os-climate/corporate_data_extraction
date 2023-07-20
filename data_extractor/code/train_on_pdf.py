@@ -87,7 +87,7 @@ def generate_text_3434(project_name, s3_usage, s3_settings):
             s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
         )
         # Download infer relevance files
-        prefix_rel_infer = str(Path(s3_settings['prefix']) / project_name / 'output' / 'RELEVANCE' / 'Text')
+        prefix_rel_infer = str(Path(s3_settings['prefix']) / project_name / 'data' / 'output' / 'RELEVANCE' / 'Text')
         s3c_main.download_files_in_prefix_to_dir(prefix_rel_infer, str(folder_relevance))
         
     with open(folder_text_3434 + r"/text_3434.csv", "w") as file_out:
