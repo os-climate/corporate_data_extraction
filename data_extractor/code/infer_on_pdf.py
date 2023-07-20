@@ -193,10 +193,10 @@ def run_router_ml(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='
     return True
 
 
-def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port):
+def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port, ip):
     if(use_docker):
         payload = {'project_name': project_name, 'verbosity': str(verbosity)}
-        rb_response = requests.get("http://0.0.0.0:{}/run".format(port), params=payload)
+        rb_response = requests.get(f"http://{ip}:{port}/run", params=payload)
         print(rb_response.text)
         if rb_response.status_code != 200:
             return False
@@ -211,13 +211,13 @@ def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, v
     return True 
 
 
-def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, port):
+def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, port, ip):
     if(use_docker):
         payload = {'project_name': project_name,
                    'pdf_name': pdf_name,
                    'csv_name': csv_name,
                    'verbosity': str(verbosity)}
-        rb_xy_extract_response = requests.get("http://0.0.0.0:{}/run_xy_ml".format(port), params=payload)
+        rb_xy_extract_response = requests.get(f"http://{ip}:{port}/run_xy_ml", params=payload)
         print(rb_xy_extract_response.text)
         if rb_xy_extract_response.status_code != 200:
             return False
@@ -236,6 +236,7 @@ def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, 
 
 def get_current_run_id():
     return int(time.time())
+    
 
 def try_int(val, default):
     try:
@@ -245,7 +246,7 @@ def try_int(val, default):
     return default
 
 
-def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, port, run_id):
+def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, port, ip, run_id):
     print("Joining output . . . ")
     # ML header:  ,pdf_name,kpi,kpi_id,answer,page,paragraph,source,score,no_ans_score,no_answer_score_plus_boost
     # RB header:  "KPI_ID","KPI_NAME","SRC_FILE","PAGE_NUM","ITEM_IDS","POS_X","POS_Y","RAW_TXT","YEAR","VALUE","SCORE","UNIT","MATCH_TYPE"
@@ -288,12 +289,10 @@ def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, ou
                         writer.writerow(data)
             except IOError:
                 pass # ML not executed
-        #return
-        # DBE XXX ----->
         csv_name = str(run_id) + r'_' + filename + r'.csv'
         if csv_name in os.listdir(output_folder):
             set_xy_ml(project_name=project_name, raw_pdf_folder=pdf_folder, working_folder=work_dir_rb, pdf_name=filename, 
-                    csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, port=port)
+                    csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, port=port, ip=ip)
         else:
             print(f'File {csv_name} not in the output and hence we are not able to detect x, y coordinates for the ML solution output.')
 
@@ -426,7 +425,7 @@ def main():
         destination_ml_infer = project_data_dir + r'/output/KPI_EXTRACTION/ml/Text'
 
         # Output folders
-        destination_output = project_data_dir + r'/output/KPI_EXTRACTION'
+        destination_output = project_data_dir + r'/output/KPI_EXTRACTION/joined_ml_rb'
 
         create_directory(destination_pdf)
         create_directory(destination_mapping)
@@ -456,17 +455,25 @@ def main():
                               project_name=project_name, \
                               verbosity=rb_verbosity, \
                               use_docker=rb_use_docker, \
+                              ip=rb_ip, \
                               port=rb_port)
         
         if(mode in ('ML', 'both')):
             print("Executing ML solution . . . ")
             end_to_end_response = end_to_end_response and \
                                   run_router_ml(ext_port, infer_port, project_name, ext_ip, infer_ip)
+            if s3_usage:
+                #Download inference output
+                s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/Text', 
+                                            destination_ml_infer)
 
         if end_to_end_response:
-            #os.system("sudo "+config_path.NLP_DIR+r"/rewrite_ownership.sh")
-            #link_files(destination_ml_infer,destination_output)
             run_id = get_current_run_id()
+            if s3_usage:
+                #Download pdf's to folder
+                s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/inference', 
+                                                    destination_pdf)
+            
             join_output(project_name=project_name,
                         pdf_folder = destination_pdf, 
                         rb_output_folder = destination_rb_infer, 
@@ -475,8 +482,13 @@ def main():
                         use_docker = rb_use_docker, 
                         work_dir_rb = destination_rb_workdir, 
                         verbosity = rb_verbosity, 
-                        port=rb_port, 
+                        port=rb_port,
+                        ip=rb_ip,
                         run_id= run_id)
+            if s3_usage:
+                s3c_main.upload_files_in_dir_to_prefix(destination_output, 
+                                  project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb')
+            
             if(enable_db_export):
                 print("Exporting output to database . . . ")
                 run_db_export(project_name, project_settings['data_export'], run_id)
@@ -484,6 +496,11 @@ def main():
                 print("Finally we transfer the text extraction to the output folder.")
                 source_extraction_data = destination_ml_extraction
                 destination_extraction_data = project_data_dir + r'/output/TEXT_EXTRACTION'
+                if s3_usage:
+                    s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', 
+                                  source_extraction_data)
+                    s3c_main.upload_files_in_dir_to_prefix(source_extraction_data, 
+                                  project_prefix + '/output/TEXT_EXTRACTION')
                 os.makedirs(destination_extraction_data, exist_ok=True)
                 end_to_end_response = copy_files_without_overwrite(source_extraction_data, destination_extraction_data)
             if project_settings['general']['delete_interim_files']:
@@ -491,6 +508,11 @@ def main():
                 create_directory(destination_rb_workdir)
                 create_directory(destination_pdf)
                 create_directory(destination_mapping)
+                if s3_usage:
+                    # Show only objects which satisfy our prefix
+                    my_bucket = s3c_interim.s3_resource.Bucket(name=s3c_interim.bucket)
+                    for objects in my_bucket.objects.filter(Prefix=project_prefix+'/interim'):
+                        _ = objects.delete()
             if end_to_end_response:
                 print("End-to-end inference complete")
     
