@@ -8,6 +8,8 @@ import csv
 import time
 import traceback
 import shutil
+from s3_communication import S3Communication
+import pandas as pd
 
 FILE_RUNNING = config_path.NLP_DIR+r'/data/running'
 
@@ -91,18 +93,68 @@ def link_extracted_files(src_ext, src_pdf, dest_ext):
         return True
 
 
-def run_router_ml(ext_port, infer_port, project_name):
+def convert_xls_to_csv(project_name, s3_usage, s3_settings):
+    """
+    This function transforms the annotations.xlsx file into annotations.csv.
+    
+    :param project_name: str, representing the project we currently work on
+    :param s3_usage: boolean, if we use s3 as we then have to upload the new csv file to s3
+    :param s3_settings: dictionary, containing information in case of s3 usage
+    return None
+    """
+    source_dir = source_annotation
+    dest_dir = destination_annotation
+    if s3_usage:
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+        # init s3 connector
+        s3c_main = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        s3c_interim = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+        )
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
+                                            source_dir)
+    first = True
+    for filename in os.listdir(source_dir):
+        if(filename[-5:]=='.xlsx'):
+            if(not first):
+                raise ValueError('More than one excel sheet found')
+            print('Converting ' + filename + ' to csv-format')
+            #read_file = pd.read_excel(source_dir + r'/' + filename, sheet_name = 'data_ex_in_xls', engine='openpyxl')
+            read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl') #only reads first sheet in excel file
+            read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index = None, header=True)
+            if s3_usage:
+                s3c_interim.upload_files_in_dir_to_prefix(dest_dir, 
+                                                  project_prefix + '/interim/ml/annotations')
+            first = False         
+    if(first):
+        raise ValueError('No annotation excel sheet found')
+
+
+def run_router_ml(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
     """
     Router function
     It fist sends a command to the extraction server to beging extraction.
     If done successfully, it will send a commnad to the inference server to start inference.
     :param ext_port (int): The port that the extraction server is listening on
     :param infer_port (int): The port that the inference server is listening on
+    :param project_name (str): The name of the project
+    :param ext_ip (int): The ip that the extraction server is listening on
+    :param infer_ip (int): The ip that the inference server is listening on
     :return: A boolean, indicating success
     """
-
+    
+    convert_xls_to_csv(project_name, project_settings['s3_usage'], project_settings['s3_settings'])
+    
     # Check if the extraction server is live
-    ext_live = requests.get("http://0.0.0.0:{}/liveness".format(ext_port))
+    ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
     if ext_live.status_code == 200:
         print("Extraction server is up. Proceeding to extraction.")
     else:
@@ -113,14 +165,14 @@ def run_router_ml(ext_port, infer_port, project_name):
     payload.update(project_settings)
     payload = {'payload': json.dumps(payload)} 
 
-    # Sending an execution request to the extraction server
-    ext_resp = requests.get("http://0.0.0.0:{}/extract".format(ext_port), params=payload)
+    # Sending an execution request to the extraction server for extraction
+    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/extract", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
 
     # Check if the inference server is live
-    infer_live = requests.get("http://0.0.0.0:{}/liveness".format(infer_port), params=payload)
+    infer_live = requests.get(f"http://{infer_ip}:{infer_port}/liveness")
     if infer_live.status_code == 200:
         print("Inference server is up. Proceeding to Inference.")
     else:
@@ -128,13 +180,13 @@ def run_router_ml(ext_port, infer_port, project_name):
         return False
 
     # Requesting the inference server to start the relevance stage
-    infer_resp = requests.get("http://0.0.0.0:{}/infer_relevance".format(infer_port), params=payload)
+    infer_resp = requests.get(f"http://{infer_ip}:{infer_port}/infer_relevance", params=payload)
     print(infer_resp.text)
     if infer_resp.status_code != 200:
         return False
 
     # Requesting the inference server to start the kpi extraction stage
-    infer_resp_kpi = requests.get("http://0.0.0.0:{}/infer_kpi".format(infer_port), params=payload)
+    infer_resp_kpi = requests.get(f"http://{infer_ip}:{infer_port}/infer_kpi", params=payload)
     print(infer_resp_kpi.text)
     if infer_resp_kpi.status_code != 200:
         return False
@@ -336,15 +388,15 @@ def main():
     f = open(project_data_dir + r'/settings.yaml', 'r')
     project_settings = yaml.safe_load(f)
     f.close()   
-    
+
     project_settings.update({'s3_usage': s3_usage})
     if s3_usage:
         project_settings.update({'s3_settings': s3_settings})
-    
+
     ext_port = project_settings['general']['ext_port']
     infer_port = project_settings['general']['infer_port']
     rb_port = project_settings['general']['rb_port']
-    
+
     ext_ip = project_settings['general']['ext_ip']
     infer_ip = project_settings['general']['infer_ip']
     rb_ip = project_settings['general']['rb_ip']
@@ -359,6 +411,8 @@ def main():
         source_pdf = project_data_dir + r'/input/pdfs/inference'
         destination_pdf = project_data_dir + r'/interim/pdfs/'
         source_mapping = project_data_dir + r'/input/kpi_mapping'
+        source_annotation = project_data_dir + r'/input/annotations'
+        destination_annotation = project_data_dir + r'/interim/ml/annotations/' 
 
         # Interim folders
         destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
@@ -371,16 +425,17 @@ def main():
 
         # Output folders
         destination_output = project_data_dir + r'/output/KPI_EXTRACTION'
-        
+
         create_directory(destination_pdf)
         create_directory(destination_mapping)
         create_directory(destination_ml_extraction)
+        create_directory(destination_annotation)
         if(mode != 'none'):
             create_directory(destination_rb_infer)
             create_directory(destination_ml_infer)        
         os.makedirs(destination_rb_workdir, exist_ok=True)
         os.makedirs(destination_output, exist_ok=True)
-        
+
         link_files(source_pdf,destination_pdf)        
         link_files(source_mapping,destination_mapping)
         if project_settings['extraction']['use_extractions']:
@@ -404,7 +459,7 @@ def main():
         if(mode in ('ML', 'both')):
             print("Executing ML solution . . . ")
             end_to_end_response = end_to_end_response and \
-                                  run_router_ml(ext_port, infer_port, project_name)
+                                  run_router_ml(ext_port, infer_port, project_name, ext_ip, infer_ip)
 
         if end_to_end_response:
             #os.system("sudo "+config_path.NLP_DIR+r"/rewrite_ownership.sh")
