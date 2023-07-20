@@ -153,20 +153,26 @@ def convert_xls_to_csv(project_name):
         raise ValueError('No annotation excel sheet found')
 
 
-def save_train_info(project_name):
+def save_train_info(project_name, s3_usage=False, s3c_main=None, s3_settings=None):
     """
     This function stores all information of the training to a dictionary and saves it into a pickle file.
     Read it via:
     relevance_model = 'output'
     kpi_model = 'output'
-    cons_date = '20220422132203'
     file_src_path = project_model_dir
-    file_src_path = file_src_path + '/rel_text_' + relevance_model + '_kpi_text_' + kpi_model + '_' + cons_date + '.pickle'
+    file_src_path = file_src_path + '/rel_text_' + relevance_model + '_kpi_text_' + kpi_model + '.pickle'
     with open(file_src_path, 'rb') as handle:
     b = pickle.load(handle)
     :param project_name: str
     return None
     """
+    if s3_usage:
+        s3_settings = project_settings["s3_settings"]
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/kpi_mapping', source_mapping)
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', source_annotation)
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/training', source_pdf)
+    
     dir_train = {}
     dir_train.update({'project_name': project_name})
     dir_train.update({'train_settings': project_settings})
@@ -181,13 +187,18 @@ def save_train_info(project_name):
     
     relevance_model = project_settings['train_relevance']['output_model_name']
     kpi_model = project_settings['train_kpi']['output_model_name']
-    
+
     name_out = project_model_dir
-    name_out = name_out + '/rel_text_' + relevance_model + '_kpi_text_' + kpi_model + '.pickle'
+    name_out = name_out + '/SUMMARY_REL_' + relevance_model + '_KPI_' + kpi_model + '.pickle'
         
     with open(name_out, 'wb') as handle:
         pickle.dump(dir_train, handle, protocol=pickle.HIGHEST_PROTOCOL)
-        return None
+    if s3_usage:
+        response_2 = s3c_main.upload_file_to_s3(filepath=name_out,
+                      s3_prefix=str(Path(s3_settings['prefix']) / project_name / 'models'),
+                      s3_key='SUMMARY_REL_' + relevance_model + '_KPI_' + kpi_model + '.pickle')
+    
+    return None
 
 
 def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
@@ -356,7 +367,7 @@ def main():
         s3_usage = s3_usage == 'Y'
 
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
-
+    s3c_main = None 
     if s3_usage:
         # Opening s3 settings file
         s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'        
@@ -468,7 +479,7 @@ def main():
                         _ = objects.delete()
                 
             if end_to_end_response:
-                save_train_info(project_name)
+                save_train_info(project_name, s3_usage, s3c_main)
                 print("End-to-end inference complete")
 
     except Exception as e:
