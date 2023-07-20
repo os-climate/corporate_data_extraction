@@ -135,7 +135,7 @@ def run_train_relevance():
                 # Download model
                 model_rel_prefix = str(pathlib.Path(s3_settings['prefix']) / project_name / 'models' / 'RELEVANCE' / 'Text')
                 output_model_zip = model_dir + ".zip"
-                s3c_main.download_file_from_s3(output_model_zip, model_inf_prefix, relevance_training_settings["input_model_name"] + ".zip")
+                s3c_main.download_file_from_s3(output_model_zip, model_rel_prefix, relevance_training_settings["input_model_name"] + ".zip")
                 with zipfile.ZipFile(output_model_zip, 'r') as zip_ref:
                     zip_ref.extractall(base_model_dir)
                 os.remove(output_model_zip)
@@ -220,7 +220,7 @@ def run_infer_relevance():
     relevance_infer_config.kpi_questions = infer_relevance_settings['kpi_questions']
     relevance_infer_config.sectors = infer_relevance_settings['sectors']
     relevance_infer_config.return_class_probs = infer_relevance_settings['return_class_probs']
-    
+
     BASE_DATA_PROJECT_FOLDER =  DATA_FOLDER / project_name
     BASE_INTERIM_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'ml'
     BASE_OUTPUT_FOLDER = BASE_DATA_PROJECT_FOLDER / 'output' / relevance_infer_config.experiment_type / relevance_infer_config.data_type
