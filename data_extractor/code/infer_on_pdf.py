@@ -193,9 +193,12 @@ def run_router_ml(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='
     return True
 
 
-def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port, ip):
+def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port, ip, s3_usage, s3_settings):
     if(use_docker):
         payload = {'project_name': project_name, 'verbosity': str(verbosity)}
+        if s3_usage:
+            project_settings.update({'s3_usage': s3_usage})
+            project_settings.update({'s3_settings': s3_settings})
         rb_response = requests.get(f"http://{ip}:{port}/run", params=payload)
         print(rb_response.text)
         if rb_response.status_code != 200:
@@ -456,7 +459,9 @@ def main():
                               verbosity=rb_verbosity, \
                               use_docker=rb_use_docker, \
                               ip=rb_ip, \
-                              port=rb_port)
+                              port=rb_port, \
+                              s3_usage=s3_usage, \
+                              s3_settings=s3_settings)
         
         if(mode in ('ML', 'both')):
             print("Executing ML solution . . . ")
