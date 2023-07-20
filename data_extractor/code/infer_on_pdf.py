@@ -44,11 +44,14 @@ def check_running():
 
 
 def create_directory(directory_name):
-    try:
-        shutil.rmtree(directory_name)
-    except:
-        pass
     os.makedirs(directory_name, exist_ok=True)
+    for filename in os.listdir(directory_name):
+        file_path = os.path.join(directory_name, filename)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
 def link_files(source_dir, destination_dir):
@@ -88,20 +91,18 @@ def link_extracted_files(src_ext, src_pdf, dest_ext):
         return True
 
 
-def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0.0.0.0'):
+def run_router_ml(ext_port, infer_port, project_name):
     """
     Router function
     It fist sends a command to the extraction server to beging extraction.
     If done successfully, it will send a commnad to the inference server to start inference.
     :param ext_port (int): The port that the extraction server is listening on
     :param infer_port (int): The port that the inference server is listening on
-    :param ext_ip (int): The ip that the extraction server is listening on
-    :param infer_ip (int): The ip that the inference server is listening on
     :return: A boolean, indicating success
     """
 
     # Check if the extraction server is live
-    ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
+    ext_live = requests.get("http://0.0.0.0:{}/liveness".format(ext_port))
     if ext_live.status_code == 200:
         print("Extraction server is up. Proceeding to extraction.")
     else:
@@ -113,13 +114,13 @@ def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip
     payload = {'payload': json.dumps(payload)} 
 
     # Sending an execution request to the extraction server
-    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/extract", params=payload)
+    ext_resp = requests.get("http://0.0.0.0:{}/extract".format(ext_port), params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
 
     # Check if the inference server is live
-    infer_live = requests.get(f"http://{infer_ip}:{infer_port}/liveness")
+    infer_live = requests.get("http://0.0.0.0:{}/liveness".format(infer_port), params=payload)
     if infer_live.status_code == 200:
         print("Inference server is up. Proceeding to Inference.")
     else:
@@ -127,23 +128,23 @@ def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip
         return False
 
     # Requesting the inference server to start the relevance stage
-    infer_resp = requests.get(f"http://{infer_ip}:{infer_port}/infer_relevance", params=payload)
+    infer_resp = requests.get("http://0.0.0.0:{}/infer_relevance".format(infer_port), params=payload)
     print(infer_resp.text)
     if infer_resp.status_code != 200:
         return False
 
     # Requesting the inference server to start the kpi extraction stage
-    infer_resp_kpi = requests.get(f"http://{infer_ip}:{infer_port}/infer_kpi", params=payload)
+    infer_resp_kpi = requests.get("http://0.0.0.0:{}/infer_kpi".format(infer_port), params=payload)
     print(infer_resp_kpi.text)
     if infer_resp_kpi.status_code != 200:
         return False
     return True
-    
 
-def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, rb_port, rb_ip):
+
+def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port):
     if(use_docker):
         payload = {'project_name': project_name, 'verbosity': str(verbosity)}
-        rb_response = requests.get(f"http://{rb_ip}:{rb_port}/run", params=payload)
+        rb_response = requests.get("http://0.0.0.0:{}/run".format(port), params=payload)
         print(rb_response.text)
         if rb_response.status_code != 200:
             return False
@@ -158,13 +159,13 @@ def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, v
     return True 
 
 
-def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, rb_port, rb_ip):
+def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, port):
     if(use_docker):
         payload = {'project_name': project_name,
                    'pdf_name': pdf_name,
                    'csv_name': csv_name,
                    'verbosity': str(verbosity)}
-        rb_xy_extract_response = requests.get(f"http://{rb_ip}:{rb_port}/run_xy_ml", params=payload)
+        rb_xy_extract_response = requests.get("http://0.0.0.0:{}/run_xy_ml".format(port), params=payload)
         print(rb_xy_extract_response.text)
         if rb_xy_extract_response.status_code != 200:
             return False
@@ -184,7 +185,6 @@ def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, 
 def get_current_run_id():
     return int(time.time())
 
-
 def try_int(val, default):
     try:
         return int(float(val))
@@ -193,7 +193,7 @@ def try_int(val, default):
     return default
 
 
-def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, rb_port, rb_ip, run_id):
+def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, port, run_id):
     print("Joining output . . . ")
     # ML header:  ,pdf_name,kpi,kpi_id,answer,page,paragraph,source,score,no_ans_score,no_answer_score_plus_boost
     # RB header:  "KPI_ID","KPI_NAME","SRC_FILE","PAGE_NUM","ITEM_IDS","POS_X","POS_Y","RAW_TXT","YEAR","VALUE","SCORE","UNIT","MATCH_TYPE"
@@ -236,10 +236,12 @@ def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, ou
                         writer.writerow(data)
             except IOError:
                 pass # ML not executed
+        #return
+        # DBE XXX ----->
         csv_name = str(run_id) + r'_' + filename + r'.csv'
         if csv_name in os.listdir(output_folder):
             set_xy_ml(project_name=project_name, raw_pdf_folder=pdf_folder, working_folder=work_dir_rb, pdf_name=filename, 
-                    csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, rb_port=rb_port, rb_ip=rb_ip)
+                    csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, port=port)
         else:
             print(f'File {csv_name} not in the output and hence we are not able to detect x, y coordinates for the ML solution output.')
 
@@ -272,7 +274,12 @@ def main():
                     type=str,
                     default='both', 
                     help='Inference Mode (RB, ML, both, or none - for just doing postprocessing)')
-                    
+    
+    parser.add_argument('--s3_usage',
+                    type=str,
+                    default=None,
+                    help='Do you want to use S3? Type either Y or N.')
+    
     args = parser.parse_args()
     project_name = args.project_name
     mode = args.mode
@@ -285,19 +292,59 @@ def main():
         project_name = input("What is the project name? ")
     if(project_name is None or project_name==""):
         print("project name must not be empty")
-        return           
-      
+        return
+    
+    s3_usage = args.s3_usage
+    if s3_usage is None:
+        s3_usage = input('Do you want to use S3? Type either Y or N.')
+    if (s3_usage is None or str(s3_usage) not in ['Y', 'N']):
+        print("Answer to S3 usage must by Y or N. Stop program. Please restart.")
+        return None
+    else:
+        s3_usage = s3_usage == 'Y'
+    
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
     project_model_dir = config_path.MODEL_DIR + r'/' + project_name
+    
+    s3c_main = None 
+    if s3_usage:
+        # Opening s3 settings file
+        s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'        
+        f = open(s3_settings_path, 'r')
+        s3_settings = yaml.safe_load(f)
+        f.close()
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+        # init s3 connector
+        s3c_main = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        s3c_interim = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+        )
+        settings_path = project_data_dir + "/settings.yaml"
+        s3c_main.download_file_from_s3(filepath=settings_path,
+                                  s3_prefix=project_prefix,
+                                  s3_key='settings.yaml')
     
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
     project_settings = yaml.safe_load(f)
     f.close()   
-
+    
+    project_settings.update({'s3_usage': s3_usage})
+    if s3_usage:
+        project_settings.update({'s3_settings': s3_settings})
+    
     ext_port = project_settings['general']['ext_port']
     infer_port = project_settings['general']['infer_port']
     rb_port = project_settings['general']['rb_port']
+    
     ext_ip = project_settings['general']['ext_ip']
     infer_ip = project_settings['general']['infer_ip']
     rb_ip = project_settings['general']['rb_ip']
@@ -323,7 +370,8 @@ def main():
         destination_ml_infer = project_data_dir + r'/output/KPI_EXTRACTION/ml/Text'
 
         # Output folders
-        destination_output = project_data_dir + r'/output/KPI_EXTRACTION'        
+        destination_output = project_data_dir + r'/output/KPI_EXTRACTION'
+        
         create_directory(destination_pdf)
         create_directory(destination_mapping)
         create_directory(destination_ml_extraction)
@@ -351,15 +399,16 @@ def main():
                               project_name=project_name, \
                               verbosity=rb_verbosity, \
                               use_docker=rb_use_docker, \
-                              rb_port=rb_port, \
-                              rb_ip=rb_ip)
+                              port=rb_port)
         
         if(mode in ('ML', 'both')):
             print("Executing ML solution . . . ")
             end_to_end_response = end_to_end_response and \
-                                  run_router_ml(ext_port, infer_port, project_name, ext_ip, infer_ip)
+                                  run_router_ml(ext_port, infer_port, project_name)
 
         if end_to_end_response:
+            #os.system("sudo "+config_path.NLP_DIR+r"/rewrite_ownership.sh")
+            #link_files(destination_ml_infer,destination_output)
             run_id = get_current_run_id()
             join_output(project_name=project_name,
                         pdf_folder = destination_pdf, 
@@ -369,8 +418,7 @@ def main():
                         use_docker = rb_use_docker, 
                         work_dir_rb = destination_rb_workdir, 
                         verbosity = rb_verbosity, 
-                        rb_port=rb_port, 
-                        rb_ip=rb_ip,
+                        port=rb_port, 
                         run_id= run_id)
             if(enable_db_export):
                 print("Exporting output to database . . . ")
