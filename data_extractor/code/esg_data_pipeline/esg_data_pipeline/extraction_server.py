@@ -67,7 +67,7 @@ def run_extraction():
             s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
         )
         if extraction_settings['use_extractions']:
-            s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', 
+            s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/TEXT_EXTRACTION', 
                                             config.EXTRACTION_FOLDER)
         s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/annotations', 
                                             config.ANNOTATION_FOLDER)
