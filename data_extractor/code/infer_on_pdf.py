@@ -488,7 +488,10 @@ def main():
             if s3_usage:
                 s3c_main.upload_files_in_dir_to_prefix(destination_output, 
                                   project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb')
-            
+                create_directory(destination_output)
+                create_directory(destination_pdf)
+                create_directory(destination_ml_infer)
+                create_directory(destination_rb_infer)
             if(enable_db_export):
                 print("Exporting output to database . . . ")
                 run_db_export(project_name, project_settings['data_export'], run_id)
