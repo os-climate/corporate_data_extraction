@@ -13,6 +13,7 @@ RUN apt-get update
 RUN apt-get install -y python3 python3-pip wget gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
 
 COPY ./rule_based_pipeline /app/code/rule_based_pipeline
+COPY ./s3_communication.py /app/code/rule_based_pipeline/rule_based_pipeline/s3_communication.py
 
 RUN chgrp -R 0 /app/code/rule_based_pipeline && chmod g=u /app/code/rule_based_pipeline
 RUN chmod -R a+x /app/code/rule_based_pipeline
