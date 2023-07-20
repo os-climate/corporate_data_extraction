@@ -6,7 +6,7 @@ general:
   infer_port: 6000
   rb_ip: '172.30.224.91'
   rb_port: 8000
-  delete_interim_files: false
+  delete_interim_files: true
 #All the parameters for exporting data
 data_export:
   enable_db_export: false
@@ -37,9 +37,9 @@ curation:
   seed: 41
 # All the input parameters for the relevance training stage
 train_relevance: 
-  base_model: roberta-test-12412412455123463
-  input_model_name:
-  output_model_name: TEST_11
+  base_model: roberta-base
+  input_model_name: 
+  output_model_name: TEST_1
   train: true
   seed: 42
   processor: # farm.processor TextPairClassificationProcessor input
@@ -78,9 +78,8 @@ infer_relevance:
 # All the input parameters for the kpi training stage
 train_kpi:
   input_model_name: 
-  output_model_name: TEST_11
-  #a-ware/roberta-large-squadv2
-  base_model: roberta-test-12312341098724102
+  output_model_name: TEST_1
+  base_model: a-ware/roberta-large-squadv2
   train: true
   seed: 42
   curation:
