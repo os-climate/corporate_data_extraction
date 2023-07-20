@@ -464,7 +464,7 @@ def main():
                                   run_router_ml(ext_port, infer_port, project_name, ext_ip, infer_ip)
             if s3_usage:
                 #Download inference output
-                s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/Text', 
+                s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/ml/Text', 
                                             destination_ml_infer)
 
         if end_to_end_response:
