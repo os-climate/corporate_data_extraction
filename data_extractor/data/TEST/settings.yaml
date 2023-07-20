@@ -40,7 +40,7 @@ train_relevance:
   base_model: roberta-test-12412412455123463
   input_model_name:
   output_model_name: TEST_11
-  train: false
+  train: true
   seed: 42
   processor: # farm.processor TextPairClassificationProcessor input
     proc_max_seq_len: 512
