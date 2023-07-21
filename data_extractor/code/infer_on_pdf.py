@@ -462,6 +462,10 @@ def main():
                               port=rb_port, \
                               s3_usage=s3_usage, \
                               s3_settings=s3_settings)
+            if s3_usage:
+                #Download inference output
+                s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/rb', 
+                                            destination_rb_infer)
         
         if(mode in ('ML', 'both')):
             print("Executing ML solution . . . ")
