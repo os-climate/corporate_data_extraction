@@ -1,9 +1,6 @@
 FROM ubuntu:20.04
 SHELL ["/bin/bash", "-c"]
 
-# no prompt during installation:
-ARG DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get update
 RUN apt-get install -y apt-utils wget python3 python3-pip vim
 
