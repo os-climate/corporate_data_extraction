@@ -197,8 +197,9 @@ def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, v
     if(use_docker):
         payload = {'project_name': project_name, 'verbosity': str(verbosity)}
         if s3_usage:
-            project_settings.update({'s3_usage': s3_usage})
-            project_settings.update({'s3_settings': s3_settings})
+            payload.update({'s3_usage': s3_usage})
+            payload.update({'s3_settings': s3_settings})
+        payload = {'payload': json.dumps(payload)}
         rb_response = requests.get(f"http://{ip}:{port}/run", params=payload)
         print(rb_response.text)
         if rb_response.status_code != 200:
