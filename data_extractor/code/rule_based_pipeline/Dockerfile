@@ -16,7 +16,7 @@ COPY ./rule_based_pipeline /app/code/rule_based_pipeline
 COPY ./s3_communication.py /app/code/rule_based_pipeline/rule_based_pipeline/s3_communication.py
 
 RUN chgrp -R 0 /app/code/rule_based_pipeline && chmod g=u /app/code/rule_based_pipeline
-RUN chmod -R a+x /app/code/rule_based_pipeline
+RUN chmod -R 777 /app/code/rule_based_pipeline
 
 WORKDIR /app/code/rule_based_pipeline
 
