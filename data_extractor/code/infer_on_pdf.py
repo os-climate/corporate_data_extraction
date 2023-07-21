@@ -221,6 +221,10 @@ def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, 
                    'pdf_name': pdf_name,
                    'csv_name': csv_name,
                    'verbosity': str(verbosity)}
+        if s3_usage:
+            payload.update({'s3_usage': s3_usage})
+            payload.update({'s3_settings': s3_settings})
+        payload = {'payload': json.dumps(payload)}
         rb_xy_extract_response = requests.get(f"http://{ip}:{port}/run_xy_ml", params=payload)
         print(rb_xy_extract_response.text)
         if rb_xy_extract_response.status_code != 200:
@@ -250,7 +254,7 @@ def try_int(val, default):
     return default
 
 
-def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, port, ip, run_id):
+def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, port, ip, run_id, s3_usage, s3_settings):
     print("Joining output . . . ")
     # ML header:  ,pdf_name,kpi,kpi_id,answer,page,paragraph,source,score,no_ans_score,no_answer_score_plus_boost
     # RB header:  "KPI_ID","KPI_NAME","SRC_FILE","PAGE_NUM","ITEM_IDS","POS_X","POS_Y","RAW_TXT","YEAR","VALUE","SCORE","UNIT","MATCH_TYPE"
@@ -295,10 +299,27 @@ def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, ou
                 pass # ML not executed
         csv_name = str(run_id) + r'_' + filename + r'.csv'
         if csv_name in os.listdir(output_folder):
+            if s3_usage:
+                project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+                s3c_main = S3Communication(
+                        s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                        aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                        aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                        s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+                )
+                s3c_main.upload_file_to_s3(filepath=output_folder + r'/' + csv_name,
+                      s3_prefix=project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb',
+                      s3_key=csv_name)
             set_xy_ml(project_name=project_name, raw_pdf_folder=pdf_folder, working_folder=work_dir_rb, pdf_name=filename, 
-                    csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, port=port, ip=ip)
+                    csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, port=port, ip=ip,
+                    s3_usage=s3_usage, s3_settings=s3_settings)
         else:
             print(f'File {csv_name} not in the output and hence we are not able to detect x, y coordinates for the ML solution output.')
+    if s3_usage:
+        create_directory(pdf_folder)
+        create_directory(rb_output_folder)
+        create_directory(ml_output_folder)
+        create_directory(output_folder)
 
 
 def run_db_export(project_name, settings, run_id):
@@ -494,14 +515,9 @@ def main():
                         verbosity = rb_verbosity, 
                         port=rb_port,
                         ip=rb_ip,
-                        run_id= run_id)
-            if s3_usage:
-                s3c_main.upload_files_in_dir_to_prefix(destination_output, 
-                                  project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb')
-                create_directory(destination_output)
-                create_directory(destination_pdf)
-                create_directory(destination_ml_infer)
-                create_directory(destination_rb_infer)
+                        run_id= run_id,
+                        s3_usage=s3_usage,
+                        s3_settings=s3_settings)
             if(enable_db_export):
                 print("Exporting output to database . . . ")
                 run_db_export(project_name, project_settings['data_export'], run_id)
