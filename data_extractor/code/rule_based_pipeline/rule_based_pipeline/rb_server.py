@@ -61,14 +61,17 @@ def liveness():
 
 @app.route("/run")
 def run():
-    args = json.loads(request.args['payload'])
-    project_name = args['project_name']
-    s3_settings = None
-    if args['s3_usage']:
-        s3_settings = args["s3_settings"]
-    verbosity  = int(request.args['verbosity'])
-    run_rb(project_name, verbosity, args['s3_usage'], s3_settings)
-    return Response(response={}, status=200)
+    try:
+        args = json.loads(request.args['payload'])
+        project_name = args['project_name']
+        s3_settings = None
+        if args['s3_usage']:
+            s3_settings = args["s3_settings"]
+        verbosity  = int(request.args['verbosity'])
+        run_rb(project_name, verbosity, args['s3_usage'], s3_settings)
+    except Exception as e:
+        m = traceback.format_exc()
+        return Response(response={m}, status=200)
 
 
 @app.route("/run_xy_ml")
