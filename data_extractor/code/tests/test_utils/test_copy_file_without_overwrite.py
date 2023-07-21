@@ -1,5 +1,4 @@
 from pathlib import Path
-import config_path
 from train_on_pdf import copy_file_without_overwrite
 import shutil
 import pytest
@@ -22,8 +21,9 @@ def path_folders_required_copy_file(path_folder_temporary: Path) -> tuple[Path, 
     path_folder_destination.mkdir(parents = True)
     yield (path_folder_source, path_folder_destination)
     
-    # cleanup 
-    shutil.rmtree(path_folder_temporary)
+    # cleanup
+    for path in path_folder_temporary.glob("*"):
+        shutil.rmtree(path)
 
 
 def test_copy_file_without_overwrite_result(path_folders_required_copy_file: tuple[Path, Path]):

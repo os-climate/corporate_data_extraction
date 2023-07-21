@@ -1,5 +1,4 @@
 from pathlib import Path
-import config_path
 from train_on_pdf import generate_text_3434
 from tests.utils_test import write_to_file
 import shutil
@@ -9,7 +8,11 @@ from unittest.mock import patch
 def test_generate_text(path_folder_temporary: Path):
     """Tests the generate_text_3434 which takes files from the folder relevance,
     reads them in and puts the content into the file text_3434.csv. Note that
-    the header of text_3434.csv is taken from the first file read in"""
+    the header of text_3434.csv is taken from the first file read in
+
+    :param path_folder_temporary: Requesting the temporary folder fixture
+    :type path_folder_temporary: Path
+    """
     project_name = 'test'
     path_folder_relevance = path_folder_temporary / 'relevance'
     path_folder_text_3434 = path_folder_temporary / 'folder_test_3434'
@@ -44,4 +47,5 @@ def test_generate_text(path_folder_temporary: Path):
                 assert line_content.rstrip() == f'That is a test {line_number}'
                 
     # cleanup
-    shutil.rmtree(path_folder_temporary)
+    for path in path_folder_temporary.glob("*"):
+        shutil.rmtree(path)

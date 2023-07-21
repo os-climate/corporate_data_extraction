@@ -1,6 +1,5 @@
 from pathlib import Path
 import pytest
-import config_path
 from train_on_pdf import convert_xls_to_csv
 from tests.utils_test import write_to_file, create_single_xlsx_file, create_multiple_xlsx_files
 import shutil
@@ -37,8 +36,8 @@ def prerequisites_convert_xls_to_csv(path_folder_temporary: Path):
     :param path_folder_temporary: Requesting the temporary folder fixture
     :type path_folder_temporary: Path
     """
-    path_source_annotation = path_folder_temporary / 'source_annotation'
-    path_destination_annotation = path_folder_temporary / 'destination_annotation'
+    path_source_annotation = path_folder_temporary / 'input' / 'pdfs' / 'training'
+    path_destination_annotation = path_folder_temporary / 'interim' / 'ml' / 'annotations'
     path_source_annotation.mkdir(parents = True, exist_ok = True)
     path_destination_annotation.mkdir(parents = True, exist_ok = True)
     project_prefix = 'corporate_data_extraction_projects'
@@ -55,7 +54,8 @@ def prerequisites_convert_xls_to_csv(path_folder_temporary: Path):
         yield
         
         # cleanup
-        shutil.rmtree(path_folder_temporary)
+        for path in path_folder_temporary.glob("*"):
+            shutil.rmtree(path)
 
 
 def test_convert_xls_to_csv_download_s3(prerequisites_convert_xls_to_csv):
