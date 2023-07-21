@@ -21,13 +21,13 @@ def create_directory(directory_name):
 
 
 def run_rb_int(raw_pdf_folder, working_folder, output_folder, verbosity):
-        cmd = 'python3 /app/code/rule_based_pipeline/rule_based_pipeline/main.py' + \
-              ' --raw_pdf_folder "' + raw_pdf_folder + '"' +    \
-              ' --working_folder "' + working_folder + '"' +    \
-              ' --output_folder "' + output_folder + '"'  +     \
-              ' --verbosity ' + str(verbosity)
-        print("Running command: " + cmd)
-        os.system(cmd)
+    cmd = 'python3 /app/code/rule_based_pipeline/rule_based_pipeline/main.py' + \
+          ' --raw_pdf_folder "' + raw_pdf_folder + '"' +    \
+          ' --working_folder "' + working_folder + '"' +    \
+          ' --output_folder "' + output_folder + '"'  +     \
+          ' --verbosity ' + str(verbosity)
+    print("Running command: " + cmd)
+    os.system(cmd)
 
 
 def run_rb(project_name, verbosity, s3_usage, s3_settings):
@@ -53,6 +53,7 @@ def run_rb(project_name, verbosity, s3_usage, s3_settings):
     if s3_usage:
         s3c_main.upload_files_in_dir_to_prefix(output_folder, 
                                   project_prefix + '/output/KPI_EXTRACTION/rb')
+    return True
 
 
 @app.route("/liveness")
@@ -70,6 +71,7 @@ def run():
             s3_settings = args["s3_settings"]
         verbosity  = int(args['verbosity'])
         run_rb(project_name, verbosity, args['s3_usage'], s3_settings)
+        return Response(response={}, status=200)
     except Exception as e:
         m = traceback.format_exc()
         return Response(response={m}, status=200)
@@ -92,7 +94,6 @@ def run_xy_ml():
              ' --verbosity ' + str(request.args['verbosity'])
     print("Running command: " + cmd)
     os.system(cmd)
-    
     return Response(response={}, status=200)
 
 
