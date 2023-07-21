@@ -1,5 +1,4 @@
 from pathlib import Path
-import config_path
 from train_on_pdf import create_directory
 import shutil
 
@@ -13,9 +12,7 @@ def test_create_directory(path_folder_temporary: Path):
     # call create_folder and check if the folder exists
     create_directory(str(path_folder_temporary))
     assert path_folder_temporary.exists()
-    
-    # cleanup
-    shutil.rmtree(path_folder_temporary)
+
 
 def test_create_directory_cleanup(path_folder_temporary: Path):
     """Tests of create_directory performs a clean-up if folder exists
@@ -32,6 +29,3 @@ def test_create_directory_cleanup(path_folder_temporary: Path):
     # call create_directory and check for empty folder
     create_directory(str(path_folder_temporary))
     assert not any(path_folder_temporary.iterdir())
-    
-    # cleanup
-    shutil.rmtree(path_folder_temporary)
