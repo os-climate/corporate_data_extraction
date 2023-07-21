@@ -105,10 +105,10 @@ def run_xy_ml():
     cmd = 'python3 /app/code/rule_based_pipeline/rule_based_pipeline/main_find_xy.py' + \
              ' --raw_pdf_folder "' + raw_pdf_folder + '"' +    \
              ' --working_folder "' + working_folder + '"' +    \
-             ' --pdf_name "' + request.args['pdf_name'] + '"'  +     \
+             ' --pdf_name "' + args['pdf_name'] + '"'  +     \
              ' --csv_name "' + csv_path + '"'  +     \
              ' --output_folder "' + output_folder + '"'  +     \
-             ' --verbosity ' + str(request.args['verbosity'])
+             ' --verbosity ' + str(args['verbosity'])
     print("Running command: " + cmd)
     os.system(cmd)
     if args['s3_usage']:
