@@ -68,7 +68,7 @@ def run():
         s3_settings = None
         if args['s3_usage']:
             s3_settings = args["s3_settings"]
-        verbosity  = int(request.args['verbosity'])
+        verbosity  = int(args['verbosity'])
         run_rb(project_name, verbosity, args['s3_usage'], s3_settings)
     except Exception as e:
         m = traceback.format_exc()
