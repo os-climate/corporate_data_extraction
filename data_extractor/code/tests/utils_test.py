@@ -1,6 +1,16 @@
 from pathlib import Path
 import pandas as pd
 
+
+def project_root() -> Path:
+    """returns the absolute project root path
+
+    :return: Path to the current project root
+    :rtype: Path
+    """
+    return Path(__file__).parent.resolve()
+
+
 def write_to_file(path_csv_file: Path, content: str, header: str = ''):
     """Write to a file for a given path with an optional header string"""
     with open(str(path_csv_file), 'w') as file:

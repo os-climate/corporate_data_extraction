@@ -5,13 +5,14 @@ from tests.utils_test import write_to_file
 import shutil
 from unittest.mock import patch
 
-def test_generate_text(path_temporary_folder: Path):
+
+def test_generate_text(path_folder_temporary: Path):
     """Tests the generate_text_3434 which takes files from the folder relevance,
     reads them in and puts the content into the file text_3434.csv. Note that
     the header of text_3434.csv is taken from the first file read in"""
     project_name = 'test'
-    path_folder_relevance = path_temporary_folder / 'relevance'
-    path_folder_text_3434 = path_temporary_folder / 'folder_test_3434'
+    path_folder_relevance = path_folder_temporary / 'relevance'
+    path_folder_text_3434 = path_folder_temporary / 'folder_test_3434'
     path_folder_relevance.mkdir(parents = True)
     path_folder_text_3434.mkdir(parents = True)
     
@@ -43,4 +44,4 @@ def test_generate_text(path_temporary_folder: Path):
                 assert line_content.rstrip() == f'That is a test {line_number}'
                 
     # cleanup
-    shutil.rmtree(path_temporary_folder)
+    shutil.rmtree(path_folder_temporary)

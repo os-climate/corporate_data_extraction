@@ -31,14 +31,14 @@ def mock_s3_upload_files(*args, **kwargs):
     return mock_s3_upload_files_return(*args, **kwargs)
 
 @pytest.fixture
-def prerequisites_convert_xls_to_csv(path_temporary_folder: Path):
+def prerequisites_convert_xls_to_csv(path_folder_temporary: Path):
     """Defines a fixture for mocking all required objects, methods and functions
 
-    :param path_temporary_folder: Requesting the temporary folder fixture
-    :type path_temporary_folder: Path
+    :param path_folder_temporary: Requesting the temporary folder fixture
+    :type path_folder_temporary: Path
     """
-    path_source_annotation = path_temporary_folder / 'source_annotation'
-    path_destination_annotation = path_temporary_folder / 'destination_annotation'
+    path_source_annotation = path_folder_temporary / 'source_annotation'
+    path_destination_annotation = path_folder_temporary / 'destination_annotation'
     path_source_annotation.mkdir(parents = True, exist_ok = True)
     path_destination_annotation.mkdir(parents = True, exist_ok = True)
     project_prefix = 'corporate_data_extraction_projects'
@@ -54,8 +54,8 @@ def prerequisites_convert_xls_to_csv(path_temporary_folder: Path):
         mock_s3c_interim.upload_files_in_dir_to_prefix.side_effect = mock_s3_upload_files
         yield
         
-    # cleanup
-    shutil.rmtree(path_temporary_folder)
+        # cleanup
+        shutil.rmtree(path_folder_temporary)
 
 
 def test_convert_xls_to_csv_download_s3(prerequisites_convert_xls_to_csv):
