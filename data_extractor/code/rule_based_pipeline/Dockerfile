@@ -22,8 +22,12 @@ WORKDIR /app/code/rule_based_pipeline
 
 RUN dpkg -i libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb
 RUN pip install -e .
+
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
+
+RUN mkdir -p /app/data
+RUN chmod -R 777 /app/data
 
 #USER 1234
 
