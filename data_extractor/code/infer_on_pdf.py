@@ -215,7 +215,7 @@ def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, v
     return True 
 
 
-def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, port, ip):
+def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, port, ip, s3_usage, s3_settings):
     if(use_docker):
         payload = {'project_name': project_name,
                    'pdf_name': pdf_name,
