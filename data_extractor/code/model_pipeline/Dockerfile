@@ -15,7 +15,7 @@ RUN apt-key del 7fa2af80
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 RUN apt-get update
-RUN apt-get install -y unzip vim git wget nvidia-smi
+RUN apt-get install -y unzip vim git wget
 
 COPY ./model_pipeline /app/code/model_pipeline
 COPY ./kpi_inference_data_pipeline /app/code/kpi_inference_data_pipeline
