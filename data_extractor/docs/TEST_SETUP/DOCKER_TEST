@@ -38,4 +38,3 @@ RUN chmod -R 777 /.vscode-server
 RUN chmod -R 777 /.vscode-remote
 
 CMD sleep infinity
-#CMD ./entry.sh

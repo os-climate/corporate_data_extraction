@@ -7,7 +7,7 @@ from pathlib import Path
 
 #df = pd.read_csv(Path(config.root).parent.parent / "kpi_mapping.csv", header=0)
 try:
-    df = pd.read_csv("/kpi_mapping.csv", header=0)
+    df = pd.read_csv("/app/code/kpi_mapping.csv", header=0)
     _KPI_MAPPING = {
         str(i[0]): (i[1], [j.strip() for j in i[2].split(',')]) \
         for i in df[['kpi_id', 'question', 'sectors']].values
@@ -24,4 +24,3 @@ except:
     KPI_MAPPING = {}
     KPI_CATEGORY = {}
     KPI_SECTORS = []
-
