@@ -45,6 +45,13 @@ def run_extraction():
     config.ANNOTATION_FOLDER = BASE_INTERIM_FOLDER / 'annotations'
     config.STAGE = 'extract'
     
+<<<<<<< HEAD
+=======
+    create_directory(config.EXTRACTION_FOLDER)
+    create_directory(config.ANNOTATION_FOLDER)
+    create_directory(config.PDF_FOLDER)
+    
+>>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
     s3_usage = args["s3_usage"]
     if s3_usage:
         s3_settings = args["s3_settings"]
@@ -62,6 +69,12 @@ def run_extraction():
             aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
             s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
         )
+<<<<<<< HEAD
+=======
+        if extraction_settings['use_extractions']:
+            s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/TEXT_EXTRACTION', 
+                                            config.EXTRACTION_FOLDER)
+>>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
         s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/annotations', 
                                             config.ANNOTATION_FOLDER)
         if args['mode'] == 'train':
