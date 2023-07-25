@@ -50,6 +50,10 @@ def clear_running():
 
 def check_running():
      return os.path.exists(path_file_running)
+<<<<<<< HEAD
+=======
+
+>>>>>>> ced44e3df (Feature/2023.04 os test (#14))
 
 
 def create_directory(directory_name):
