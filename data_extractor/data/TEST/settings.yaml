@@ -1,12 +1,12 @@
-# SETTINGS FILE FOR PROJECT ESG
+# SETTINGS FILE FOR PROJECT TEST
 general:
-  ext_ip: '0.0.0.0'
+  ext_ip: '172.30.15.68'
   ext_port: 4000
-  infer_ip: '0.0.0.0'
+  infer_ip: '172.30.88.213'
   infer_port: 6000
-  rb_ip: '0.0.0.0'
+  rb_ip: '172.30.224.91'
   rb_port: 8000
-  delete_interim_files: false
+  delete_interim_files: true
 #All the parameters for exporting data
 data_export:
   enable_db_export: false
@@ -20,7 +20,7 @@ data_export:
 # Next follow the parameters for the NLP Machine Learning Model
 # All the input parameters for pdf text extraction stage
 extraction: 
-  min_paragraph_length: 30
+  min_paragraph_length: 20
   seed: 42
   annotation_folder:
   skip_extracted_files: true
@@ -37,13 +37,11 @@ curation:
   seed: 41
 # All the input parameters for the relevance training stage
 train_relevance: 
-  tokenizer_base_model: roberta-base
   base_model: roberta-base
-  input_model_name:
-  output_model_name: ESG_REL_1
+  input_model_name: 
+  output_model_name: TEST_1
   train: true
   seed: 42
-  tokenizer_pretrained_model_name_or_path: roberta-base # farm.tokenization input
   processor: # farm.processor TextPairClassificationProcessor input
     proc_max_seq_len: 512
     proc_dev_split: 0.2
@@ -52,7 +50,6 @@ train_relevance:
     proc_delimiter: ","
     proc_metric: acc
   model: # farm.model TextClassificationHead input
-    model_lang_model: roberta-base
     model_layer_dims: [768, 2]
     model_lm_output_types: ["per_sequence"]
   training: # multiple farm input parameter for training
@@ -81,7 +78,7 @@ infer_relevance:
 # All the input parameters for the kpi training stage
 train_kpi:
   input_model_name: 
-  output_model_name: ESG_KPI_1
+  output_model_name: TEST_1
   base_model: a-ware/roberta-large-squadv2
   train: true
   seed: 42

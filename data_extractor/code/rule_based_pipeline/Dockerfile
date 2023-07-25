@@ -9,22 +9,26 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
-#RUN add-apt-repository -E --yes ppa:linuxuprising/libpng12
 RUN apt-get update
-#RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libpng12-0 libfontconfig
-RUN apt-get install -y python3 python3-pip gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
+RUN apt-get install -y python3 python3-pip wget vim gfortran libopenblas-dev liblapack-dev libpng-dev libfreetype-dev libfontconfig
 
 COPY ./rule_based_pipeline /app/code/rule_based_pipeline
+COPY ./s3_communication.py /app/code/rule_based_pipeline/rule_based_pipeline/s3_communication.py
 
 RUN chgrp -R 0 /app/code/rule_based_pipeline && chmod g=u /app/code/rule_based_pipeline
-RUN chmod -R a+x /app/code/rule_based_pipeline
+RUN chmod -R 777 /app/code/rule_based_pipeline
 
 WORKDIR /app/code/rule_based_pipeline
 
 RUN dpkg -i libpng12-0_1.2.54-1ubuntu1.1+1_ppa0_eoan_amd64.deb
 RUN pip install -e .
-RUN mkdir -p /app/server_logs
 
-USER 1234
+RUN mkdir -p /app/server_logs
+RUN chmod -R 777 /app/server_logs
+
+RUN mkdir -p /app/data
+RUN chmod -R 777 /app/data
+
+#USER 1234
 
 CMD ./entry.sh

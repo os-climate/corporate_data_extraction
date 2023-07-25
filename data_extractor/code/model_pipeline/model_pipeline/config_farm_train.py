@@ -27,8 +27,8 @@ class FileConfig(Config):
         self.annotation_dir = os.path.join(self.data_dir, self.experiment_name, "interim", "ml", "annotations")
         self.curated_data = os.path.join(self.data_dir, self.experiment_name, "interim", "ml", "curation", "esg_TEXT_dataset.csv")
         self.training_dir = os.path.join(self.data_dir, self.experiment_name, "interim", "ml",  "training")
-        self.train_filename = os.path.join(self.data_dir, self.experiment_name, "interim", "ml","training",  f"kpi_train_split.csv")
-        self.dev_filename = os.path.join(self.data_dir, self.experiment_name, "interim",  "ml","training", f"kpi_val_split.csv")
+        self.train_filename = os.path.join(self.training_dir, f"kpi_train_split.csv")
+        self.dev_filename = os.path.join(self.training_dir, f"kpi_val_split.csv")
         self.test_filename = None
         #The next defines the folder where the trained relevance model is stored to
         self.saved_models_dir = os.path.join(self.root, "models", self.experiment_name, self.experiment_type, self.data_type, self.output_model_name)
