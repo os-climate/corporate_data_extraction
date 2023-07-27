@@ -1,0 +1,21 @@
+FROM ubuntu:20.04
+SHELL ["/bin/bash", "-c"]
+
+# no prompt during installation:
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install -y apt-utils wget python3 python3-pip vim
+
+# No requirements up to now. If so include the following:
+# COPY ./docs/visitor_container/requirements.txt /app/code/requirements.txt
+# WORKDIR /app/code
+# RUN pip install -r requirements.txt
+
+# Adding vs code server
+RUN mkdir -p /.vscode-server
+RUN mkdir -p /.vscode-remote
+RUN chmod -R 777 /.vscode-server
+RUN chmod -R 777 /.vscode-remote
+
+CMD sleep infinity
