@@ -31,7 +31,7 @@ RUN apt-get update && apt-get install -y git wget vim ninja-build poppler-utils 
 ## # ---------------->
 ## RUN pip install --no-cache-dir -e .
 ## # <----------------
-## 
+##
 ## # Reinstall openmm-mmcv to use the right version, somehow the above installation
 ## # of mmdetection installs mmcv of an updated version which is not compatible for
 ## # mmdetection v1.2
