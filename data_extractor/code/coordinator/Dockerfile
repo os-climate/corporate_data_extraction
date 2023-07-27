@@ -38,4 +38,4 @@ RUN mkdir -p /.vscode-remote
 RUN chmod -R 777 /.vscode-server
 RUN chmod -R 777 /.vscode-remote
 
-CMD ./entry_coordinator.sh
+CMD ./entry.sh
