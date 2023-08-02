@@ -38,7 +38,7 @@ def run_extraction():
     
     extraction_settings = args['extraction']
     
-    BASE_DATA_PROJECT_FOLDER =  config.DATA_FOLDER / project_name    
+    BASE_DATA_PROJECT_FOLDER = config.DATA_FOLDER / project_name
     config.PDF_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'pdfs'    
     BASE_INTERIM_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'ml'
     config.EXTRACTION_FOLDER = BASE_INTERIM_FOLDER / 'extraction'
@@ -68,15 +68,15 @@ def run_extraction():
         )
         if extraction_settings['use_extractions']:
             s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/TEXT_EXTRACTION', 
-                                            config.EXTRACTION_FOLDER)
+                                                     config.EXTRACTION_FOLDER)
         s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/annotations', 
-                                            config.ANNOTATION_FOLDER)
+                                                     config.ANNOTATION_FOLDER)
         if args['mode'] == 'train':
             s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/training', 
-                                                config.PDF_FOLDER)
+                                                     config.PDF_FOLDER)
         else:
             s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/inference', 
-                                                config.PDF_FOLDER)
+                                                     config.PDF_FOLDER)
     
     pdfs = glob.glob(os.path.join(config.PDF_FOLDER, "*.pdf"))
     if len(pdfs) == 0:
@@ -125,7 +125,7 @@ def run_extraction():
         
     if s3_usage:
         s3c_interim.upload_files_in_dir_to_prefix(config.EXTRACTION_FOLDER, 
-                                          project_prefix + '/interim/ml/extraction')
+                                                  project_prefix + '/interim/ml/extraction')
         # clear folder
         create_directory(config.EXTRACTION_FOLDER)
         create_directory(config.ANNOTATION_FOLDER)
@@ -141,13 +141,13 @@ def run_curation():
     project_name = args["project_name"]
     curation_settings = args["curation"]
 
-    BASE_DATA_PROJECT_FOLDER =  config.DATA_FOLDER / project_name    
+    BASE_DATA_PROJECT_FOLDER = config.DATA_FOLDER / project_name
     BASE_INTERIM_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'ml'
     config.EXTRACTION_FOLDER = BASE_INTERIM_FOLDER / 'extraction'
     config.CURATION_FOLDER = BASE_INTERIM_FOLDER / 'curation'
     config.ANNOTATION_FOLDER = BASE_INTERIM_FOLDER / 'annotations'
     config.KPI_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'kpi_mapping'
-    
+
     create_directory(config.EXTRACTION_FOLDER)
     create_directory(config.CURATION_FOLDER)
     create_directory(config.ANNOTATION_FOLDER)
@@ -171,7 +171,8 @@ def run_curation():
         )
         s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/kpi_mapping', config.KPI_FOLDER)
         s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', config.EXTRACTION_FOLDER)
-        s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/annotations', config.ANNOTATION_FOLDER)
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations',
+                                                 config.ANNOTATION_FOLDER)
 
     shutil.copyfile(os.path.join(config.KPI_FOLDER, "kpi_mapping.csv"), "/app/code/kpi_mapping.csv")
 
@@ -193,7 +194,7 @@ def run_curation():
     
     if s3_usage:
         s3c_interim.upload_files_in_dir_to_prefix(config.CURATION_FOLDER, 
-                                          project_prefix + '/interim/ml/curation')
+                                                  project_prefix + '/interim/ml/curation')
         # clear folder
         create_directory(config.KPI_FOLDER)
         create_directory(config.EXTRACTION_FOLDER)
@@ -210,6 +211,6 @@ if __name__ == "__main__":
                         type=int,
                         default=4000,
                         help='port to use for the extract server')
-    args = parser.parse_args()
-    port = args.port
+    args_server = parser.parse_args()
+    port = args_server.port
     app.run(host="0.0.0.0", port=port)

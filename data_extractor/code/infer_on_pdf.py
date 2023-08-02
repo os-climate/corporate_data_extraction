@@ -427,8 +427,8 @@ def main():
     rb_ip = project_settings['general']['rb_ip']
 
     enable_db_export = project_settings['data_export']['enable_db_export']
-    rb_verbosity =  int(project_settings['rule_based']['verbosity'])
-    rb_use_docker =  project_settings['rule_based']['use_docker']
+    rb_verbosity = int(project_settings['rule_based']['verbosity'])
+    rb_use_docker = project_settings['rule_based']['use_docker']
   
     set_running()
     try:
