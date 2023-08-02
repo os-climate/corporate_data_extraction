@@ -451,6 +451,7 @@ def main():
         # Output folders
         destination_output = project_data_dir + r'/output/KPI_EXTRACTION/joined_ml_rb'
 
+        create_directory(source_pdf)
         create_directory(destination_pdf)
         create_directory(destination_mapping)
         create_directory(destination_ml_extraction)
