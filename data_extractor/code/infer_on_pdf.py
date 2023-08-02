@@ -382,8 +382,7 @@ def main():
         s3_usage = s3_usage == 'Y'
     
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
-    project_model_dir = config_path.MODEL_DIR + r'/' + project_name
-    
+    create_directory(project_data_dir)
     s3c_main = None 
     if s3_usage:
         # Opening s3 settings file

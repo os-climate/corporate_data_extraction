@@ -43,12 +43,16 @@ COPY ./s3_communication.py /app/code/esg_data_pipeline/esg_data_pipeline/s3_comm
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
 RUN chmod -R 777 /app/code
 
+
+
 WORKDIR /app/code/esg_data_pipeline
 
 RUN pip install -e .
+
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
 
-## USER 1234
+RUN mkdir -p /app/data
+RUN chmod -R 777 /app/data
 
 CMD ./entry.sh

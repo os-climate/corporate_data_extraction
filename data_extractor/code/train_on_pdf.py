@@ -367,6 +367,7 @@ def main():
         s3_usage = s3_usage == 'Y'
 
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
+    create_directory(project_data_dir)
     s3c_main = None 
     if s3_usage:
         # Opening s3 settings file
@@ -426,6 +427,9 @@ def main():
         folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
+        create_directory(source_pdf)
+        create_directory(source_annotation)
+        create_directory(source_mapping)
         create_directory(folder_text_3434)
         create_directory(destination_pdf)
         create_directory(destination_annotation)
@@ -439,9 +443,9 @@ def main():
             create_directory(destination_saved_models_inference)
         create_directory(folder_relevance)
 
-        link_files(source_pdf,destination_pdf)
-        link_files(source_annotation,destination_annotation)
-        link_files(source_mapping,destination_mapping)
+        link_files(source_pdf, destination_pdf)
+        link_files(source_annotation, destination_annotation)
+        link_files(source_mapping, destination_mapping)
         if project_settings['extraction']['use_extractions']:
             source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
             if os.path.exists(source_extraction):
