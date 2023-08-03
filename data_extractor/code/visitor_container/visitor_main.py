@@ -1,7 +1,5 @@
-import yaml
 import requests
 import os
-from pathlib import Path
 
 
 def main(app_type, project_name, s3_usage, mode):
@@ -27,12 +25,12 @@ def main(app_type, project_name, s3_usage, mode):
         print("mode should be RB, ML, both or none. Please restart with valid input.")
         return False
 
-    f = open(str(Path(os.getcwd()) / 'coordinator_settings.yaml'), 'r')
-    coordinator_settings = yaml.safe_load(f)
-    f.close()
+    coordinator_ip = os.getenv('coordinator_ip')
+    coordinator_port = os.getenv('coordinator_port')
+
     # Example string http://172.40.103.147:2000/liveness
-    liveness_string = f"http://{coordinator_settings['coordinator_ip']}:" \
-                      f"{coordinator_settings['coordinator_port']}/liveness"
+    liveness_string = f"http://{coordinator_ip}:" \
+                      f"{coordinator_port}/liveness"
     coordinator_server_live = requests.get(liveness_string)
     if coordinator_server_live.status_code == 200:
         print(f"Coordinator server is up. Proceeding to the task {app_type} with project {project_name}.")
@@ -43,8 +41,8 @@ def main(app_type, project_name, s3_usage, mode):
     if app_type == 'training':
         print(f"We will contact the server to start training for project {project_name}.")
         # Example string http://172.40.103.147:2000/train?project_name=ABC&s3_usage=Y
-        train_string = f"http://{coordinator_settings['coordinator_ip']}:" \
-                        f"{coordinator_settings['coordinator_port']}/train" \
+        train_string = f"http://{coordinator_ip}:" \
+                        f"{coordinator_port}/train" \
                         f'?project_name={project_name}'\
                         f'&s3_usage={s3_usage}'
         coordinator_start_train = requests.get(train_string)
@@ -56,8 +54,8 @@ def main(app_type, project_name, s3_usage, mode):
     else:
         print(f"We will contact the server to start inference for project {project_name}.")
         # Example string http://172.40.103.147:2000/infer?project_name=ABC&s3_usage=Y&mode=both
-        infer_string = f"http://{coordinator_settings['coordinator_ip']}:" \
-                        f"{coordinator_settings['coordinator_port']}/infer" \
+        infer_string = f"http://{coordinator_ip}:" \
+                        f"{coordinator_port}/infer" \
                         f'?project_name={project_name}'\
                         f'&s3_usage={s3_usage}' \
                         f'&mode={mode}'
@@ -70,9 +68,5 @@ def main(app_type, project_name, s3_usage, mode):
 
 
 if __name__ == '__main__':
-    # ABC will only work on branch feature/2023.04-os-test
-    main('training', 'ABC', 'Y', 'both')
-    main('inference', 'ABC', 'Y', 'both')
-    # TEST will only work on branch main
-    main('training', 'TEST', 'Y', 'both')
-    main('training', 'TEST', 'Y', 'both')
+    main('training', os.getenv('test_project'), 'Y', 'both')
+    main('inference', os.getenv('test_project'), 'Y', 'both')
