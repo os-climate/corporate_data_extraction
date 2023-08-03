@@ -70,5 +70,9 @@ def main(app_type, project_name, s3_usage, mode):
 
 
 if __name__ == '__main__':
+    # ABC will only work on branch feature/2023.04-os-test
     main('training', 'ABC', 'Y', 'both')
     main('inference', 'ABC', 'Y', 'both')
+    # TEST will only work on branch main
+    main('training', 'TEST', 'Y', 'both')
+    main('training', 'TEST', 'Y', 'both')
