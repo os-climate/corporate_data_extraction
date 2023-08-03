@@ -30,19 +30,19 @@ folder_relevance = None
 
 
 def set_running():
-     with open(path_file_running, 'w'):
-          pass
+    with open(path_file_running, 'w'):
+        pass
 
 
 def clear_running():
-     try:
-          os.unlink(path_file_running)
-     except Exception as e:
-          pass
+    try:
+        os.unlink(path_file_running)
+    except Exception as e:
+        pass
 
 
 def check_running():
-     return os.path.exists(path_file_running)
+    return os.path.exists(path_file_running)
 
 
 def create_directory(directory_name):
@@ -61,7 +61,7 @@ def link_files(source_dir, destination_dir):
     for file in files:
         try:
             os.unlink(f"{destination_dir}/{file}")
-        except:
+        except Exception:
             pass
         os.link(f"{source_dir}/{file}", f"{destination_dir}/{file}")
 
@@ -79,7 +79,7 @@ def copy_files_without_overwrite(src_path, dest_path):
 
 
 def link_extracted_files(src_ext, src_pdf, dest_ext):
-    extracted_pdfs = [name[:-5] + ".pdf"  for name in os.listdir(src_ext)]
+    extracted_pdfs = [name[:-5] + ".pdf" for name in os.listdir(src_ext)]
     for pdf in os.listdir(src_pdf):
         if pdf in extracted_pdfs:
             json_name = pdf[:-4] + ".json"
@@ -120,34 +120,33 @@ def convert_xls_to_csv(project_name, s3_usage, s3_settings):
                                     s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
         )
         s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
-                                            source_dir)
+                                                 source_dir)
     first = True
     for filename in os.listdir(source_dir):
-        if(filename[-5:]=='.xlsx'):
-            if(not first):
+        if filename[-5:] == '.xlsx':
+            if not first:
                 raise ValueError('More than one excel sheet found')
             print('Converting ' + filename + ' to csv-format')
-            #read_file = pd.read_excel(source_dir + r'/' + filename, sheet_name = 'data_ex_in_xls', engine='openpyxl')
-            read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl') #only reads first sheet in excel file
-            read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index = None, header=True)
+            # only reads first sheet in excel file
+            read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl')
+            read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index=None, header=True)
             if s3_usage:
-                s3c_interim.upload_files_in_dir_to_prefix(dest_dir, 
-                                                  project_prefix + '/interim/ml/annotations')
+                s3c_interim.upload_files_in_dir_to_prefix(dest_dir,  project_prefix + '/interim/ml/annotations')
             first = False         
-    if(first):
+    if first:
         raise ValueError('No annotation excel sheet found')
 
 
-def run_router_ml(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
+def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0.0.0.0'):
     """
     Router function
-    It fist sends a command to the extraction server to beging extraction.
-    If done successfully, it will send a commnad to the inference server to start inference.
-    :param ext_port (int): The port that the extraction server is listening on
-    :param infer_port (int): The port that the inference server is listening on
-    :param project_name (str): The name of the project
-    :param ext_ip (int): The ip that the extraction server is listening on
-    :param infer_ip (int): The ip that the inference server is listening on
+    It fist sends a command to the extraction server to begin extraction.
+    If done successfully, it will send a command to the inference server to start inference.
+    :param ext_port: int: The port that the extraction server is listening on
+    :param infer_port: int: The port that the inference server is listening on
+    :param project_name: str: The name of the project
+    :param ext_ip: int: The ip that the extraction server is listening on
+    :param infer_ip: int: The ip that the inference server is listening on
     :return: A boolean, indicating success
     """
     
@@ -193,8 +192,9 @@ def run_router_ml(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='
     return True
 
 
-def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port, ip, s3_usage, s3_settings):
-    if(use_docker):
+def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port, ip,
+                  s3_usage, s3_settings):
+    if use_docker:
         payload = {'project_name': project_name, 'verbosity': str(verbosity)}
         if s3_usage:
             payload.update({'s3_usage': s3_usage})
@@ -208,15 +208,16 @@ def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, v
         cmd = config_path.PYTHON_EXECUTABLE + ' rule_based_pipeline/rule_based_pipeline/main.py' + \
                  ' --raw_pdf_folder "' + raw_pdf_folder + '"' +    \
                  ' --working_folder "' + working_folder + '"' +    \
-                 ' --output_folder "' + output_folder + '"'  +     \
+                 ' --output_folder "' + output_folder + '"' +     \
                  ' --verbosity ' + str(verbosity)
         print("Running command: " + cmd)
         os.system(cmd)
     return True 
 
 
-def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, port, ip, s3_usage, s3_settings):
-    if(use_docker):
+def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker,
+              port, ip, s3_usage, s3_settings):
+    if use_docker:
         payload = {'project_name': project_name,
                    'pdf_name': pdf_name,
                    'csv_name': csv_name,
@@ -233,9 +234,9 @@ def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, 
         cmd = config_path.PYTHON_EXECUTABLE + ' rule_based_pipeline/rule_based_pipeline/main_find_xy.py' + \
                  ' --raw_pdf_folder "' + raw_pdf_folder + '"' +    \
                  ' --working_folder "' + working_folder + '"' +    \
-                 ' --pdf_name "' + pdf_name + '"'  +     \
-                 ' --csv_name "' + csv_name + '"'  +     \
-                 ' --output_folder "' + output_folder + '"'  +     \
+                 ' --pdf_name "' + pdf_name + '"' +     \
+                 ' --csv_name "' + csv_name + '"' +     \
+                 ' --output_folder "' + output_folder + '"' +     \
                  ' --verbosity ' + str(verbosity)
         print("Running command: " + cmd)
     
@@ -249,51 +250,51 @@ def get_current_run_id():
 def try_int(val, default):
     try:
         return int(float(val))
-    except:
+    except Exception:
         pass
     return default
 
 
-def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, port, ip, run_id, s3_usage, s3_settings):
+def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb,
+                verbosity, port, ip, run_id, s3_usage, s3_settings):
     print("Joining output . . . ")
     # ML header:  ,pdf_name,kpi,kpi_id,answer,page,paragraph,source,score,no_ans_score,no_answer_score_plus_boost
-    # RB header:  "KPI_ID","KPI_NAME","SRC_FILE","PAGE_NUM","ITEM_IDS","POS_X","POS_Y","RAW_TXT","YEAR","VALUE","SCORE","UNIT","MATCH_TYPE"
-    output_header = ["METHOD", "PDF_NAME", "KPI_ID", "KPI_NAME", "KPI_DESC", \
-                     "ANSWER_RAW", "ANSWER", "PAGE", "PARAGRAPH", "PARAGRAPH_RELEVANCE_SCORE", "POS_X", "POS_Y", \
+    # RB header:  "KPI_ID","KPI_NAME","SRC_FILE","PAGE_NUM","ITEM_IDS","POS_X","POS_Y","RAW_TXT",
+    # "YEAR","VALUE","SCORE","UNIT","MATCH_TYPE"
+    output_header = ["METHOD", "PDF_NAME", "KPI_ID", "KPI_NAME", "KPI_DESC",
+                     "ANSWER_RAW", "ANSWER", "PAGE", "PARAGRAPH", "PARAGRAPH_RELEVANCE_SCORE", "POS_X", "POS_Y",
                      "KPI_SOURCE", "SCORE", "NO_ANS_SCORE", "SCORE_PLUS_BOOST", "KPI_YEAR", "UNIT_RAW", "UNIT"]
     for filename in os.listdir(pdf_folder):
         print(filename)
-        with open(output_folder + r'/' + str(run_id) + r'_' + filename + r'.csv', 'w', encoding='UTF8', newline='') as f_out:
+        with open(output_folder + r'/' + str(run_id) + r'_' + filename + r'.csv', 'w',
+                  encoding='UTF8', newline='') as f_out:
             writer = csv.writer(f_out)
             writer.writerow(output_header)
             
             rb_filename = rb_output_folder + r'/' + filename + '.csv'
             ml_filename = ml_output_folder + r'/' + filename[:len(filename)-4] + '_predictions_kpi.csv'
             # Read RB:
-            #print("ml=" + ml_filename)
             try:
-                #print(rb_filename)
                 with open(rb_filename, 'r') as f:
-                    #print("open")
                     csv_file = csv.DictReader(f)
                     for row in csv_file:
                         d = dict(row)
-                        data = ["RB", d["SRC_FILE"], d["KPI_ID"], d["KPI_NAME"], "", d["RAW_TXT"], d["VALUE"], d["PAGE_NUM"], "", "", d["POS_X"], d["POS_Y"], \
-                             d["MATCH_TYPE"], d["SCORE"], "", "", d["YEAR"], d["UNIT"], d["UNIT"]] #TODO: Use UNIT_RAW/UNIT, once implemented in RB solution
+                        # TODO: Use UNIT_RAW/UNIT, once implemented in RB solution
+                        data = ["RB", d["SRC_FILE"], d["KPI_ID"], d["KPI_NAME"], "", d["RAW_TXT"],
+                                d["VALUE"], d["PAGE_NUM"], "", "", d["POS_X"], d["POS_Y"],
+                                d["MATCH_TYPE"], d["SCORE"], "", "", d["YEAR"], d["UNIT"], d["UNIT"]]
                         writer.writerow(data)
             except IOError:
                 pass # RB not executed
             # Read ML:
             try:
-                #print(ml_filename)
                 with open(ml_filename, 'r') as f:
-                    #print("open")
                     csv_file = csv.DictReader(f)
                     for row in csv_file:
                         d = dict(row)
-                        data = ["ML", d["pdf_name"] + r".pdf", "", "", d["kpi"], d["answer"], d["answer"], \
-                             str(try_int(d["page"], -2)+1), d["paragraph"], d["paragraph_relevance_score"], "", "", \
-                             d["source"], d["score"], d["no_ans_score"], d["no_answer_score_plus_boost"], "", "", ""]
+                        data = ["ML", d["pdf_name"] + r".pdf", "", "", d["kpi"], d["answer"], d["answer"],
+                                str(try_int(d["page"], -2)+1), d["paragraph"], d["paragraph_relevance_score"], "", "",
+                                d["source"], d["score"], d["no_ans_score"], d["no_answer_score_plus_boost"], "", "", ""]
                         writer.writerow(data)
             except IOError:
                 pass # ML not executed
@@ -308,13 +309,14 @@ def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, ou
                         s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
                 )
                 s3c_main.upload_file_to_s3(filepath=output_folder + r'/' + csv_name,
-                      s3_prefix=project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb',
-                      s3_key=csv_name)
-            set_xy_ml(project_name=project_name, raw_pdf_folder=pdf_folder, working_folder=work_dir_rb, pdf_name=filename, 
-                    csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, port=port, ip=ip,
-                    s3_usage=s3_usage, s3_settings=s3_settings)
+                                           s3_prefix=project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb',
+                                           s3_key=csv_name)
+            set_xy_ml(project_name=project_name, raw_pdf_folder=pdf_folder, working_folder=work_dir_rb,
+                      pdf_name=filename, csv_name=csv_name, output_folder=output_folder, verbosity=verbosity,
+                      use_docker=use_docker, port=port, ip=ip, s3_usage=s3_usage, s3_settings=s3_settings)
         else:
-            print(f'File {csv_name} not in the output and hence we are not able to detect x, y coordinates for the ML solution output.')
+            print(f'File {csv_name} not in the output and hence we are not able to detect x, '
+                  f'y coordinates for the ML solution output.')
     if s3_usage:
         create_directory(pdf_folder)
         create_directory(rb_output_folder)
@@ -336,7 +338,7 @@ def main():
     global source_annotation
     global destination_annotation
     
-    if(check_running()):
+    if check_running():
         print("Another training or inference process is currently running.")
         return
         
@@ -344,38 +346,38 @@ def main():
     
     # Add the arguments
     parser.add_argument('--project_name',
-                    type=str,
-                    default=None,
-                    help='Name of the Project')
+                        type=str,
+                        default=None,
+                        help='Name of the Project')
                     
     parser.add_argument('--mode',
-                    type=str,
-                    default='both', 
-                    help='Inference Mode (RB, ML, both, or none - for just doing postprocessing)')
+                        type=str,
+                        default='both',
+                        help='Inference Mode (RB, ML, both, or none - for just doing postprocessing)')
     
     parser.add_argument('--s3_usage',
-                    type=str,
-                    default=None,
-                    help='Do you want to use S3? Type either Y or N.')
+                        type=str,
+                        default=None,
+                        help='Do you want to use S3? Type either Y or N.')
     
     args = parser.parse_args()
     project_name = args.project_name
     mode = args.mode
     
-    if(mode not in ('RB', 'ML', 'both', 'none')):
+    if mode not in ('RB', 'ML', 'both', 'none'):
         print("Illegal mode specified. Mode must be either RB, ML, both or none")
         return
     
     if project_name is None:
         project_name = input("What is the project name? ")
-    if(project_name is None or project_name==""):
+    if project_name is None or project_name == "":
         print("project name must not be empty")
         return
     
     s3_usage = args.s3_usage
     if s3_usage is None:
         s3_usage = input('Do you want to use S3? Type either Y or N.')
-    if (s3_usage is None or str(s3_usage) not in ['Y', 'N']):
+    if s3_usage is None or str(s3_usage) not in ['Y', 'N']:
         print("Answer to S3 usage must by Y or N. Stop program. Please restart.")
         return None
     else:
@@ -406,8 +408,8 @@ def main():
         )
         settings_path = project_data_dir + "/settings.yaml"
         s3c_main.download_file_from_s3(filepath=settings_path,
-                                  s3_prefix=project_prefix,
-                                  s3_key='settings.yaml')
+                                       s3_prefix=project_prefix,
+                                       s3_key='settings.yaml')
     
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
@@ -442,9 +444,7 @@ def main():
         # Interim folders
         destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
         destination_ml_extraction = project_data_dir + r'/interim/ml/extraction/'
-        #destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + project_settings['train_relevance']['output_model_name']
-        #destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + project_settings['kpi_inference_training']['output_model_name'] 
-        destination_rb_workdir  = project_data_dir + r'/interim/rb/work'
+        destination_rb_workdir = project_data_dir + r'/interim/rb/work'
         destination_rb_infer = project_data_dir + r'/output/KPI_EXTRACTION/rb'
         destination_ml_infer = project_data_dir + r'/output/KPI_EXTRACTION/ml/Text'
 
@@ -452,18 +452,19 @@ def main():
         destination_output = project_data_dir + r'/output/KPI_EXTRACTION/joined_ml_rb'
 
         create_directory(source_pdf)
+        create_directory(source_mapping)
         create_directory(destination_pdf)
         create_directory(destination_mapping)
         create_directory(destination_ml_extraction)
         create_directory(destination_annotation)
-        if(mode != 'none'):
+        if mode != 'none':
             create_directory(destination_rb_infer)
             create_directory(destination_ml_infer)        
         os.makedirs(destination_rb_workdir, exist_ok=True)
         os.makedirs(destination_output, exist_ok=True)
 
-        link_files(source_pdf,destination_pdf)        
-        link_files(source_mapping,destination_mapping)
+        link_files(source_pdf, destination_pdf)
+        link_files(source_mapping, destination_mapping)
         if project_settings['extraction']['use_extractions']:
             source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
             if os.path.exists(source_extraction):
@@ -471,54 +472,54 @@ def main():
             
         end_to_end_response = True
         
-        if(mode in ('RB', 'both')):
+        if mode in ('RB', 'both'):
             print("Executing RB solution . . . ")
             end_to_end_response = end_to_end_response and  \
-                run_router_rb(raw_pdf_folder=destination_pdf, \
-                              working_folder=destination_rb_workdir, \
-                              output_folder=destination_rb_infer, \
-                              project_name=project_name, \
-                              verbosity=rb_verbosity, \
-                              use_docker=rb_use_docker, \
-                              ip=rb_ip, \
-                              port=rb_port, \
-                              s3_usage=s3_usage, \
+                run_router_rb(raw_pdf_folder=destination_pdf,
+                              working_folder=destination_rb_workdir,
+                              output_folder=destination_rb_infer,
+                              project_name=project_name,
+                              verbosity=rb_verbosity,
+                              use_docker=rb_use_docker,
+                              ip=rb_ip,
+                              port=rb_port,
+                              s3_usage=s3_usage,
                               s3_settings=s3_settings)
             if s3_usage:
-                #Download inference output
+                # Download inference output
                 s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/rb', 
-                                            destination_rb_infer)
+                                                         destination_rb_infer)
         
-        if(mode in ('ML', 'both')):
+        if mode in ('ML', 'both'):
             print("Executing ML solution . . . ")
             end_to_end_response = end_to_end_response and \
                                   run_router_ml(ext_port, infer_port, project_name, ext_ip, infer_ip)
             if s3_usage:
-                #Download inference output
+                # Download inference output
                 s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/ml/Text', 
-                                            destination_ml_infer)
+                                                         destination_ml_infer)
 
         if end_to_end_response:
             run_id = get_current_run_id()
             if s3_usage:
-                #Download pdf's to folder
+                # Download pdf's to folder
                 s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/inference', 
-                                                    destination_pdf)
+                                                         destination_pdf)
             
             join_output(project_name=project_name,
-                        pdf_folder = destination_pdf, 
-                        rb_output_folder = destination_rb_infer, 
-                        ml_output_folder = destination_ml_infer, 
-                        output_folder= destination_output, 
-                        use_docker = rb_use_docker, 
-                        work_dir_rb = destination_rb_workdir, 
-                        verbosity = rb_verbosity, 
+                        pdf_folder=destination_pdf,
+                        rb_output_folder=destination_rb_infer,
+                        ml_output_folder=destination_ml_infer,
+                        output_folder=destination_output,
+                        use_docker=rb_use_docker,
+                        work_dir_rb=destination_rb_workdir,
+                        verbosity=rb_verbosity,
                         port=rb_port,
                         ip=rb_ip,
-                        run_id= run_id,
+                        run_id=run_id,
                         s3_usage=s3_usage,
                         s3_settings=s3_settings)
-            if(enable_db_export):
+            if enable_db_export:
                 print("Exporting output to database . . . ")
                 run_db_export(project_name, project_settings['data_export'], run_id)
             if project_settings['extraction']['store_extractions']:
@@ -527,11 +528,11 @@ def main():
                 destination_extraction_data = project_data_dir + r'/output/TEXT_EXTRACTION'
                 if s3_usage:
                     s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', 
-                                  source_extraction_data)
+                                                                source_extraction_data)
                     s3c_main.upload_files_in_dir_to_prefix(source_extraction_data, 
-                                  project_prefix + '/output/TEXT_EXTRACTION')
+                                                           project_prefix + '/output/TEXT_EXTRACTION')
                 os.makedirs(destination_extraction_data, exist_ok=True)
-                end_to_end_response = copy_files_without_overwrite(source_extraction_data, destination_extraction_data)
+                copy_files_without_overwrite(source_extraction_data, destination_extraction_data)
             if project_settings['general']['delete_interim_files']:
                 create_directory(destination_ml_extraction)
                 create_directory(destination_rb_workdir)
