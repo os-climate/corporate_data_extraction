@@ -104,4 +104,3 @@ def test_save_tain_info_return_value(prerequisites_save_train_info: Path):
     
     # perform and check for return value of save_train_info call
     assert save_train_info(project_name) is None
-
