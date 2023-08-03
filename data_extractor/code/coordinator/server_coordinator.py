@@ -49,9 +49,7 @@ def train():
     if project_name is None or s3_usage is None:
         try:
             project_name = request.args.get("project_name")
-            print(project_name)
             s3_usage = request.args.get("s3_usage")
-            print(s3_usage)
         except AttributeError:
             pass
 
@@ -59,7 +57,6 @@ def train():
     if project_name is None or s3_usage is None:
         try:
             args_train = json.loads(request.args['payload'])
-
             project_name = args_train["project_name"]
             s3_usage = args_train["s3_usage"]
         except Exception:
@@ -121,7 +118,6 @@ def infer():
     if project_name is None or s3_usage is None:
         try:
             args_infer = json.loads(request.args['payload'])
-
             project_name = args_infer["project_name"]
             s3_usage = args_infer["s3_usage"]
             mode = args_infer["mode"]
@@ -129,7 +125,7 @@ def infer():
             msg = "Project name, mode or s3_usage where not given via command or payload. Please recheck your call."
             return Response(msg, status=500)
 
-    cmd = 'python infer_on_pdf.py' + \
+    cmd = 'python3 infer_on_pdf.py' + \
           ' --project_name "' + project_name + '"' + \
           ' --mode "' + mode + '"' + \
           ' --s3_usage "' + s3_usage + '"'
