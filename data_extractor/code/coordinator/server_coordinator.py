@@ -37,10 +37,25 @@ def train():
                               default=None,
                               help='Do you want to use S3? Type either Y or N.')
 
-    args_train = parser.parse_args()
-    project_name = args_train.project_name
-    s3_usage = args_train.s3_usage
+    # Read arguments from direct python call
+    args_train = parser_train.parse_args()
+    try:
+        project_name = args_train.project_name
+        s3_usage = args_train.s3_usage
+    except AttributeError:
+        pass
 
+    # Read arguments from wget call
+    if project_name is None or s3_usage is None:
+        try:
+            project_name = request.args.get("project_name")
+            print(project_name)
+            s3_usage = request.args.get("s3_usage")
+            print(s3_usage)
+        except AttributeError:
+            pass
+
+    # Read arguments from payload if given
     if project_name is None or s3_usage is None:
         try:
             args_train = json.loads(request.args['payload'])
@@ -51,7 +66,7 @@ def train():
             msg = "Project name or s3_usage where not given via command or payload. Please recheck your call."
             return Response(msg, status=500)
 
-    cmd = 'python train_on_pdf.py' + \
+    cmd = 'python3 train_on_pdf.py' + \
           ' --project_name "' + project_name + '"' + \
           ' --s3_usage "' + s3_usage + '"'
     print("Running command: " + cmd)
@@ -93,6 +108,16 @@ def infer():
     s3_usage = args_infer.s3_usage
     mode = args_infer.mode
 
+    # Read arguments from wget call
+    if project_name is None or s3_usage is None:
+        try:
+            project_name = request.args.get("project_name")
+            s3_usage = request.args.get("s3_usage")
+            mode = request.args.get("mode")
+        except AttributeError:
+            pass
+
+    # Read arguments from payload if given
     if project_name is None or s3_usage is None:
         try:
             args_infer = json.loads(request.args['payload'])

@@ -215,8 +215,8 @@ def run_router(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0
     :param s3c_interim: S3Communication class element (based on boto3)
     :return: A boolean, indicating success
     """
-    convert_xls_to_csv(project_name, s3_usage, s3c_main, s3c_interim)
-    
+    convert_xls_to_csv(s3_usage, s3c_main, s3c_interim)
+
     # Check if the extraction server is live
     ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
     if ext_live.status_code == 200:
@@ -257,7 +257,8 @@ def run_router(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0
         if train_resp.status_code != 200:
             return False
     else:
-        print("No relevance training done. If you want to have a relevance training please set variable train under train_relevance to true.")
+        print("No relevance training done. If you want to have a relevance training please set variable "
+              "train under train_relevance to true.")
     
     if project_settings['train_kpi']['train']:
         # Requesting the inference server to start the relevance stage
@@ -275,14 +276,16 @@ def run_router(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0
             print('Error while generating text_3434.')
             print(repr(e))
             print(traceback.format_exc())
-        
+
+        print('Next we start the training of the inference model. This may take some time.')
         # Requesting the inference server to start the kpi extraction stage
         infer_resp_kpi = requests.get(f"http://{infer_ip}:{infer_port}/train_kpi", params=payload)
         print(infer_resp_kpi.text)
         if infer_resp_kpi.status_code != 200:
             return False
     else:
-        print("No kpi training done. If you want to have a kpi training please set variable train under train_kpi to true.")
+        print("No kpi training done. If you want to have a kpi training please set variable"
+              " train under train_kpi to true.")
     return True
 
 

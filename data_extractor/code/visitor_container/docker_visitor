@@ -7,9 +7,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y apt-utils wget python3 python3-pip vim
 
-COPY ./requirements.txt /app/code/requirements.txt
-COPY ./coordinator_settings.yaml /app/code/coordinator_settings.yaml
-COPY ./visitor_main.py /app/code/visitor_main.py
+COPY ./code/visitor_container/requirements.txt /app/code/requirements.txt
+COPY ./data/coordinator_settings.yaml /app/code/coordinator_settings.yaml
+COPY ./code/visitor_container/visitor_main.py /app/code/visitor_main.py
 WORKDIR /app/code
 RUN pip install -r requirements.txt
 
