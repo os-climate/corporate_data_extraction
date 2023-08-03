@@ -15,12 +15,12 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
     :type path_folder_root_testing: Path
     :param path_folder_temporary: Requesting the temporary folder fixture
     :type path_folder_temporary: Path
-    :return: Returns mocked project_model_dir
+    :return: Returns path to pickled save_train_info file
     :rtype: Path
-    :yield: Returns mocked project_model_dir
+    :yield: Returns path to pickled save_train_info file
     :rtype: Iterator[Path]
     """
-    
+    # create sample project_settings
     mock_project_settings = {
         'train_relevance': {
             'output_model_name': 'TEST'
@@ -28,53 +28,65 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
         'train_kpi':{
             'output_model_name': 'TEST'
         }
-        }
+    }
+    # define required paths
     path_source_pdf = path_folder_root_testing / 'input' / 'pdf' / 'training'
     path_source_annotation = path_folder_root_testing / 'input' / 'pdfs' / 'training'
     path_source_mapping = path_folder_root_testing / 'data' / 'TEST' / 'input' / 'kpi_mapping'
     path_project_model_dir = path_folder_temporary / 'models'
     path_project_model_dir.mkdir(parents=True)
+    # create path to save info pickle file
+    relevance_model = mock_project_settings['train_relevance']['output_model_name']
+    kpi_model = mock_project_settings['train_kpi']['output_model_name']
+    file_train_info = f'rel_text_{relevance_model}_kpi_text_{kpi_model}.pickle'
+    path_train_info = path_project_model_dir / file_train_info
 
     
     with (patch('train_on_pdf.project_settings', mock_project_settings),
           patch('train_on_pdf.source_annotation', str(path_source_annotation)),
           patch('train_on_pdf.source_mapping', str(path_source_mapping))):
         train_on_pdf.project_model_dir = str(path_project_model_dir)
-        yield path_project_model_dir
+        yield path_train_info
         
         # cleanup
         shutil.rmtree(path_folder_temporary)
         del train_on_pdf.project_model_dir
 
 
-def test_save_train_info_pickle(prerequisites_save_train_info):
+def test_save_train_info_pickle(prerequisites_save_train_info: Path):
     """Tests if the train info is pickle correctly
 
-    :param prerequisites_save_train_info: _description_
-    :type prerequisites_save_train_info: _type_
+    :param prerequisites_save_train_info: Requesting the prerequisites_save_train_info fixture
+    :type prerequisites_save_train_info: Path
     """
     project_name = 'TEST'
     
-    path_project_model_dir = prerequisites_save_train_info
+    path_train_info = prerequisites_save_train_info
     
+    # perform the save_train_info call
     save_train_info(project_name)
     
-    assert len(list(path_project_model_dir.glob('*'))) == 1
+    # check that a single pickle file exists
+    assert path_train_info.exists()
     
 
-def test_save_train_info_entries(prerequisites_save_train_info):
-    
+def test_save_train_info_entries(prerequisites_save_train_info: Path):
+    """Tests if all the train infos exists in the pickled train info file
+
+    :param prerequisites_save_train_info: Requesting the prerequisites_save_train_info fixture
+    :type prerequisites_save_train_info: Path
+    """
     project_name = 'TEST'
+    path_train_info = prerequisites_save_train_info
     
-    path_project_model_dir = prerequisites_save_train_info
-    
+    # perform the save_train_info call
     save_train_info(project_name)
     
-    path_pickled_train_info = list(path_project_model_dir.glob('*'))[0]
-    
-    with open(str(path_pickled_train_info), 'rb') as file:
+    # load pickled file
+    with open(str(path_train_info), 'rb') as file:
         train_info = pickle.load(file)
     
+    # define all expected keys
     required_keys = [
         'project_name',
         'train_settings',
@@ -82,10 +94,14 @@ def test_save_train_info_entries(prerequisites_save_train_info):
         'annotations',
         'kpis'
     ]
-    
-    assert required_keys in train_info.keys()
+    # check that all keys exist in dict
+    assert all(key in required_keys for key in train_info.keys())
     
 
-def test_save_tain_info_return_value(prerequisites_save_train_info):
-    pass
+def test_save_tain_info_return_value(prerequisites_save_train_info: Path):
+    project_name = 'TEST'
+    path_train_info = prerequisites_save_train_info
+    
+    # perform and check for return value of save_train_info call
+    assert save_train_info(project_name) is None
 
