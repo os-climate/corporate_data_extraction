@@ -33,6 +33,12 @@ folder_relevance = None
 project_prefix = None
 
 
+s3_usage = None
+s3c_main = None
+s3c_interim = None
+project_prefix = None
+
+
 def set_running():
      with open(path_file_running, 'w'):
           pass

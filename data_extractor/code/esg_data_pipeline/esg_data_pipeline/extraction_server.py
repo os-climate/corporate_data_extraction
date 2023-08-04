@@ -147,7 +147,6 @@ def run_curation():
     config.CURATION_FOLDER = BASE_INTERIM_FOLDER / 'curation'
     config.ANNOTATION_FOLDER = BASE_INTERIM_FOLDER / 'annotations'
     config.KPI_FOLDER = BASE_DATA_PROJECT_FOLDER / 'interim' / 'kpi_mapping'
-
     create_directory(config.EXTRACTION_FOLDER)
     create_directory(config.CURATION_FOLDER)
     create_directory(config.ANNOTATION_FOLDER)

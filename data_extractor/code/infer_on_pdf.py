@@ -411,6 +411,32 @@ def main():
                                        s3_prefix=project_prefix,
                                        s3_key='settings.yaml')
     
+    s3c_main = None 
+    if s3_usage:
+        # Opening s3 settings file
+        s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'        
+        f = open(s3_settings_path, 'r')
+        s3_settings = yaml.safe_load(f)
+        f.close()
+        project_prefix = s3_settings['prefix'] + "/" + project_name + '/data'
+        # init s3 connector
+        s3c_main = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['main_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['main_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['main_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['main_bucket']['s3_bucket_name']),
+        )
+        s3c_interim = S3Communication(
+                                    s3_endpoint_url=os.getenv(s3_settings['interim_bucket']['s3_endpoint']),
+                                    aws_access_key_id=os.getenv(s3_settings['interim_bucket']['s3_access_key']),
+                                    aws_secret_access_key=os.getenv(s3_settings['interim_bucket']['s3_secret_key']),
+                                    s3_bucket=os.getenv(s3_settings['interim_bucket']['s3_bucket_name']),
+        )
+        settings_path = project_data_dir + "/settings.yaml"
+        s3c_main.download_file_from_s3(filepath=settings_path,
+                                  s3_prefix=project_prefix,
+                                  s3_key='settings.yaml')
+    
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
     project_settings = yaml.safe_load(f)
