@@ -16,6 +16,7 @@ from pathlib import Path
 path_file_running = config_path.NLP_DIR+r'/data/running'
 
 project_settings = None
+project_model_dir = None
 source_pdf = None
 source_annotation = None
 source_mapping = None
@@ -29,6 +30,8 @@ destination_saved_models_relevance = None
 destination_saved_models_inference = None
 folder_text_3434 = None
 folder_relevance = None
+project_prefix = None
+
 
 s3_usage = None
 s3c_main = None
@@ -50,7 +53,6 @@ def clear_running():
 
 def check_running():
      return os.path.exists(path_file_running)
-
 
 
 def create_directory(directory_name):
@@ -124,33 +126,34 @@ def generate_text_3434(project_name, s3_usage, s3_settings):
     return True
 
 
-def convert_xls_to_csv(project_name):
+def convert_xls_to_csv(s3_usage, s3c_main, s3c_interim):
     """
     This function transforms the annotations.xlsx file into annotations.csv.
-    
-    :param project_name: str, representing the project we currently work on
-    :param s3_usage: boolean, if we use s3 as we then have to upload the new csv file to s3
-    :param s3_settings: dictionary, containing information in case of s3 usage
+
+    :param s3_usage: boolean: True if S3 connection should be used
+    :param s3c_main: S3Communication class element (based on boto3)
+    :param s3c_interim: S3Communication class element (based on boto3)
     return None
     """
     source_dir = source_annotation
     dest_dir = destination_annotation
-    s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', 
-                                        source_dir)
+    if s3_usage:
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations',
+                                                 source_dir)
     first = True
     for filename in os.listdir(source_dir):
-        if(filename[-5:]=='.xlsx'):
-            if(not first):
+        if filename[-5:] == '.xlsx':
+            if not first:
                 raise ValueError('More than one excel sheet found')
             print('Converting ' + filename + ' to csv-format')
-            #read_file = pd.read_excel(source_dir + r'/' + filename, sheet_name = 'data_ex_in_xls', engine='openpyxl')
-            read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl') #only reads first sheet in excel file
-            read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index = None, header=True)
+            # only reads first sheet in excel file
+            read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl')
+            read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index=None, header=True)
             if s3_usage:
                 s3c_interim.upload_files_in_dir_to_prefix(dest_dir, 
-                                                  project_prefix + '/interim/ml/annotations')
+                                                          project_prefix + '/interim/ml/annotations')
             first = False         
-    if(first):
+    if first:
         raise ValueError('No annotation excel sheet found')
 
 
@@ -202,20 +205,24 @@ def save_train_info(project_name, s3_usage=False, s3c_main=None, s3_settings=Non
     return None
 
 
-def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
+def run_router(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0.0.0.0',
+               s3_usage=False, s3c_main=None, s3c_interim=None):
     """
     Router function
-    It fist sends a command to the extraction server to beging extraction.
-    If done successfully, it will send a commnad to the inference server to start inference.
-    :param ext_port (int): The port that the extraction server is listening on
-    :param infer_port (int): The port that the inference server is listening on
-    :param ext_ip (int): The ip that the extraction server is listening on
-    :param infer_ip (int): The ip that the inference server is listening on
+    It fist sends a command to the extraction server to begin extraction.
+    If done successfully, it will send a command to the inference server to start inference.
+    :param ext_port: int: The port that the extraction server is listening on
+    :param infer_port: int: The port that the inference server is listening on
+    :param project_name: string
+    :param ext_ip: int: The ip that the extraction server is listening on
+    :param infer_ip: int: The ip that the inference server is listening on
+    :param s3_usage: boolean: True if S3 connection should be used
+    :param s3c_main: S3Communication class element (based on boto3)
+    :param s3c_interim: S3Communication class element (based on boto3)
     :return: A boolean, indicating success
     """
-    
-    convert_xls_to_csv(project_name)
-    
+    convert_xls_to_csv(s3_usage, s3c_main, s3c_interim)
+
     # Check if the extraction server is live
     ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
     if ext_live.status_code == 200:
@@ -256,7 +263,8 @@ def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0
         if train_resp.status_code != 200:
             return False
     else:
-        print("No relevance training done. If you want to have a relevance training please set variable train under train_relevance to true.")
+        print("No relevance training done. If you want to have a relevance training please set variable "
+              "train under train_relevance to true.")
     
     if project_settings['train_kpi']['train']:
         # Requesting the inference server to start the relevance stage
@@ -274,14 +282,16 @@ def run_router(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0
             print('Error while generating text_3434.')
             print(repr(e))
             print(traceback.format_exc())
-        
+
+        print('Next we start the training of the inference model. This may take some time.')
         # Requesting the inference server to start the kpi extraction stage
         infer_resp_kpi = requests.get(f"http://{infer_ip}:{infer_port}/train_kpi", params=payload)
         print(infer_resp_kpi.text)
         if infer_resp_kpi.status_code != 200:
             return False
     else:
-        print("No kpi training done. If you want to have a kpi training please set variable train under train_kpi to true.")
+        print("No kpi training done. If you want to have a kpi training please set variable"
+              " train under train_kpi to true.")
     return True
 
 
@@ -328,12 +338,9 @@ def main():
     global project_model_dir
     global folder_text_3434
     global folder_relevance
-    global s3_usage
-    global s3c_main
-    global s3c_interim
     global project_prefix
 
-    if(check_running()):
+    if check_running():
         print("Another training or inference process is currently running.")
         return
         
@@ -354,24 +361,26 @@ def main():
     project_name = args.project_name
     if project_name is None:
         project_name = input("What is the project name? ")
-    if(project_name is None or project_name==""):
+    if project_name is None or project_name=="":
         print("project name must not be empty")
         return
 
     s3_usage = args.s3_usage
     if s3_usage is None:
         s3_usage = input('Do you want to use S3? Type either Y or N.')
-    if (s3_usage is None or str(s3_usage) not in ['Y', 'N']):
+    if s3_usage is None or str(s3_usage) not in ['Y', 'N']:
         print("Answer to S3 usage must by Y or N. Stop program. Please restart.")
         return None
     else:
         s3_usage = s3_usage == 'Y'
 
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
-    s3c_main = None 
+    create_directory(project_data_dir)
+    s3c_main = None
+    s3c_interim = None
     if s3_usage:
         # Opening s3 settings file
-        s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'        
+        s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'
         f = open(s3_settings_path, 'r')
         s3_settings = yaml.safe_load(f)
         f.close()
@@ -391,8 +400,8 @@ def main():
         )
         settings_path = project_data_dir + "/settings.yaml"
         s3c_main.download_file_from_s3(filepath=settings_path,
-                                  s3_prefix=project_prefix,
-                                  s3_key='settings.yaml')
+                                       s3_prefix=project_prefix,
+                                       s3_key='settings.yaml')
 
     # Opening YAML file
     f = open(project_data_dir + r'/settings.yaml', 'r')
@@ -417,16 +426,19 @@ def main():
         source_annotation = project_data_dir + r'/input/annotations'
         source_mapping = project_data_dir + r'/input/kpi_mapping'
         destination_pdf = project_data_dir + r'/interim/pdfs/'
-        destination_annotation = project_data_dir + r'/interim/ml/annotations/' 
-        destination_mapping = project_data_dir + r'/interim/kpi_mapping/' 
-        destination_extraction = project_data_dir + r'/interim/ml/extraction/' 
-        destination_curation = project_data_dir + r'/interim/ml/curation/' 
-        destination_training = project_data_dir + r'/interim/ml/training/'  
-        destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + relevance_training_output_model_name 
-        destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + kpi_inference_training_output_model_name 
+        destination_annotation = project_data_dir + r'/interim/ml/annotations/'
+        destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
+        destination_extraction = project_data_dir + r'/interim/ml/extraction/'
+        destination_curation = project_data_dir + r'/interim/ml/curation/'
+        destination_training = project_data_dir + r'/interim/ml/training/'
+        destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + relevance_training_output_model_name
+        destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + kpi_inference_training_output_model_name
         folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
+        create_directory(source_pdf)
+        create_directory(source_annotation)
+        create_directory(source_mapping)
         create_directory(folder_text_3434)
         create_directory(destination_pdf)
         create_directory(destination_annotation)
@@ -440,15 +452,16 @@ def main():
             create_directory(destination_saved_models_inference)
         create_directory(folder_relevance)
 
-        link_files(source_pdf,destination_pdf)
-        link_files(source_annotation,destination_annotation)
-        link_files(source_mapping,destination_mapping)
+        link_files(source_pdf, destination_pdf)
+        link_files(source_annotation, destination_annotation)
+        link_files(source_mapping, destination_mapping)
         if project_settings['extraction']['use_extractions']:
             source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
             if os.path.exists(source_extraction):
                 link_extracted_files(source_extraction, source_pdf, destination_extraction)
         
-        end_to_end_response = run_router(ext_port, infer_port, project_name, ext_ip, infer_ip)
+        end_to_end_response = run_router(ext_port, infer_port, project_name, ext_ip, infer_ip,
+                                         s3_usage, s3c_main, s3c_interim)
         
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:
@@ -457,13 +470,13 @@ def main():
                 destination_extraction_data = project_data_dir + r'/output/TEXT_EXTRACTION'
                 if s3_usage:
                     s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', 
-                                  source_extraction_data)
+                                                                source_extraction_data)
                     s3c_main.upload_files_in_dir_to_prefix(source_extraction_data, 
-                                  project_prefix + '/output/TEXT_EXTRACTION')
+                                                           project_prefix + '/output/TEXT_EXTRACTION')
                 else:
                     os.makedirs(destination_extraction_data, exist_ok=True)
-                    end_to_end_response = copy_file_without_overwrite(source_extraction_data, destination_extraction_data)
-
+                    end_to_end_response = copy_file_without_overwrite(source_extraction_data,
+                                                                      destination_extraction_data)
                 
             if project_settings['general']['delete_interim_files']:
                 create_directory(destination_pdf)
