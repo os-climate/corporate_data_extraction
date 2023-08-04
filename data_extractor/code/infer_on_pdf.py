@@ -144,6 +144,7 @@ def convert_xls_to_csv(project_name, s3_usage, s3_settings):
 
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 def run_router_ml(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='0.0.0.0'):
 >>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
     """
@@ -162,6 +163,11 @@ def run_router_ml(ext_port, infer_port, project_name,ext_ip='0.0.0.0',infer_ip='
 def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0.0.0.0'):
     """
     Router function
+=======
+def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0.0.0.0'):
+    """
+    Router function
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
     It fist sends a command to the extraction server to begin extraction.
     If done successfully, it will send a command to the inference server to start inference.
     :param ext_port: int: The port that the extraction server is listening on
@@ -169,7 +175,10 @@ def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip
     :param project_name: str: The name of the project
     :param ext_ip: int: The ip that the extraction server is listening on
     :param infer_ip: int: The ip that the inference server is listening on
+<<<<<<< HEAD
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
     :return: A boolean, indicating success
     """
     
@@ -220,8 +229,15 @@ def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip
 <<<<<<< HEAD
     
 
+<<<<<<< HEAD
 def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, rb_port, rb_ip):
     if(use_docker):
+=======
+
+def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, verbosity, use_docker, port, ip,
+                  s3_usage, s3_settings):
+    if use_docker:
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
         payload = {'project_name': project_name, 'verbosity': str(verbosity)}
         rb_response = requests.get(f"http://{rb_ip}:{rb_port}/run", params=payload)
 =======
@@ -253,6 +269,7 @@ def run_router_rb(raw_pdf_folder, working_folder, output_folder, project_name, v
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, rb_port, rb_ip):
 =======
 def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker, port, ip, s3_usage, s3_settings):
@@ -263,6 +280,11 @@ def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, 
               port, ip, s3_usage, s3_settings):
     if use_docker:
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+def set_xy_ml(project_name, raw_pdf_folder, working_folder, pdf_name, csv_name, output_folder, verbosity, use_docker,
+              port, ip, s3_usage, s3_settings):
+    if use_docker:
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
         payload = {'project_name': project_name,
                    'pdf_name': pdf_name,
                    'csv_name': csv_name,
@@ -307,6 +329,7 @@ def try_int(val, default):
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, rb_port, rb_ip, run_id):
 =======
 def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb, verbosity, port, ip, run_id, s3_usage, s3_settings):
@@ -315,6 +338,10 @@ def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, ou
 def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb,
                 verbosity, port, ip, run_id, s3_usage, s3_settings):
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, output_folder, use_docker, work_dir_rb,
+                verbosity, port, ip, run_id, s3_usage, s3_settings):
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
     print("Joining output . . . ")
     # ML header:  ,pdf_name,kpi,kpi_id,answer,page,paragraph,source,score,no_ans_score,no_answer_score_plus_boost
     # RB header:  "KPI_ID","KPI_NAME","SRC_FILE","PAGE_NUM","ITEM_IDS","POS_X","POS_Y","RAW_TXT",
@@ -368,6 +395,7 @@ def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, ou
                 )
                 s3c_main.upload_file_to_s3(filepath=output_folder + r'/' + csv_name,
 <<<<<<< HEAD
+<<<<<<< HEAD
                       s3_prefix=project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb',
                       s3_key=csv_name)
             set_xy_ml(project_name=project_name, raw_pdf_folder=pdf_folder, working_folder=work_dir_rb, pdf_name=filename, 
@@ -379,12 +407,17 @@ def join_output(project_name, pdf_folder, rb_output_folder, ml_output_folder, ou
                     csv_name=csv_name, output_folder=output_folder, verbosity=verbosity, use_docker=use_docker, port=port, ip=ip,
                     s3_usage=s3_usage, s3_settings=s3_settings)
 =======
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
                                            s3_prefix=project_prefix + '/output/KPI_EXTRACTION/joined_ml_rb',
                                            s3_key=csv_name)
             set_xy_ml(project_name=project_name, raw_pdf_folder=pdf_folder, working_folder=work_dir_rb,
                       pdf_name=filename, csv_name=csv_name, output_folder=output_folder, verbosity=verbosity,
                       use_docker=use_docker, port=port, ip=ip, s3_usage=s3_usage, s3_settings=s3_settings)
+<<<<<<< HEAD
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
         else:
             print(f'File {csv_name} not in the output and hence we are not able to detect x, '
                   f'y coordinates for the ML solution output.')
@@ -556,11 +589,16 @@ def main():
         destination_output = project_data_dir + r'/output/KPI_EXTRACTION/joined_ml_rb'
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 =======
         create_directory(source_pdf)
         create_directory(source_mapping)
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+        create_directory(source_pdf)
+        create_directory(source_mapping)
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
         create_directory(destination_pdf)
         create_directory(destination_mapping)
         create_directory(destination_ml_extraction)
@@ -584,6 +622,7 @@ def main():
             print("Executing RB solution . . . ")
             end_to_end_response = end_to_end_response and  \
 <<<<<<< HEAD
+<<<<<<< HEAD
                 run_router_rb(raw_pdf_folder=destination_pdf, \
                               working_folder=destination_rb_workdir, \
                               output_folder=destination_rb_infer, \
@@ -598,6 +637,8 @@ def main():
                               port=rb_port, \
                               s3_usage=s3_usage, \
 =======
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
                 run_router_rb(raw_pdf_folder=destination_pdf,
                               working_folder=destination_rb_workdir,
                               output_folder=destination_rb_infer,
@@ -607,17 +648,24 @@ def main():
                               ip=rb_ip,
                               port=rb_port,
                               s3_usage=s3_usage,
+<<<<<<< HEAD
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
                               s3_settings=s3_settings)
             if s3_usage:
                 # Download inference output
                 s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/rb', 
+<<<<<<< HEAD
 <<<<<<< HEAD
                                             destination_rb_infer)
 >>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 =======
                                                          destination_rb_infer)
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+                                                         destination_rb_infer)
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
         
         if mode in ('ML', 'both'):
             print("Executing ML solution . . . ")
@@ -629,11 +677,15 @@ def main():
                 # Download inference output
                 s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/KPI_EXTRACTION/ml/Text', 
 <<<<<<< HEAD
+<<<<<<< HEAD
                                             destination_ml_infer)
 >>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 =======
                                                          destination_ml_infer)
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+                                                         destination_ml_infer)
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
 
         if end_to_end_response:
             run_id = get_current_run_id()
@@ -643,6 +695,7 @@ def main():
                                                          destination_pdf)
             
             join_output(project_name=project_name,
+<<<<<<< HEAD
 <<<<<<< HEAD
                         pdf_folder = destination_pdf, 
                         rb_output_folder = destination_rb_infer, 
@@ -657,6 +710,8 @@ def main():
                         run_id= run_id)
 =======
 =======
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
                         pdf_folder=destination_pdf,
                         rb_output_folder=destination_rb_infer,
                         ml_output_folder=destination_ml_infer,
@@ -664,18 +719,25 @@ def main():
                         use_docker=rb_use_docker,
                         work_dir_rb=destination_rb_workdir,
                         verbosity=rb_verbosity,
+<<<<<<< HEAD
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
                         port=rb_port,
                         ip=rb_ip,
                         run_id=run_id,
                         s3_usage=s3_usage,
                         s3_settings=s3_settings)
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
             if(enable_db_export):
 =======
             if enable_db_export:
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+            if enable_db_export:
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
                 print("Exporting output to database . . . ")
                 run_db_export(project_name, project_settings['data_export'], run_id)
             if project_settings['extraction']['store_extractions']:

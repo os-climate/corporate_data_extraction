@@ -56,7 +56,10 @@ def check_running():
 <<<<<<< HEAD
 =======
 
+<<<<<<< HEAD
 >>>>>>> ced44e3df (Feature/2023.04 os test (#14))
+=======
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
 
 def create_directory(directory_name):
     os.makedirs(directory_name, exist_ok=True)

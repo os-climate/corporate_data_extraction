@@ -74,11 +74,15 @@ def run_extraction():
         if extraction_settings['use_extractions']:
             s3c_main.download_files_in_prefix_to_dir(project_prefix + '/output/TEXT_EXTRACTION', 
 <<<<<<< HEAD
+<<<<<<< HEAD
                                             config.EXTRACTION_FOLDER)
 >>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 =======
                                                      config.EXTRACTION_FOLDER)
 >>>>>>> 243fad1d7 (Feature/2023.04 os test (#16))
+=======
+                                                     config.EXTRACTION_FOLDER)
+>>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
         s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/annotations', 
                                                      config.ANNOTATION_FOLDER)
         if args['mode'] == 'train':
