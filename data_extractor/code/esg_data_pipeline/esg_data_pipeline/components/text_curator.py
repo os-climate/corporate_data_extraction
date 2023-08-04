@@ -72,7 +72,7 @@ class TextCurator(BaseCurator):
 
         df_result = pd.DataFrame(examples_list).reset_index(drop=True)
         # Drop the unnecessary column.
-        df_result.drop(["Index"], axis=1, inplace=True)
+        # df_result.drop(["Index"], axis=1, inplace=True)
 
         # Map the KPI to KPI questions
         importlib.reload(kpi_mapping)
