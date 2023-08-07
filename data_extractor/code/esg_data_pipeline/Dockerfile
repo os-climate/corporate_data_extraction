@@ -21,9 +21,10 @@ RUN apt-get update && apt-get install -y git wget vim ninja-build poppler-utils 
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./esg_data_pipeline /app/code/esg_data_pipeline
+COPY ./s3_communication.py /app/code/esg_data_pipeline/esg_data_pipeline/s3_communication.py
 
-RUN chgrp -R 0 /app/code/esg_data_pipeline && chmod g=u /app/code/esg_data_pipeline
-RUN chmod -R a+x /app/code/esg_data_pipeline
+RUN chgrp -R 0 /app/code && chmod g=u /app/code
+RUN chmod -R 777 /app/code
 
 WORKDIR /app/code/esg_data_pipeline
 
@@ -31,8 +32,6 @@ RUN pip install -e .
 
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
-
-USER 1234
 
 CMD ./entry.sh
 
