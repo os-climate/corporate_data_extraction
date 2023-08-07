@@ -33,6 +33,9 @@ RUN pip install -e .
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
 
+RUN mkdir -p /app/data
+RUN chmod -R 777 /app/data
+
 CMD ./entry.sh
 
 
