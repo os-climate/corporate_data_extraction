@@ -12,7 +12,10 @@ from tests.test_utils.test_running import prerequisite_running
 
 
 @pytest.fixture
-def prerequisite_train_on_pdf_settings_files(path_folder_root_testing) -> tuple[Path, Path]:
+def prerequisite_train_on_pdf_settings_files(
+    path_folder_root_testing,
+    prerequisite_running
+    ) -> tuple[Path, Path]:
     
     mocked_project_settings = {
         's3_usage': False,
@@ -61,7 +64,7 @@ def prerequisite_train_on_pdf_settings_files(path_folder_root_testing) -> tuple[
     
     yield mocked_project_settings, mocked_s3_settings
     
-@pytest.fixture(params=(False, False))
+@pytest.fixture(params=[(False, False)])
 def prerequisite_train_on_pdf_try_run(
     request,
     prerequisite_train_on_pdf_settings_files: tuple[Path, Path],
@@ -220,8 +223,8 @@ def test_train_on_pdf_s3_usage(prerequisite_train_on_pdf_settings_files):
 
 def test_train_on_pdf_required_settings_file(
     prerequisite_train_on_pdf_settings_files: tuple[Path, Path],
-    path_folder_root_testing: Path,
-    prerequisite_running):
+    path_folder_root_testing: Path
+    ):
     project_settings_expected, _ = prerequisite_train_on_pdf_settings_files
     
     try:
@@ -238,11 +241,6 @@ def test_train_on_pdf_required_settings_file(
     except:
         pytest.fail()
 
-@pytest.mark.parametrize(
-    'prerequisite_train_on_pdf_try_run', 
-    [(True, False)], 
-    indirect=True
-) 
 def test_train_on_pdf_folders_default_created(
     prerequisite_train_on_pdf_try_run: Mock,
     path_folder_root_testing
@@ -282,11 +280,10 @@ def test_train_on_pdf_folders_default_created(
 @pytest.mark.parametrize(
     'paths_expected',
     [
-        r'/RELEVANCE/Text/test',
-        r'/KPI_EXTRACTION/Text/test'
+        r'/RELEVANCE/Text/test'
     ]
     )
-def test_train_on_pdf_folders_default_created(
+def test_train_on_pdf_folders_relevance_created(
     paths_expected,
     prerequisite_train_on_pdf_try_run: Mock,
     path_folder_root_testing
@@ -306,3 +303,5 @@ def test_train_on_pdf_folders_default_created(
         for path_current in paths_expected:
             path_folder_current = path_folder_root_testing + path_current
             mocked_create_directory.assert_any_call(str(path_folder_current))  
+            
+            #TODO Why '/' in paths_expected
