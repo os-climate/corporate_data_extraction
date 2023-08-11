@@ -160,7 +160,7 @@ def run_router_ml(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip
         print("Extraction server is not responding.")
         return False
         
-    payload = {'project_name': project_name, 'mode': 'train'}
+    payload = {'project_name': project_name, 'mode': 'infer'}
     payload.update(project_settings)
     payload = {'payload': json.dumps(payload)} 
 
