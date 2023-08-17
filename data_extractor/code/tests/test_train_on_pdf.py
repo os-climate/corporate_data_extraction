@@ -176,7 +176,6 @@ def test_train_on_pdf_correct_input_s3_usage(s3_usage):
         train_on_pdf.main()
         assert mocked_input() == s3_usage
 
-
 def test_train_on_pdf_s3_usage(prerequisite_train_on_pdf_settings_files):
     _, mocked_s3_settings = prerequisite_train_on_pdf_settings_files
     
@@ -274,7 +273,7 @@ def test_train_on_pdf_folders_default_created(
 
 @pytest.mark.parametrize(
     'prerequisite_train_on_pdf_try_run', 
-    [(False, True)], 
+    [(True, False)], 
     indirect=True
 ) 
 @pytest.mark.parametrize(
@@ -300,7 +299,7 @@ def test_train_on_pdf_folders_relevance_created(
         path_folder_root_testing = path_folder_root_testing / 'models'
         path_folder_root_testing = str(path_folder_root_testing) + '/TEST'
         
-        for path_current in paths_expected:
+        for path_current in [paths_expected]:
             path_folder_current = path_folder_root_testing + path_current
             mocked_create_directory.assert_any_call(str(path_folder_current))  
             

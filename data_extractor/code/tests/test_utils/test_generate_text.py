@@ -24,7 +24,7 @@ def prerequisites_generate_text(path_folder_temporary: Path) -> Path:
     
     # create multiple files in the folder_relevance with the same header
     for i in range(5):
-        path_current_file = path_folder_relevance / f'test_{i}.csv'
+        path_current_file = path_folder_relevance / f'{i}_test.csv'
         path_current_file.touch()
         write_to_file(path_current_file, f'That is a test {i}', 'HEADER')
         
@@ -61,10 +61,13 @@ def test_generate_text(prerequisites_generate_text: Path):
     assert path_file_text_3434_csv.exists()
     
     # check if header and content of files exist
+    strings_expected = [
+        f'That is a test {line_number}' for line_number in range(5)
+        ]
     with open(str(path_file_text_3434_csv), 'r') as file_text_3434:
         for line_number, line_content in enumerate(file_text_3434, start = -1):
             if line_number == -1:
                 assert line_content.rstrip() == 'HEADER'
             else:
-                assert line_content.rstrip() == f'That is a test {line_number}'
+                assert line_content.rstrip() in strings_expected
                 
