@@ -1,5 +1,6 @@
 from pathlib import Path
 import pandas as pd
+import typing
 
 
 def project_tests_root() -> Path:
@@ -53,3 +54,19 @@ def create_multiple_xlsx_files(path_folder: Path) -> None:
     """
     for i in range(5):
         create_single_xlsx_file(path_folder, file_name = f'xlsx_file_{i}.xlsx')
+
+def modify_project_settings(project_settings: typing.Dict, 
+                            *args: typing.Tuple[str, str, bool]) -> typing.Dict:
+    """Returns are modified project settings dict based on the input args
+
+    :param project_settings: Project settings
+    :type project_settings: typing.Dict
+    :return: Modified project settings
+    :rtype: typing.Dict
+    """
+    for modifier in args:
+        # check for valid args
+        if len(modifier) == 3:
+            key1, key2, decision = modifier
+            project_settings[key1][key2] = decision
+    return project_settings
