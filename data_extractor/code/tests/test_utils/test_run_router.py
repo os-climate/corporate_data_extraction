@@ -1,7 +1,7 @@
 from pathlib import Path
 from train_on_pdf import run_router
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import shutil
 import train_on_pdf
 import requests
@@ -31,7 +31,8 @@ def prerequisites_run_router(prerequisites_convert_xls_to_csv,
     inference_ip = '0.0.0.1'
     inference_port = '8000'
 
-    yield extraction_ip, extraction_port, inference_ip, inference_port
+    with patch('train_on_pdf.convert_xls_to_csv', Mock()):
+        yield extraction_ip, extraction_port, inference_ip, inference_port
     
 
 @pytest.mark.parametrize('status_code, exptected_output',
@@ -198,8 +199,8 @@ def test_run_router_relevance_training(mock_project_settings: dict,
 @pytest.mark.parametrize('mock_project_settings, status_code_infer_relevance, project_name, status_code_train_kpi, expected_output',
                          [
                             ({'train_kpi': {'train': True}}, -1, "TEST", -1, ("", False)),
-                            ({'train_kpi': {'train': True}}, 200, "TEST", -1, ("text_3434 was generated without error.", False)),
-                            ({'train_kpi': {'train': True}}, 200, "TEST", 200, ("text_3434 was generated without error.", True)),
+                            ({'train_kpi': {'train': True}}, 200, "TEST", -1, ("text_3434 was generated without error", False)),
+                            ({'train_kpi': {'train': True}}, 200, "TEST", 200, ("text_3434 was not generated without error", True)),
                             ({'train_kpi': {'train': True}}, 200, None, -1, ("Error while generating text_3434.", False)),
                             ({'train_kpi': {'train': True}}, 200, None, 200, ("Error while generating text_3434.", True)),
                             ({'train_kpi': {'train': False}}, -1, None, -1, (("No kpi training done. If you want to have a kpi "
@@ -232,13 +233,25 @@ def test_run_router_kpi_training(mock_project_settings: typing.Dict[str, typing.
     extraction_ip, extraction_port, inference_ip, inference_port = prerequisites_run_router
     return_value = None
     mock_project_settings['train_relevance'] = {'train': False}
-    
+    mock_project_settings['s3_usage'] = None
+    mock_project_settings['s3_settings'] = None
+        
     # force an exception of generate_text_3434 by remove the folder_text_3434
     if not project_name:
         train_on_pdf.folder_text_3434 = None
+    
+    mocked_generate_text = Mock() 
+    if project_name:
+        if status_code_train_kpi < 0:
+            mocked_generate_text.side_effect = lambda *args: True
+        else:
+            mocked_generate_text.side_effect = lambda *args: False
+    else:
+        mocked_generate_text.side_effect = Exception
         
     with (requests_mock.Mocker() as mock_server,
-        patch('train_on_pdf.project_settings', mock_project_settings)):
+        patch('train_on_pdf.project_settings', mock_project_settings),
+        patch('train_on_pdf.generate_text_3434', mocked_generate_text)):
         mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
         mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
         mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
