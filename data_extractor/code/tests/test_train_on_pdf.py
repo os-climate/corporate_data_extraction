@@ -5,21 +5,33 @@ import shutil
 import train_on_pdf
 import requests
 import requests_mock
-import typing
 import config_path
-import typing
 import sys
+import traceback
 from tests.utils_test import modify_project_settings
 from tests.test_utils.test_running import prerequisite_running
+
+# types
+import typing
+from _pytest.fixtures import FixtureRequest
+from _pytest.capture import CaptureFixture
 
 
 @pytest.fixture(params=[()])
 def prerequisite_train_on_pdf_try_run(
-    request,
-    path_folder_root_testing,
-    prerequisite_running
-    ) -> Mock:
-    
+    request: FixtureRequest,
+    path_folder_root_testing: Path,
+    prerequisite_running: None
+    ):
+    """Defines a fixture for the train_on_pdf script
+
+    :param request: Request for parametrization
+    :param path_folder_root_testing: Path for the testing folder
+    :type path_folder_root_testing: Path
+    :param prerequisite_running: Fixture for prerequisite of running funcions
+    :type prerequisite_running: None
+    """
+    # project settings getting mocked
     mocked_project_settings = {
         's3_usage': False,
         's3_settings': {},
@@ -48,10 +60,35 @@ def prerequisite_train_on_pdf_try_run(
             }
     }
     
+    # s3 settings getting mocked
+    mocked_s3_settings = {
+        'prefix': 'test_prefix',
+        'main_bucket': {
+            's3_endpoint': 'S3_END_MAIN',
+            's3_access_key': 'S3_ACCESS_MAIN',
+            's3_secret_key': 'S3_SECRET_MAIN',
+            's3_bucket_name': 'S3_NAME_MAIN'
+        },
+        'interim_bucket': {
+            's3_endpoint': 'S3_END_INTERIM',
+            's3_access_key': 'S3_ACCESS_INTERIM',
+            's3_secret_key': 'S3_SECRET_INTERIM',
+            's3_bucket_name': 'S3_NAME_INTERIM'
+        }
+    }
+    
+    # helper function for choosing the right settings file
+    def return_project_settings(*args: typing.List[Mock]):
+        if 's3' in args[0].name:
+            return mocked_s3_settings
+        else:
+            return mocked_project_settings
+    
     path_folder_data = path_folder_root_testing / 'data'
     path_folder_models = path_folder_root_testing / 'models'
     project_name = 'TEST'
     
+    # modifying the project settings file via parametrization
     mocked_project_settings = modify_project_settings(mocked_project_settings, request.param)
 
     with (
@@ -64,15 +101,21 @@ def prerequisite_train_on_pdf_try_run(
         mocked_argpase.return_value.s3_usage = 'N'
         mocked_config_path.DATA_DIR = str(path_folder_data)
         mocked_config_path.MODEL_DIR = str(path_folder_models)
-        mocked_yaml.safe_load.side_effect = lambda args: mocked_project_settings
+        mocked_yaml.safe_load.side_effect = return_project_settings
         yield
     
-def test_train_on_pdf_check_running(capsys):
+def test_train_on_pdf_check_running(capsys: typing.Generator[CaptureFixture[str], None, None]):
+    """Tests if everything is printed when another training is running
+
+    :param capsys: Requesting default fixture to capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None])
+    """
     with patch('train_on_pdf.check_running') as mocked_function:
         return_value = train_on_pdf.main()
         
         output_cmd, _ = capsys.readouterr()
         
+        # check if the correct strings are written to the console
         string_expected = 'Another training or inference process is currently running.'
         train_on_pdf.check_running.assert_called_once()
         assert return_value is None
@@ -80,9 +123,18 @@ def test_train_on_pdf_check_running(capsys):
 
 @pytest.mark.parametrize('project_name, output_expected',
                          [(None,  None), ('', None)])
-def test_train_on_pdf_wrong_input_project_name(project_name,
-                                               output_expected,
-                                               capsys):
+def test_train_on_pdf_wrong_input_project_name(project_name: typing.Union[str, None],
+                                               output_expected: None,
+                                               capsys: typing.Generator[CaptureFixture[str], None, None]):
+    """Tests the correct behaviour of wrong given project names
+
+    :param project_name: Project name
+    :type project_name: typing.Union[str, None]
+    :param output_expected: Expected outputs
+    :type output_expected: None
+    :param capsys: Requesting default fixture to capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None])
+    """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
           patch('train_on_pdf.input', Mock()) as mocked_input):
         mocked_argpase.return_value.project_name = project_name
@@ -98,8 +150,10 @@ def test_train_on_pdf_wrong_input_project_name(project_name,
             mocked_input.assert_called_with(string_call_expected) 
         assert string_expected in output_cmd
         assert return_value is output_expected
-            
+     
 def test_train_on_pdf_correct_input_project_name():
+    """Tests that a correct project name is accepted
+    """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
           patch('train_on_pdf.input', Mock()) as mocked_input):
         mocked_argpase.return_value.s3_usage = True
@@ -113,9 +167,18 @@ def test_train_on_pdf_correct_input_project_name():
                              (None, None),
                              ('X', None)
                          ])
-def test_train_on_pdf_wrong_input_s3(s3_usage, 
-                                     output_expected,
-                                     capsys):
+def test_train_on_pdf_wrong_input_s3(s3_usage: typing.Union[str, None], 
+                                     output_expected: None,
+                                     capsys: typing.Generator[CaptureFixture[str], None, None]):
+    """Tests the correct behaviour of wrong s3 input is given
+
+    :param s3_usage: S3 usage (yes or no)
+    :type s3_usage: typing.Union[str, None]
+    :param output_expected: Expected outputs
+    :type output_expected: None
+    :param capsys: Requesting default fixture to capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None])
+    """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
           patch('train_on_pdf.input', Mock()) as mocked_input):
         mocked_argpase.return_value.project_name = 'TEST'
@@ -124,6 +187,7 @@ def test_train_on_pdf_wrong_input_s3(s3_usage,
         
         output_cmd, _ = capsys.readouterr()
         
+        # expected outputs
         string_expected = 'Answer to S3 usage must by Y or N. Stop program. Please restart.'
         if s3_usage is None:
             string_call_expected = 'Do you want to use S3? Type either Y or N.'
@@ -134,7 +198,12 @@ def test_train_on_pdf_wrong_input_s3(s3_usage,
             
 @pytest.mark.parametrize('s3_usage',
                          ['Y', 'N'])
-def test_train_on_pdf_correct_input_s3_usage(s3_usage):
+def test_train_on_pdf_correct_input_s3_usage(s3_usage: typing.Union[str, None]):
+    """Tests that the correct s3 usage is accepted
+
+    :param s3_usage: S3 usage (yes or no)
+    :type s3_usage: typing.Union[str, None]
+    """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
           patch('train_on_pdf.input', Mock()) as mocked_input):
         mocked_argpase.return_value.project_name = 'TEST'
@@ -143,69 +212,54 @@ def test_train_on_pdf_correct_input_s3_usage(s3_usage):
         train_on_pdf.main()
         assert mocked_input() == s3_usage
 
-def test_train_on_pdf_s3_usage(path_folder_root_testing):
-    mocked_s3_settings = {
-        'prefix': 'test_prefix',
-        'main_bucket': {
-            's3_endpoint': 'S3_END_MAIN',
-            's3_access_key': 'S3_ACCESS_MAIN',
-            's3_secret_key': 'S3_SECRET_MAIN',
-            's3_bucket_name': 'S3_NAME_MAIN'
-        },
-        'interim_bucket': {
-            's3_endpoint': 'S3_END_INTERIM',
-            's3_access_key': 'S3_ACCESS_INTERIM',
-            's3_secret_key': 'S3_SECRET_INTERIM',
-            's3_bucket_name': 'S3_NAME_INTERIM'
-        }
+def test_train_on_pdf_s3_usage(prerequisite_train_on_pdf_try_run: None):
+    """Tests if the s3 usage is correctly performed
 
-    }
-    
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    """
     project_name = 'TEST'
-    mocked_s3_communication = Mock()
-    mocked_open = MagicMock()
-    mocked_yaml = Mock()
-    
-    try:
-        with (
-            patch('train_on_pdf.os.getenv', Mock(side_effect=lambda *args: args[0])),
-            patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
-            patch('train_on_pdf.yaml', mocked_yaml),
-            patch('train_on_pdf.open', mocked_open),
-            patch('train_on_pdf.S3Communication', mocked_s3_communication)
-            ):
-            mocked_argpase.return_value.project_name = project_name
-            mocked_argpase.return_value.s3_usage = 'Y'
-            mocked_yaml.safe_load.side_effect = lambda args: mocked_s3_settings
-            
-            train_on_pdf.main()
 
-    except:
-        pass
-    finally:
-        mocked_open.assert_any_call(f"{config_path.DATA_DIR}/s3_settings.yaml", "r")
-
+    with (
+        patch('train_on_pdf.os.getenv', Mock(side_effect=lambda *args: args[0])),
+        patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
+        patch('train_on_pdf.S3Communication', Mock()) as mocked_s3_communication
+        ):
+        mocked_argpase.return_value.project_name = project_name
+        mocked_argpase.return_value.s3_usage = 'Y'
+        
+        train_on_pdf.main()
+        
+        # check that the communications objects for s3 usage are getting called
         mocked_s3_communication.assert_any_call(
-            s3_endpoint_url=mocked_s3_settings['main_bucket']['s3_endpoint'],
-            aws_access_key_id=mocked_s3_settings['main_bucket']['s3_access_key'],
-            aws_secret_access_key=mocked_s3_settings['main_bucket']['s3_secret_key'],
-            s3_bucket=mocked_s3_settings['main_bucket']['s3_bucket_name']
+            s3_endpoint_url='S3_END_MAIN',
+            aws_access_key_id='S3_ACCESS_MAIN',
+            aws_secret_access_key='S3_SECRET_MAIN',
+            s3_bucket='S3_NAME_MAIN'
         )
         
         mocked_s3_communication.assert_any_call(
-            s3_endpoint_url=mocked_s3_settings['interim_bucket']['s3_endpoint'],
-            aws_access_key_id=mocked_s3_settings['interim_bucket']['s3_access_key'],
-            aws_secret_access_key=mocked_s3_settings['interim_bucket']['s3_secret_key'],
-            s3_bucket=mocked_s3_settings['interim_bucket']['s3_bucket_name']
+            s3_endpoint_url='S3_END_INTERIM',
+            aws_access_key_id='S3_ACCESS_INTERIM',
+            aws_secret_access_key='S3_SECRET_INTERIM',
+            s3_bucket='S3_NAME_INTERIM'
         )
         
         mocked_s3_communication.return_value.download_file_from_s3.assert_called_once()
 
 def test_train_on_pdf_folders_default_created(
-    prerequisite_train_on_pdf_try_run,
-    path_folder_root_testing
+    prerequisite_train_on_pdf_try_run: None,
+    path_folder_root_testing: Path
     ):
+    """Tests of the required default folders are created
+
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    :param path_folder_root_testing: Path for the testing folder
+    :type path_folder_root_testing: Path
+    """
     
+    # define all expected paths to the folder
     paths_folders_default = [
         r'/interim/ml',
         r'/interim/pdfs/',
@@ -224,6 +278,7 @@ def test_train_on_pdf_folders_default_created(
         ):
         train_on_pdf.main()
         
+        # we have to combine pathlib object with str path...
         path_folder_root_testing = path_folder_root_testing / 'data'
         path_folder_root_testing = str(path_folder_root_testing) + '/TEST'
         
@@ -238,9 +293,16 @@ def test_train_on_pdf_folders_default_created(
     indirect=True
 ) 
 def test_train_on_pdf_folders_relevance_created(
-    prerequisite_train_on_pdf_try_run: Mock,
-    path_folder_root_testing
+    prerequisite_train_on_pdf_try_run: None,
+    path_folder_root_testing: Path
     ):
+    """Tests of the relevance folder is created
+
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    :param path_folder_root_testing: Path for the testing folder
+    :type path_folder_root_testing: Path
+    """
     
     with (
         patch('train_on_pdf.link_files', Mock()),
@@ -249,6 +311,7 @@ def test_train_on_pdf_folders_relevance_created(
         ):
         train_on_pdf.main()
         
+        # we have to combine pathlib object with str path...
         path_folder_root_testing = path_folder_root_testing / 'models'
         path_folder_root_testing = str(path_folder_root_testing) + '/TEST'
         
@@ -261,10 +324,16 @@ def test_train_on_pdf_folders_relevance_created(
     indirect=True
 ) 
 def test_train_on_pdf_folders_kpi_extraction_created(
-    prerequisite_train_on_pdf_try_run: Mock,
-    path_folder_root_testing
+    prerequisite_train_on_pdf_try_run: None,
+    path_folder_root_testing: Path
     ):
-    
+    """Tests of the kpi extraction folder is created
+
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    :param path_folder_root_testing: Path for the testing folder
+    :type path_folder_root_testing: Path
+    """
     with (
         patch('train_on_pdf.link_files', Mock()),
         patch('train_on_pdf.run_router', side_effect=lambda *args: False),
@@ -272,6 +341,7 @@ def test_train_on_pdf_folders_kpi_extraction_created(
         ):
         train_on_pdf.main()
         
+        # we have to combine pathlib object with str path...
         path_folder_root_testing = path_folder_root_testing / 'models'
         path_folder_root_testing = str(path_folder_root_testing) + '/TEST'
         
@@ -286,9 +356,18 @@ def test_train_on_pdf_folders_kpi_extraction_created(
     indirect=True
 ) 
 def test_train_on_pdf_e2e_store_extractions(
-    prerequisite_train_on_pdf_try_run,
-    path_folder_root_testing,
-    capsys):
+    prerequisite_train_on_pdf_try_run: None,
+    path_folder_root_testing: Path,
+    capsys: typing.Generator[CaptureFixture[str], None, None]):
+    """Tests of the extraction works properly
+
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    :param path_folder_root_testing: Path for the testing folder
+    :type path_folder_root_testing: Path
+    :param capsys: Requesting default fixture to capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None])
+    """
     
     with (
         patch('train_on_pdf.link_files', Mock()),
@@ -300,6 +379,7 @@ def test_train_on_pdf_e2e_store_extractions(
         mocked_copy_files.return_value = False
         train_on_pdf.main()
         
+        # we have to combine pathlib object with str path...
         path_folder_root = path_folder_root_testing / 'data'
         path_folder_root_source = str(path_folder_root) + '/TEST/interim/ml/extraction/'
         path_folder_root_destination = str(path_folder_root) + '/TEST/output/TEXT_EXTRACTION'
@@ -315,9 +395,17 @@ def test_train_on_pdf_e2e_store_extractions(
     indirect=True
 ) 
 def test_train_on_pdf_e2e_delete_interim_files(
-    prerequisite_train_on_pdf_try_run,
-    path_folder_root_testing):
+    prerequisite_train_on_pdf_try_run: None,
+    path_folder_root_testing: Path):
+    """Tests if interim files are getting deleted
+
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    :param path_folder_root_testing: Path for the testing folder
+    :type path_folder_root_testing: Path
+    """
     
+    # define the folders for getting checked
     paths_folders_default = [
         r'interim/pdfs/',
         r'interim/kpi_mapping/',
@@ -335,6 +423,7 @@ def test_train_on_pdf_e2e_delete_interim_files(
         
         train_on_pdf.main()
         
+        # we have to combine pathlib object with str path...
         path_folder_root_testing = path_folder_root_testing / 'data' / 'TEST'
         
         for path_current in paths_folders_default:
@@ -342,9 +431,16 @@ def test_train_on_pdf_e2e_delete_interim_files(
             assert not any(path_folder_current.iterdir())
 
 def test_train_on_pdf_e2e_save_train_info(
-    prerequisite_train_on_pdf_try_run,
-    capsys
+    prerequisite_train_on_pdf_try_run: None,
+    capsys: typing.Generator[CaptureFixture[str], None, None]
     ):
+    """Tests if the train info of this run is saved
+
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    :param capsys: Requesting default fixture to capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None]
+    """
     with (
         patch('train_on_pdf.link_files', Mock()),
         patch('train_on_pdf.run_router', side_effect=lambda *args: True),
@@ -357,3 +453,25 @@ def test_train_on_pdf_e2e_save_train_info(
         
         output_cmd, _ = capsys.readouterr()
         assert output_cmd == "End-to-end inference complete\n"
+        
+def test_train_on_pdf_process_failed(
+    prerequisite_train_on_pdf_try_run: None,
+    capsys: typing.Generator[CaptureFixture[str], None, None]
+    ):
+    """Tests for cmd output if exception is raised
+
+    :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
+    :type prerequisite_train_on_pdf_try_run: None
+    :param capsys: Requesting default fixture to capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None]
+    """
+    with (
+        patch('train_on_pdf.link_files', Mock()),
+        patch('train_on_pdf.run_router', side_effect=lambda *args: False),
+        patch('train_on_pdf.create_directory', side_effect=ValueError())
+        ):
+
+        train_on_pdf.main()
+        
+        output_cmd, _ = capsys.readouterr()
+        assert "Process failed to run. Reason: " in output_cmd
