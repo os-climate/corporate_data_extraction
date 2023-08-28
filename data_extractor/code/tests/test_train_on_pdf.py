@@ -21,6 +21,7 @@ from _pytest.capture import CaptureFixture
 def prerequisite_train_on_pdf_try_run(
     request: FixtureRequest,
     path_folder_root_testing: Path,
+    path_folder_temporary: Path,
     prerequisite_running: None
     ):
     """Defines a fixture for the train_on_pdf script
@@ -84,9 +85,20 @@ def prerequisite_train_on_pdf_try_run(
         else:
             return mocked_project_settings
     
-    path_folder_data = path_folder_root_testing / 'data'
-    path_folder_models = path_folder_root_testing / 'models'
     project_name = 'TEST'
+    path_folder_data = path_folder_temporary / 'data'
+    path_folder_models = path_folder_temporary / 'models'
+    Path(path_folder_data / project_name).mkdir(parents=True)
+    path_folder_models.mkdir(parents=True)
+    
+    path_file_settings_root_testing = path_folder_root_testing / 'data' / project_name / 'settings.yaml'
+    path_file_settings_temporary = path_folder_temporary / 'data' / project_name / 'settings.yaml'
+    
+    path_file_settings_s3_root_testing = path_folder_root_testing / 'data' / 's3_settings.yaml'
+    path_file_settings_s3_temporary = path_folder_temporary / 'data' / 's3_settings.yaml'
+    
+    shutil.copy(path_file_settings_root_testing, path_file_settings_temporary)
+    shutil.copy(path_file_settings_s3_root_testing, path_file_settings_s3_temporary)
     
     # modifying the project settings file via parametrization
     mocked_project_settings = modify_project_settings(mocked_project_settings, request.param)
@@ -103,6 +115,9 @@ def prerequisite_train_on_pdf_try_run(
         mocked_config_path.MODEL_DIR = str(path_folder_models)
         mocked_yaml.safe_load.side_effect = return_project_settings
         yield
+        
+        # cleanup
+        shutil.rmtree(path_folder_temporary)
     
 def test_train_on_pdf_check_running(capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if everything is printed when another training is running
@@ -198,19 +213,29 @@ def test_train_on_pdf_wrong_input_s3(s3_usage: typing.Union[str, None],
             
 @pytest.mark.parametrize('s3_usage',
                          ['Y', 'N'])
-def test_train_on_pdf_correct_input_s3_usage(s3_usage: typing.Union[str, None]):
+def test_train_on_pdf_correct_input_s3_usage(prerequisite_train_on_pdf_try_run,
+                                             s3_usage: typing.Union[str, None]):
     """Tests that the correct s3 usage is accepted
 
     :param s3_usage: S3 usage (yes or no)
     :type s3_usage: typing.Union[str, None]
     """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
-          patch('train_on_pdf.input', Mock()) as mocked_input):
+          patch('train_on_pdf.input', Mock()) as mocked_input,
+          patch('train_on_pdf.create_directory', 
+                side_effect=lambda *args: Path(args[0]).mkdir(parents=True, exist_ok=True)),
+          patch('train_on_pdf.S3Communication', Mock()) as mocked_s3_communication):
         mocked_argpase.return_value.project_name = 'TEST'
-        mocked_input.side_effect = lambda: s3_usage
+        mocked_argpase.return_value.s3_usage = None
+        mocked_input.side_effect = lambda *args: s3_usage
         
         train_on_pdf.main()
         assert mocked_input() == s3_usage
+        
+        if s3_usage == 'Y':
+            assert mocked_s3_communication.call_count == 2
+            
+            mocked_s3_communication.return_value.download_file_from_s3.assert_called_once()
 
 def test_train_on_pdf_s3_usage(prerequisite_train_on_pdf_try_run: None):
     """Tests if the s3 usage is correctly performed
