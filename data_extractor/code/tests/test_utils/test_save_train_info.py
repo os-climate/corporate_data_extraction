@@ -39,7 +39,7 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
     # create path to save info pickle file
     relevance_model = mock_project_settings['train_relevance']['output_model_name']
     kpi_model = mock_project_settings['train_kpi']['output_model_name']
-    file_train_info = f'rel_text_{relevance_model}_kpi_text_{kpi_model}.pickle'
+    file_train_info = f'SUMMARY_REL_{relevance_model}_KPI_{kpi_model}.pickle'
     path_train_info = path_project_model_dir / file_train_info
 
     
@@ -68,6 +68,10 @@ def test_save_train_info_pickle(prerequisites_save_train_info: Path):
     save_train_info(project_name)
     
     # check that a single pickle file exists
+    # we have to combine a pathlib and a string object...
+    path_parent_train_info = path_train_info.parent
+    path_file_pickle = path_train_info.name
+    path_train_info = Path(str(path_parent_train_info) + f'/{path_file_pickle}')
     assert path_train_info.exists()
     
 
