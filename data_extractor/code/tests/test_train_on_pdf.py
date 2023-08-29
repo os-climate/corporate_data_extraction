@@ -29,6 +29,8 @@ def prerequisite_train_on_pdf_try_run(
     :param request: Request for parametrization
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
+    :param path_folder_temporary: Path for the temporary folder
+    :type path_folder_temporary: Path
     :param prerequisite_running: Fixture for prerequisite of running funcions
     :type prerequisite_running: None
     """
@@ -91,6 +93,7 @@ def prerequisite_train_on_pdf_try_run(
     Path(path_folder_data / project_name).mkdir(parents=True)
     path_folder_models.mkdir(parents=True)
     
+    # copy settings files to temporary folder
     path_file_settings_root_testing = path_folder_root_testing / 'data' / project_name / 'settings.yaml'
     path_file_settings_temporary = path_folder_temporary / 'data' / project_name / 'settings.yaml'
     
@@ -118,7 +121,8 @@ def prerequisite_train_on_pdf_try_run(
         
         # cleanup
         shutil.rmtree(path_folder_temporary)
-    
+
+  
 def test_train_on_pdf_check_running(capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if everything is printed when another training is running
 
@@ -135,6 +139,7 @@ def test_train_on_pdf_check_running(capsys: typing.Generator[CaptureFixture[str]
         train_on_pdf.check_running.assert_called_once()
         assert return_value is None
         assert string_expected in output_cmd
+
 
 @pytest.mark.parametrize('project_name, output_expected',
                          [(None,  None), ('', None)])
@@ -165,7 +170,8 @@ def test_train_on_pdf_wrong_input_project_name(project_name: typing.Union[str, N
             mocked_input.assert_called_with(string_call_expected) 
         assert string_expected in output_cmd
         assert return_value is output_expected
-     
+        
+
 def test_train_on_pdf_correct_input_project_name():
     """Tests that a correct project name is accepted
     """
@@ -237,6 +243,7 @@ def test_train_on_pdf_correct_input_s3_usage(prerequisite_train_on_pdf_try_run,
             
             mocked_s3_communication.return_value.download_file_from_s3.assert_called_once()
 
+
 def test_train_on_pdf_s3_usage(prerequisite_train_on_pdf_try_run: None):
     """Tests if the s3 usage is correctly performed
 
@@ -273,6 +280,7 @@ def test_train_on_pdf_s3_usage(prerequisite_train_on_pdf_try_run: None):
         
         mocked_s3_communication.return_value.download_file_from_s3.assert_called_once()
 
+
 def test_train_on_pdf_folders_default_created(
     prerequisite_train_on_pdf_try_run: None,
     path_folder_temporary: Path
@@ -281,8 +289,8 @@ def test_train_on_pdf_folders_default_created(
 
     :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
     :type prerequisite_train_on_pdf_try_run: None
-    :param path_folder_root_testing: Path for the testing folder
-    :type path_folder_root_testing: Path
+    :param path_folder_temporary: Path for the temporary folder
+    :type path_folder_temporary: Path
     """
     
     # define all expected paths to the folder
@@ -326,8 +334,8 @@ def test_train_on_pdf_folders_relevance_created(
 
     :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
     :type prerequisite_train_on_pdf_try_run: None
-    :param path_folder_root_testing: Path for the testing folder
-    :type path_folder_root_testing: Path
+    :param path_folder_temporary: Path for the temporary folder
+    :type path_folder_temporary: Path
     """
     
     with (
@@ -343,6 +351,7 @@ def test_train_on_pdf_folders_relevance_created(
         
         path_folder_expected = path_folder_temporary + '/RELEVANCE/Text/test'
         mocked_create_directory.assert_any_call(str(path_folder_expected))
+
             
 @pytest.mark.parametrize(
     'prerequisite_train_on_pdf_try_run', 
@@ -357,8 +366,8 @@ def test_train_on_pdf_folders_kpi_extraction_created(
 
     :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
     :type prerequisite_train_on_pdf_try_run: None
-    :param path_folder_root_testing: Path for the testing folder
-    :type path_folder_root_testing: Path
+    :param path_folder_temporary: Path for the temporary folder
+    :type path_folder_temporary: Path
     """
     with (
         patch('train_on_pdf.link_files', Mock()),
@@ -373,8 +382,7 @@ def test_train_on_pdf_folders_kpi_extraction_created(
         
         path_folder_expected = path_folder_temporary + '/KPI_EXTRACTION/Text/test'
         mocked_create_directory.assert_any_call(str(path_folder_expected))
-            
-            
+                  
 
 @pytest.mark.parametrize(
     'prerequisite_train_on_pdf_try_run', 
@@ -389,8 +397,8 @@ def test_train_on_pdf_e2e_store_extractions(
 
     :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
     :type prerequisite_train_on_pdf_try_run: None
-    :param path_folder_root_testing: Path for the testing folder
-    :type path_folder_root_testing: Path
+    :param path_folder_temporary: Path for the temporary folder
+    :type path_folder_temporary: Path
     :param capsys: Requesting default fixture to capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
@@ -415,6 +423,7 @@ def test_train_on_pdf_e2e_store_extractions(
         assert 'Finally we transfer the text extraction to the output folder\n' in output_cmd
 
         mocked_copy_files.assert_called_with(path_folder_root_source, path_folder_root_destination)
+
 
 @pytest.mark.parametrize(
     'prerequisite_train_on_pdf_try_run', 
@@ -458,6 +467,7 @@ def test_train_on_pdf_e2e_delete_interim_files(
             path_folder_current = path_folder_root_testing / path_current
             assert not any(path_folder_current.iterdir())
 
+
 def test_train_on_pdf_e2e_save_train_info(
     prerequisite_train_on_pdf_try_run: None,
     capsys: typing.Generator[CaptureFixture[str], None, None]
@@ -482,6 +492,7 @@ def test_train_on_pdf_e2e_save_train_info(
         
         output_cmd, _ = capsys.readouterr()
         assert output_cmd == "End-to-end inference complete\n"
+
         
 def test_train_on_pdf_process_failed(
     prerequisite_train_on_pdf_try_run: None,
