@@ -6,7 +6,7 @@ import shutil
 def test_create_directory(path_folder_temporary: Path):
     """Tests of create_directory creates a folder
 
-    :param path_folder_temporary: Requesting the temporary folder fixture
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
     # call create_folder and check if the folder exists
@@ -17,7 +17,7 @@ def test_create_directory(path_folder_temporary: Path):
 def test_create_directory_cleanup(path_folder_temporary: Path):
     """Tests of create_directory performs a clean-up if folder exists
 
-    :param path_folder_temporary: Requesting the temporary folder fixture
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
     # create folder with files

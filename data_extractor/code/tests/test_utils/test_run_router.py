@@ -69,6 +69,7 @@ def test_run_router_extraction_liveness_up(status_code: int,
         assert exptected_cmd_output in cmd_output
         assert return_value is expected_return_value
 
+
 def test_run_router_extraction_server_down(prerequisites_run_router: tuple[str, str, str, str]):
     """Tests the return value if the extraction server is down
 
@@ -87,6 +88,7 @@ def test_run_router_extraction_server_down(prerequisites_run_router: tuple[str, 
 
         # check sys out and return value
         assert return_value is False
+
 
 def test_run_router_extraction_curation_server_down(prerequisites_run_router: tuple[str, str, str, str]):
     """Tests the return value of the curation of the extraction server
@@ -107,7 +109,6 @@ def test_run_router_extraction_curation_server_down(prerequisites_run_router: tu
 
         # check sys out and return value
         assert return_value is False
-
 
 
 @pytest.mark.parametrize('status_code, expected_output',
@@ -147,6 +148,7 @@ def test_run_router_inference_liveness(status_code: int,
         # check sys out and return value
         cmd_output, cmd_error = capsys.readouterr()
         assert expected_output in cmd_output
+
 
 @pytest.mark.parametrize('mock_project_settings, status_code, expected_output',
                          [
@@ -266,6 +268,7 @@ def test_run_router_kpi_training(mock_project_settings: typing.Dict[str, typing.
     expected_cmd_out, exptected_return_value = expected_output
     assert expected_cmd_out in cmd_output
     assert return_value == exptected_return_value
+
 
 @pytest.mark.parametrize('mock_project_settings, expected_output',
                          [

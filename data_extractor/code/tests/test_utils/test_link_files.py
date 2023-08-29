@@ -5,15 +5,12 @@ import pytest
 
 
 @pytest.fixture
-def path_folders_required_linking(path_folder_temporary: Path) -> tuple[Path, Path, Path]:
+def path_folders_required_linking(path_folder_temporary: Path) -> None:
     """Defines a fixture for creating the source, source_pdf and destination folder
 
-    :param path_folder_temporary: Requesting the temporary folder fixture
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
-    :return: Tuple containing the paths to the source, source_pdf and destination folders
-    :rtype: tuple[Path, Path, Path]
-    :yield: Tuple containing the paths to the source, source_pdf and destination folders
-    :rtype: Iterator[tuple[Path, Path, Path]]
+    :return: None
     """
     path_folder_source = path_folder_temporary / 'source'
     path_folder_source_pdf = path_folder_temporary / 'source_pdf'
@@ -21,20 +18,25 @@ def path_folders_required_linking(path_folder_temporary: Path) -> tuple[Path, Pa
     path_folder_source.mkdir(parents = True)
     path_folder_source_pdf.mkdir(parents = True)
     path_folder_destination.mkdir(parents = True)
-    yield (path_folder_source, path_folder_source_pdf, path_folder_destination)
+    yield
 
     # cleanup
     for path in path_folder_temporary.glob("*"):
         shutil.rmtree(path)
 
-def test_link_files(path_folders_required_linking: tuple[Path, Path, Path]):
+
+def test_link_files(path_folders_required_linking: None,
+                    path_folder_temporary: Path):
     """Tests if link_files creates proper hard links
 
-    :param path_folders_required_linking: Tuple containing the paths to the source
-    source_pdf and destination folders
-    :type path_folders_required_linking: tuple[Path, Path, Path]
+    :param path_folders_required_linking: Requesting the path_folders_required_linking fixture
+    :type path_folders_required_linking: None
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
+    :type path_folder_temporary: Path
     """
-    path_folder_source, _, path_folder_destination = path_folders_required_linking
+    path_folder_source = path_folder_temporary / 'source'
+    path_folder_source_pdf = path_folder_temporary / 'source_pdf'
+    path_folder_destination = path_folder_temporary / 'destination'
     
     # create sample files
     for i in range(10):
@@ -50,14 +52,19 @@ def test_link_files(path_folders_required_linking: tuple[Path, Path, Path]):
         assert path_current_file.stat().st_nlink == 2
 
 
-def test_link_extracted_files_result(path_folders_required_linking: tuple[Path, Path, Path]):
+def test_link_extracted_files_result(path_folders_required_linking: None,
+                                     path_folder_temporary: Path):
     """Tests if link_extracted_files returns True if executed
 
-    :param path_folders_required_linking: Tuple containing the paths to the source
-    source_pdf and destination folders
-    :type path_folders_required_linking: tuple[Path, Path, Path]
+
+    :param path_folders_required_linking: Requesting the path_folders_required_linking fixture
+    :type path_folders_required_linking: None
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
+    :type path_folder_temporary: Path
     """
-    path_folder_source, path_folder_source_pdf, path_folder_destination = path_folders_required_linking
+    path_folder_source = path_folder_temporary / 'source'
+    path_folder_source_pdf = path_folder_temporary / 'source_pdf'
+    path_folder_destination = path_folder_temporary / 'destination'
     # single pdf and json file 
     path_folder_source_file_pdf = path_folder_source / f'test.pdf'
     path_folder_source_file_json = path_folder_source / f'test.json'
@@ -68,15 +75,19 @@ def test_link_extracted_files_result(path_folders_required_linking: tuple[Path, 
     assert result == True
     
     
-def test_link_extracted_files_copy(path_folders_required_linking: tuple[Path, Path, Path]):
+def test_link_extracted_files_copy(path_folders_required_linking: None,
+                                   path_folder_temporary: Path):
     """Tests if the extracted json files in folder_source has a regarding pdf in the folder_source_pdf 
     and if so, copy the json file to the folder_destination
 
-    :param path_folders_required_linking: Tuple containing the paths to the source
-    source_pdf and destination folders
-    :type path_folders_required_linking: tuple[Path, Path, Path]
+    :param path_folders_required_linking: Requesting the path_folders_required_linking fixture
+    :type path_folders_required_linking: None
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
+    :type path_folder_temporary: Path
     """
-    path_folder_source, path_folder_source_pdf, path_folder_destination = path_folders_required_linking
+    path_folder_source = path_folder_temporary / 'source'
+    path_folder_source_pdf = path_folder_temporary / 'source_pdf'
+    path_folder_destination = path_folder_temporary / 'destination'
     
     # create test pdf and json files in the source_extraction and source_pdf folders
     for i in range(10):

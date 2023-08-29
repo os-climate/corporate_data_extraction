@@ -18,15 +18,12 @@ from _pytest.capture import CaptureFixture
 
 
 @pytest.fixture
-def prerequisites_generate_text(path_folder_temporary: Path) -> Path:
+def prerequisites_generate_text(path_folder_temporary: Path) -> None:
     """Defines a fixture for mocking all required paths and creating required temporary folders
 
-    :param path_folder_temporary: Requesting the temporary folder fixture
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
-    :return: Returning Path object to the temporary sub-folder
-    :rtype: Path
-    :yield: Returning Path object to the temporary sub-folder
-    :rtype: Iterator[Path]
+    :rtype: None
     """
 =======
 
@@ -56,21 +53,24 @@ def test_generate_text(path_folder_temporary: Path):
     with (patch('train_on_pdf.folder_relevance', str(path_folder_relevance)),
           patch('train_on_pdf.folder_text_3434', str(path_folder_text_3434)),
           patch('train_on_pdf.os.getenv', lambda *args: args[0])):
-        yield path_folder_text_3434
+        yield
         
         # cleanup
         for path in path_folder_temporary.glob("*"):
             shutil.rmtree(path)
 
 
-def test_generate_text_with_s3(prerequisites_generate_text: Path):
+def test_generate_text_with_s3(prerequisites_generate_text: Path,
+                               path_folder_temporary: Path):
     """Tests if the s3 connection objects are created and their methods are called
 
-    :param path_folder_temporary: Requesting the prerequistite fixture
+    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
+    :type prerequisites_generate_text: Path
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
     # get the path to the temporary folder
-    path_folder_text_3434 = prerequisites_generate_text
+    path_folder_text_3434 = path_folder_temporary / 'folder_test_3434'
     project_name = 'test'
     
     mocked_s3_settings = {
@@ -120,16 +120,20 @@ def test_generate_text_with_s3(prerequisites_generate_text: Path):
     assert any([call for call in call_list if 'download_files_in_prefix_to_dir' in call])
     assert any([call for call in call_list if 'upload_file_to_s3' in call])
 
-def test_generate_text_no_s3(prerequisites_generate_text: Path):
+
+def test_generate_text_no_s3(prerequisites_generate_text: Path,
+                             path_folder_temporary: Path):
     """Tests if files are taken from the folder relevance,
     then read in and putting the content into the file text_3434.csv. Note that
     the header of text_3434.csv is taken from the first file read in
 
-    :param path_folder_temporary: Requesting the prerequistite fixture
+    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
+    :type prerequisites_generate_text: Path
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
     # get the path to the temporary folder
-    path_folder_text_3434 = prerequisites_generate_text
+    path_folder_text_3434 = path_folder_temporary / 'folder_test_3434'
     project_name = 'test'
     s3_usage = False
     project_settings = None
@@ -159,7 +163,9 @@ def test_generate_text_no_s3(prerequisites_generate_text: Path):
             else:
 <<<<<<< HEAD
                 assert line_content.rstrip() in strings_expected
+
                 
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
                 assert line_content.rstrip() == f'That is a test {line_number}'
@@ -170,9 +176,15 @@ def test_generate_text_no_s3(prerequisites_generate_text: Path):
 >>>>>>> ced44e3df (Feature/2023.04 os test (#14))
 =======
 def test_generate_text_successful(prerequisites_generate_text: Path):
+=======
+def test_generate_text_successful(prerequisites_generate_text: Path,
+                                  path_folder_temporary: Path):
+>>>>>>> 78c8e7f89 (Some cosmetics and consistency changes)
     """Tests if the function returns true
 
-    :param path_folder_temporary: Requesting the prerequistite fixture
+    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
+    :type prerequisites_generate_text: Path
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
     
@@ -182,16 +194,19 @@ def test_generate_text_successful(prerequisites_generate_text: Path):
     
     return_value = generate_text_3434(project_name, s3_usage, project_settings)
     assert return_value == True
+
     
 def test_generate_text_not_successful_empty_folder(path_folder_temporary: Path,
                                                    prerequisites_generate_text: Path,
                                                    capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if the function returns false
 
-    :param path_folder_temporary: Requesting the temporary folder fixture
+    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
+    :type prerequisites_generate_text: Path
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
-    :param path_folder_temporary: Requesting the prerequistite fixture
-    :type path_folder_temporary: Path
+    :param capsys: Requesting default fixture to capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
     
     project_name = 'test'
@@ -208,14 +223,15 @@ def test_generate_text_not_successful_empty_folder(path_folder_temporary: Path,
     output_cmd, _ = capsys.readouterr()
     assert 'No relevance inference results found.' in output_cmd
     assert return_value == False
+
     
-def test_generate_text_not_successful_exception(path_folder_temporary: Path,
-                                                prerequisites_generate_text: Path):
+def test_generate_text_not_successful_exception(prerequisites_generate_text: Path,
+                                                path_folder_temporary: Path):
     """Tests if the function returns false
 
-    :param path_folder_temporary: Requesting the temporary folder fixture
-    :type path_folder_temporary: Path
-    :param path_folder_temporary: Requesting the prerequistite fixture
+    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
+    :type prerequisites_generate_text: Path
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
     

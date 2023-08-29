@@ -142,7 +142,8 @@ def test_train_on_pdf_check_running(capsys: typing.Generator[CaptureFixture[str]
 
 
 @pytest.mark.parametrize('project_name, output_expected',
-                         [(None,  None), ('', None)])
+                         [(None,  None), 
+                          ('', None)])
 def test_train_on_pdf_wrong_input_project_name(project_name: typing.Union[str, None],
                                                output_expected: None,
                                                capsys: typing.Generator[CaptureFixture[str], None, None]):
@@ -183,11 +184,10 @@ def test_train_on_pdf_correct_input_project_name():
         train_on_pdf.main()
         assert mocked_input() == 'TEST'
 
+
 @pytest.mark.parametrize('s3_usage, output_expected',
-                         [
-                             (None, None),
-                             ('X', None)
-                         ])
+                         [(None, None), 
+                          ('X', None)])
 def test_train_on_pdf_wrong_input_s3(s3_usage: typing.Union[str, None], 
                                      output_expected: None,
                                      capsys: typing.Generator[CaptureFixture[str], None, None]):
@@ -216,9 +216,11 @@ def test_train_on_pdf_wrong_input_s3(s3_usage: typing.Union[str, None],
             mocked_input.assert_called_with(string_call_expected)
         assert string_expected in output_cmd
         assert return_value is output_expected
+
             
 @pytest.mark.parametrize('s3_usage',
-                         ['Y', 'N'])
+                         ['Y', 
+                          'N'])
 def test_train_on_pdf_correct_input_s3_usage(prerequisite_train_on_pdf_try_run,
                                              s3_usage: typing.Union[str, None]):
     """Tests that the correct s3 usage is accepted
@@ -283,8 +285,7 @@ def test_train_on_pdf_s3_usage(prerequisite_train_on_pdf_try_run: None):
 
 def test_train_on_pdf_folders_default_created(
     prerequisite_train_on_pdf_try_run: None,
-    path_folder_temporary: Path
-    ):
+    path_folder_temporary: Path):
     """Tests of the required default folders are created
 
     :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
@@ -321,11 +322,9 @@ def test_train_on_pdf_folders_default_created(
             mocked_create_directory.assert_any_call(str(path_folder_current))
     
 
-@pytest.mark.parametrize(
-    'prerequisite_train_on_pdf_try_run', 
-    [('train_relevance', 'train', True)], 
-    indirect=True
-) 
+@pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
+                         [('train_relevance', 'train', True)], 
+                         indirect=True) 
 def test_train_on_pdf_folders_relevance_created(
     prerequisite_train_on_pdf_try_run: None,
     path_folder_temporary: Path
@@ -353,11 +352,9 @@ def test_train_on_pdf_folders_relevance_created(
         mocked_create_directory.assert_any_call(str(path_folder_expected))
 
             
-@pytest.mark.parametrize(
-    'prerequisite_train_on_pdf_try_run', 
-    [('train_kpi', 'train', True)], 
-    indirect=True
-) 
+@pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
+                         [('train_kpi', 'train', True)], 
+                         indirect=True) 
 def test_train_on_pdf_folders_kpi_extraction_created(
     prerequisite_train_on_pdf_try_run: None,
     path_folder_temporary: Path,
@@ -384,11 +381,9 @@ def test_train_on_pdf_folders_kpi_extraction_created(
         mocked_create_directory.assert_any_call(str(path_folder_expected))
                   
 
-@pytest.mark.parametrize(
-    'prerequisite_train_on_pdf_try_run', 
-    [('extraction', 'store_extractions', True)], 
-    indirect=True
-) 
+@pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
+                         [('extraction', 'store_extractions', True)], 
+                         indirect=True) 
 def test_train_on_pdf_e2e_store_extractions(
     prerequisite_train_on_pdf_try_run: None,
     path_folder_temporary: Path,
@@ -425,11 +420,9 @@ def test_train_on_pdf_e2e_store_extractions(
         mocked_copy_files.assert_called_with(path_folder_root_source, path_folder_root_destination)
 
 
-@pytest.mark.parametrize(
-    'prerequisite_train_on_pdf_try_run', 
-    [('general', 'delete_interim_files', True)], 
-    indirect=True
-) 
+@pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
+                         [('general', 'delete_interim_files', True)], 
+                         indirect=True) 
 def test_train_on_pdf_e2e_delete_interim_files(
     prerequisite_train_on_pdf_try_run: None,
     path_folder_root_testing: Path):
