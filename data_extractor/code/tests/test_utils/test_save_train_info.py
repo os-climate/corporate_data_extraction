@@ -1,8 +1,12 @@
 from pathlib import Path
 from train_on_pdf import save_train_info
 import pytest
+<<<<<<< HEAD
 from unittest.mock import patch
 <<<<<<< HEAD
+=======
+from unittest.mock import patch, Mock
+>>>>>>> bb1209e32 (Modifying test cases for save_train_info function)
 import shutil
 import train_on_pdf
 import pickle
@@ -28,6 +32,9 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
             },
         'train_kpi':{
             'output_model_name': 'TEST'
+        },
+        's3_settings': {
+            'prefix' : 'corporate_data_extraction_projects'
         }
     }
     # define required paths
@@ -35,7 +42,7 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
     path_source_annotation = path_folder_root_testing / 'input' / 'pdfs' / 'training'
     path_source_mapping = path_folder_root_testing / 'data' / 'TEST' / 'input' / 'kpi_mapping'
     path_project_model_dir = path_folder_temporary / 'models'
-    path_project_model_dir.mkdir(parents=True)
+    path_project_model_dir.mkdir(parents=True, exist_ok=True)
     # create path to save info pickle file
     relevance_model = mock_project_settings['train_relevance']['output_model_name']
     kpi_model = mock_project_settings['train_kpi']['output_model_name']
@@ -45,8 +52,15 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
     
     with (patch('train_on_pdf.project_settings', mock_project_settings),
           patch('train_on_pdf.source_annotation', str(path_source_annotation)),
-          patch('train_on_pdf.source_mapping', str(path_source_mapping))):
+          patch('train_on_pdf.source_mapping', str(path_source_mapping)),
+          patch('train_on_pdf.os.listdir', side_effect=lambda *args: 'test.pdf'),
+          patch('train_on_pdf.source_mapping', str(path_folder_temporary / 'source_mapping')),
+          patch('train_on_pdf.source_annotation', str(path_folder_temporary / 'source_annotation')),
+          patch('train_on_pdf.source_pdf', str(path_folder_temporary / 'source_pdf')),
+          patch('train_on_pdf.pd', Mock()) as mocked_pandas):
         train_on_pdf.project_model_dir = str(path_project_model_dir)
+        mocked_pandas.read_csv.return_value = {None}
+        mocked_pandas.read_excel.return_value = {None}
         yield path_train_info
         
         # cleanup
@@ -73,8 +87,8 @@ def test_save_train_info_pickle(prerequisites_save_train_info: Path):
     path_file_pickle = path_train_info.name
     path_train_info = Path(str(path_parent_train_info) + f'/{path_file_pickle}')
     assert path_train_info.exists()
-    
-
+  
+  
 def test_save_train_info_entries(prerequisites_save_train_info: Path):
     """Tests if all the train infos exists in the pickled train info file
 
@@ -101,14 +115,15 @@ def test_save_train_info_entries(prerequisites_save_train_info: Path):
     ]
     # check that all keys exist in dict
     assert all(key in required_keys for key in train_info.keys())
-    
 
+    
 def test_save_tain_info_return_value(prerequisites_save_train_info: Path):
     project_name = 'TEST'
     path_train_info = prerequisites_save_train_info
     
     # perform and check for return value of save_train_info call
     assert save_train_info(project_name) is None
+<<<<<<< HEAD
 =======
 
 
@@ -121,3 +136,24 @@ def test_save_tain_info_return_value(prerequisites_save_train_info: Path):
 
 # def 
 >>>>>>> ced44e3df (Feature/2023.04 os test (#14))
+=======
+    
+
+def test_save_train_info_s3_usage(prerequisites_save_train_info: Path):
+    """Tests if the s3_usage flag correctly works
+
+    :param prerequisites_save_train_info: Requesting the prerequisites_save_train_info fixture
+    :type prerequisites_save_train_info: Path
+    """
+    project_name = 'TEST'
+    s3_usage = True
+    mocked_s3 = Mock()
+    
+    # perform the save_train_info call
+    save_train_info(project_name, s3_usage, mocked_s3)
+    
+    # assert all required calls
+    assert mocked_s3.download_files_in_prefix_to_dir.call_count == 3
+    assert mocked_s3.upload_file_to_s3.called_once()
+        
+>>>>>>> bb1209e32 (Modifying test cases for save_train_info function)
