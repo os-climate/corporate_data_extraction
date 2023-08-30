@@ -4,7 +4,7 @@ import shutil
 import pytest
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def path_folders_required_linking(path_folder_temporary: Path) -> None:
     """Defines a fixture for creating the source, source_pdf and destination folder
 
@@ -25,12 +25,10 @@ def path_folders_required_linking(path_folder_temporary: Path) -> None:
         shutil.rmtree(path)
 
 
-def test_link_files(path_folders_required_linking: None,
-                    path_folder_temporary: Path):
+def test_link_files(path_folder_temporary: Path):
     """Tests if link_files creates proper hard links
-
-    :param path_folders_required_linking: Requesting the path_folders_required_linking fixture
-    :type path_folders_required_linking: None
+    Requesting path_folders_required_linking automatically (autouse)
+    
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
@@ -52,13 +50,10 @@ def test_link_files(path_folders_required_linking: None,
         assert path_current_file.stat().st_nlink == 2
 
 
-def test_link_extracted_files_result(path_folders_required_linking: None,
-                                     path_folder_temporary: Path):
+def test_link_extracted_files_result(path_folder_temporary: Path):
     """Tests if link_extracted_files returns True if executed
-
-
-    :param path_folders_required_linking: Requesting the path_folders_required_linking fixture
-    :type path_folders_required_linking: None
+    Requesting path_folders_required_linking automatically (autouse)
+    
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
@@ -75,13 +70,11 @@ def test_link_extracted_files_result(path_folders_required_linking: None,
     assert result == True
     
     
-def test_link_extracted_files_copy(path_folders_required_linking: None,
-                                   path_folder_temporary: Path):
+def test_link_extracted_files_copy(path_folder_temporary: Path):
     """Tests if the extracted json files in folder_source has a regarding pdf in the folder_source_pdf 
     and if so, copy the json file to the folder_destination
-
-    :param path_folders_required_linking: Requesting the path_folders_required_linking fixture
-    :type path_folders_required_linking: None
+    Requesting path_folders_required_linking automatically (autouse)
+    
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """

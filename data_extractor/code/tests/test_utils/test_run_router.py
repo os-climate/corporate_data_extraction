@@ -6,237 +6,252 @@ import shutil
 import train_on_pdf
 import requests
 import requests_mock
-import typing
 from tests.test_utils.test_convert_xls_to_csv import prerequisites_convert_xls_to_csv
 from tests.test_utils.test_generate_text import prerequisites_generate_text
+
+# types
+import typing
+from _pytest.capture import CaptureFixture
+
 
 
 @pytest.fixture
 def prerequisites_run_router(prerequisites_convert_xls_to_csv, 
                              prerequisites_generate_text
-                             ) -> tuple[str, str, str, str]:
+                             ) -> requests_mock.mocker.Mocker:
     """Prerequisites for running the function run_router
 
     :param prerequisites_convert_xls_to_csv: Requesting fixture for running function convert_xls_to_csv (required in 
     run_router)
     :param prerequisites_generate_text: Requesting fixture for running function generate_text (required in 
     run_router)
-    :return: Return the strings as extraction ip, extraction port, inference ip and inference port
-    :rtype: tuple[str, str, str, str]
-    :yield: Return the strings as extraction ip, extraction port, inference ip and inference port
-    :rtype: Iterator[tuple[str, str, str, str]]
+    :rtype: requests_mock.mocker.Mocker
     """
+    mock_project_settings = {
+        'train_relevance': {'train': False},
+        'train_kpi': {'train': False},
+        's3_usage': None,
+        's3_settings': None
+    }
     extraction_ip = '0.0.0.0'
     extraction_port = '8000'
     inference_ip = '0.0.0.1'
     inference_port = '8000'
 
-    with patch('train_on_pdf.convert_xls_to_csv', Mock()):
-        yield extraction_ip, extraction_port, inference_ip, inference_port
-    
-
-@pytest.mark.parametrize('status_code, exptected_output',
-                         [
-                             (200, ('Extraction server is up. Proceeding to extraction.', None)),
-                             (-1, ('Extraction server is not responding.', False))
-                         ])
-def test_run_router_extraction_liveness_up(status_code: int, 
-                                           exptected_output: tuple[str, typing.Union[bool, None]],
-                                           prerequisites_run_router: tuple[str, str, str, str], 
-                                           capsys):
-    """Tests the liveness of the extraction server
-
-    :param status_code: Status code used for mocking the server
-    :type status_code: int
-    :param exptected_output: Expected output for checking correctness
-    :type exptected_output: tuple[str, typing.Union[bool, None]]
-    :param prerequisites_run_router: Requesting prerequisites fixture for run_router
-    :type prerequisites_run_router: tuple[str, str, str, str]
-    :param capsys: Requesting default fixture to capturing cmd output
-    """
-    extraction_ip, extraction_port, _, inference_port = prerequisites_run_router
-    project_name = 'TEST'
-    return_value = None
-    
-    try:
-        with requests_mock.Mocker() as mock_server:
-            mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=status_code)
-            return_value = run_router(extraction_port, inference_port, project_name)
-            
-    except:
-        exptected_cmd_output, expected_return_value = exptected_output
-        cmd_output, cmd_error = capsys.readouterr()
-        assert exptected_cmd_output in cmd_output
-        assert return_value is expected_return_value
-
-
-def test_run_router_extraction_server_down(prerequisites_run_router: tuple[str, str, str, str]):
-    """Tests the return value if the extraction server is down
-
-    :param prerequisites_run_router: Requesting prerequisites fixture for run_router
-    :type prerequisites_run_router: tuple[str, str, str, str]]
-    """
-    extraction_ip, extraction_port, _, inference_port = prerequisites_run_router
-    project_name = 'TEST'
-    mock_project_settings = {}
-    
     with (requests_mock.Mocker() as mock_server,
-          patch('train_on_pdf.project_settings', mock_project_settings)):
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=-1)
-        return_value = run_router(extraction_port, inference_port, project_name)
-
-        # check sys out and return value
-        assert return_value is False
-
-
-def test_run_router_extraction_curation_server_down(prerequisites_run_router: tuple[str, str, str, str]):
-    """Tests the return value of the curation of the extraction server
-
-    :param prerequisites_run_router: Requesting prerequisites fixture for run_router
-    :type prerequisites_run_router: tuple[str, str, str, str]]
-    """
-    extraction_ip, extraction_port, _, inference_port = prerequisites_run_router
-    project_name = 'TEST'
-    mock_project_settings = {}
-    
-    with (requests_mock.Mocker() as mock_server,
+          patch('train_on_pdf.convert_xls_to_csv', Mock()),
           patch('train_on_pdf.project_settings', mock_project_settings)):
         mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
         mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=-1)
-        return_value = run_router(extraction_port, inference_port, project_name)
+        mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
+        mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=200)
+        mock_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=200)
+        mock_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=200)
+        mock_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=200)
+        yield mock_server
+    
 
-        # check sys out and return value
-        assert return_value is False
-
-
-@pytest.mark.parametrize('status_code, expected_output',
+@pytest.mark.parametrize('status_code, cmd_output_expected, return_value_expected',
                          [
-                             (200, 'Inference server is up. Proceeding to Inference.'),
-                             (-1, 'Inference server is not responding.')
-                         ]
-                         )
-def test_run_router_inference_liveness(status_code: int, 
-                                       expected_output: tuple[str, typing.Union[bool, None]],
-                                       prerequisites_run_router: tuple[str, str, str, str], 
-                                       capsys):
+                             (200, 'Extraction server is up. Proceeding to extraction.', True),
+                             (-1, 'Extraction server is not responding.', False)
+                         ])
+def test_run_router_extraction_liveness_up(prerequisites_run_router: requests_mock.mocker.Mocker,
+                                           status_code: int, 
+                                           cmd_output_expected: str,
+                                           return_value_expected: bool,
+                                           capsys: typing.Generator[CaptureFixture[str], None, None]):
+    """Tests the liveness of the extraction server
+
+    :param prerequisites_run_router: Requesting the prerequisites_run_router fixture
+    :type prerequisites_run_router: requests_mock.mocker.Mocker
+    :param status_code: Status code used in extraction server
+    :type status_code: int
+    :param cmd_output_expected: Expeceted cmd output
+    :type cmd_output_expected: str
+    :param return_value_expected: Expected return_value
+    :type return_value_expected: bool
+    :param capsys: Requesting default fixture for capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None])
+    """    
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_port = '8000'
+    project_name = 'TEST'
+    mock_server = prerequisites_run_router
+    
+    mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=status_code)
+    return_value = run_router(extraction_port, inference_port, project_name)
+
+    cmd_output, _ = capsys.readouterr()
+    assert cmd_output_expected in cmd_output
+    assert return_value == return_value_expected
+
+
+def test_run_router_extraction_server_down(prerequisites_run_router: requests_mock.mocker.Mocker):
+    """Tests the return value if the extraction server is down
+
+    :param prerequisites_run_router: Requesting the prerequisites_run_router fixture
+    :type prerequisites_run_router: requests_mock.mocker.Mocker
+    """
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_port = '8000'
+    project_name = 'TEST'
+    mock_server = prerequisites_run_router
+    
+    mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=-1)
+    return_value = run_router(extraction_port, inference_port, project_name)
+
+    # check sys out and return value
+    assert return_value is False
+
+
+def test_run_router_extraction_curation_server_down(prerequisites_run_router: requests_mock.mocker.Mocker):
+    """Tests the return value of the curation of the extraction server
+
+    :param prerequisites_run_router: Requesting the prerequisites_run_router fixture
+    :type prerequisites_run_router: requests_mock.mocker.Mocker
+    """
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_port = '8000'
+    project_name = 'TEST'
+    mock_server = prerequisites_run_router
+    
+    mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=-1)      
+    return_value = run_router(extraction_port, inference_port, project_name)
+
+    # check sys out and return value
+    assert return_value is False
+
+
+@pytest.mark.parametrize('status_code, cmd_output_expected, return_value_expected',
+                         [
+                             (200, 'Inference server is up. Proceeding to Inference.', True),
+                             (-1, 'Inference server is not responding.', False)
+                         ])
+def test_run_router_inference_liveness(prerequisites_run_router: requests_mock.mocker.Mocker,
+                                       status_code: int, 
+                                       cmd_output_expected: str,
+                                       return_value_expected: bool,
+                                       capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests the liveness of the inference server, up as well as down
 
-    :param status_code: Status code used for mocking the server
+    :param prerequisites_run_router: Requesting the prerequisites_run_router fixture
+    :type prerequisites_run_router: requests_mock.mocker.Mocker
+    :param status_code: Status code for liveness
     :type status_code: int
-    :param exptected_output: Expected output for checking correctness
-    :type exptected_output: tuple[str, typing.Union[bool, None]]
-    :param prerequisites_run_router: Requesting prerequisites fixture for run_router
-    :type prerequisites_run_router: tuple[str, str, str, str]
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param cmd_output_expected: Expected cmd output
+    :type cmd_output_expected: str
+    :param return_value_expected: Expected return_value
+    :type return_value_expected: bool
+    :param capsys: Requesting default fixture for capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
-    extraction_ip, extraction_port, inference_ip, inference_port = prerequisites_run_router
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_ip = '0.0.0.1'
+    inference_port = '8000'
     project_name = 'TEST'
-    mock_project_settings = {}
+    mock_server = prerequisites_run_router
     
-    try:
-        with (requests_mock.Mocker() as mock_server,
-                patch('train_on_pdf.project_settings', mock_project_settings)):
-            mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
-            mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
-            mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
-            mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=status_code)
-            run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
+    mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=status_code)
+    return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
     
-    except:    
-        # check sys out and return value
-        cmd_output, cmd_error = capsys.readouterr()
-        assert expected_output in cmd_output
+    # check sys out and return value
+    cmd_output, _ = capsys.readouterr()
+    assert cmd_output_expected in cmd_output
+    assert return_value == return_value_expected
 
 
-@pytest.mark.parametrize('mock_project_settings, status_code, expected_output',
+@pytest.mark.parametrize('train_relevance, status_code, cmd_output_expected, return_value_expected',
                          [
-                            ({'train_relevance': {'train': True}}, -1, ("Relevance training will be started.", False)),
-                            ({'train_relevance': {'train': True}}, 200, ("Relevance training will be started.", None)),
-                            ({'train_relevance': {'train': False}}, -1, (("No relevance training done. If you want to have a relevance training please "
-                                         "set variable train under train_relevance to true."), None))
-                         ]
-)
-def test_run_router_relevance_training(mock_project_settings: dict, 
-                                       status_code: int, 
-                                       expected_output: tuple[str, typing.Union[bool, None]],
-                                       prerequisites_run_router: tuple[str, str, str, str], 
-                                       capsys):
+                            (True, -1, "Relevance training will be started.", False),
+                            (True, 200, "Relevance training will be started.", True),
+                            (False, -1, ("No relevance training done. If you want to have a relevance training please "
+                                         "set variable train under train_relevance to true."), True)
+                         ])
+def test_run_router_relevance_training(prerequisites_run_router: requests_mock.mocker.Mocker,
+                                       train_relevance: bool, 
+                                       status_code: int,
+                                       cmd_output_expected: str,
+                                       return_value_expected: bool, 
+                                       capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if the relevance training fails and successfully starts
 
-    :param mock_project_settings: Project settings used for mocking
-    :type mock_project_settings: dict
-    :param status_code: Status code used for mocking the server
+    :param prerequisites_run_router: Requesting the prerequisites_run_router fixture
+    :type prerequisites_run_router: requests_mock.mocker.Mocker
+    :param train_relevance: Flag for train relevance
+    :type train_relevance: bool
+    :param status_code: Status code for train relevance
     :type status_code: int
-    :param exptected_output: Expected output for checking correctness
-    :type exptected_output: tuple[str, typing.Union[bool, None]]
-    :param prerequisites_run_router: Requesting prerequisites fixture for run_router
-    :type prerequisites_run_router: tuple[str, str, str, str]
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param cmd_output_expected: Expected cmd output
+    :type cmd_output_expected: str
+    :param return_value_expected: Expected return_value
+    :type return_value_expected: bool
+    :param capsys: Requesting default fixture for capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
-    extraction_ip, extraction_port, inference_ip, inference_port = prerequisites_run_router
+    extraction_port = '8000'
+    inference_ip = '0.0.0.1'
+    inference_port = '8000'
     project_name = 'TEST'
-    return_value = None
+    mock_server = prerequisites_run_router
+    train_on_pdf.project_settings['train_relevance']['train'] = train_relevance
     
-    try:
-        with (requests_mock.Mocker() as mock_server,
-              patch('train_on_pdf.project_settings', mock_project_settings)):
-            mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
-            mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
-            mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
-            mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=200)
-            mock_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=status_code)
-            return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
-    except:
-        pass
-    finally:
-        # check sys out and return value
-        cmd_output, _ = capsys.readouterr()
-        expected_cmd_out, exptected_return_value = expected_output
-        assert expected_cmd_out in cmd_output
-        assert return_value == exptected_return_value
+    mock_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=status_code)
+    return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
+
+    # check sys out and return value
+    cmd_output, _ = capsys.readouterr()
+    assert cmd_output_expected in cmd_output
+    assert return_value == return_value_expected
 
 
-@pytest.mark.parametrize('mock_project_settings, status_code_infer_relevance, project_name, status_code_train_kpi, expected_output',
+@pytest.mark.parametrize('train_kpi, status_code_infer_relevance, project_name, status_code_train_kpi, cmd_output_expected, return_value_expected',
                          [
-                            ({'train_kpi': {'train': True}}, -1, "TEST", -1, ("", False)),
-                            ({'train_kpi': {'train': True}}, 200, "TEST", -1, ("text_3434 was generated without error", False)),
-                            ({'train_kpi': {'train': True}}, 200, "TEST", 200, ("text_3434 was not generated without error", True)),
-                            ({'train_kpi': {'train': True}}, 200, None, -1, ("Error while generating text_3434.", False)),
-                            ({'train_kpi': {'train': True}}, 200, None, 200, ("Error while generating text_3434.", True)),
-                            ({'train_kpi': {'train': False}}, -1, None, -1, (("No kpi training done. If you want to have a kpi "
-                                                                    "training please set variable train under train_kpi to true."), True))
-                         ]
-)
-def test_run_router_kpi_training(mock_project_settings: typing.Dict[str, typing.Dict[str, bool]], 
-                                 status_code_infer_relevance: int, 
+                            (True, -1, "TEST", -1, "", False),
+                            (True, 200, "TEST", -1, "text_3434 was generated without error", False),
+                            (True, 200, "TEST", 200, "text_3434 was not generated without error", True),
+                            (True, 200, None, -1, "Error while generating text_3434.", False),
+                            (True, 200, None, 200, "Error while generating text_3434.", True),
+                            (False, -1, None, -1, ("No kpi training done. If you want to have a kpi "
+                                                    "training please set variable train under train_kpi to true."), True)
+                         ])
+def test_run_router_kpi_training(prerequisites_run_router: requests_mock.mocker.Mocker,
+                                 train_kpi: bool,
+                                 status_code_infer_relevance: int,
                                  project_name: typing.Union[str, None],
                                  status_code_train_kpi: int, 
-                                 expected_output: tuple[str, bool], 
-                                 prerequisites_run_router: tuple[str, str, str, str], 
-                                 capsys):
+                                 cmd_output_expected: str,
+                                 return_value_expected: bool,
+                                 capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if kpi training fails and successfully starts
 
-    :param mock_project_settings: Project settings used for mocking
-    :type mock_project_settings: typing.Dict[str, typing.Dict[str, bool]]
-    :param status_code_infer_relevance: Status code used for mocking the server
+    :param prerequisites_run_router: Requesting the prerequisites_run_router fixture
+    :type prerequisites_run_router: requests_mock.mocker.Mocker
+    :param train_kpi: Flag for train kpi
+    :type train_kpi: bool
+    :param status_code_infer_relevance: Status code for infer relevance
     :type status_code_infer_relevance: int
-    :param project_name: Name of the project
+    :param project_name: Project name
     :type project_name: typing.Union[str, None]
-    :param status_code_train_kpi: Status code used for mocking the server
+    :param status_code_train_kpi: Status code for train kpi
     :type status_code_train_kpi: int
-    :param exptected_output: Expected output for checking correctness
-    :type expected_output: tuple[str, bool]
-    :param prerequisites_run_router: Requesting prerequisites fixture for run_router
-    :type prerequisites_run_router: tuple[str, str, str, str]
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param cmd_output_expected: Expected cmd output
+    :type cmd_output_expected: str
+    :param return_value_expected: Expected return_value
+    :type return_value_expected: bool
+    :param capsys: Requesting default fixture for capturing cmd output
+    :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
-    extraction_ip, extraction_port, inference_ip, inference_port = prerequisites_run_router
-    return_value = None
-    mock_project_settings['train_relevance'] = {'train': False}
-    mock_project_settings['s3_usage'] = None
-    mock_project_settings['s3_settings'] = None
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_ip = '0.0.0.1'
+    inference_port = '8000'
+    mock_server = prerequisites_run_router
+    train_on_pdf.project_settings['train_kpi']['train'] = train_kpi
         
     # force an exception of generate_text_3434 by remove the folder_text_3434
     if not project_name:
@@ -249,61 +264,47 @@ def test_run_router_kpi_training(mock_project_settings: typing.Dict[str, typing.
         else:
             mocked_generate_text.side_effect = lambda *args: False
     else:
-        mocked_generate_text.side_effect = Exception
+        mocked_generate_text.side_effect = Exception()
         
-    with (requests_mock.Mocker() as mock_server,
-        patch('train_on_pdf.project_settings', mock_project_settings),
-        patch('train_on_pdf.generate_text_3434', mocked_generate_text)):
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=200)
+    with patch('train_on_pdf.generate_text_3434', mocked_generate_text):
         mock_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=status_code_infer_relevance)
         mock_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=status_code_train_kpi)
         return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
 
-    # check sys out and return value
-    cmd_output, _ = capsys.readouterr()
-    expected_cmd_out, exptected_return_value = expected_output
-    assert expected_cmd_out in cmd_output
-    assert return_value == exptected_return_value
+        # check sys out and return value
+        cmd_output, _ = capsys.readouterr()
+        assert cmd_output_expected in cmd_output
+        assert return_value == return_value_expected
 
 
-@pytest.mark.parametrize('mock_project_settings, expected_output',
+@pytest.mark.parametrize('infer_relevance, train_kpi',
                          [
-                            ({'train_relevance': {'train': True}, 'train_kpi': {'train': True}}, True),
-                            ({'train_relevance': {'train': True}, 'train_kpi': {'train': False}}, True),
-                            ({'train_relevance': {'train': False}, 'train_kpi': {'train': True}}, True),
-                            ({'train_relevance': {'train': False}, 'train_kpi': {'train': False}}, True),  
-                         ]
-)
-def test_run_router_successful_run(mock_project_settings: typing.Dict[str, typing.Dict[str, bool]], 
-                                   expected_output: bool, 
-                                   prerequisites_run_router: tuple[str, str, str, str]):
+                            (True, True),
+                            (True, False),
+                            (True, True),
+                            (True, False),  
+                         ])
+def test_run_router_successful_run(prerequisites_run_router: requests_mock.mocker.Mocker,
+                                   infer_relevance: bool,
+                                   train_kpi: bool):
     """Tests a successful run of run_router
 
-    :param mock_project_settings: Project settings used for mocking
-    :type mock_project_settings: typing.Dict[str, typing.Dict[str, bool]]
-    :param expected_output:  Expected output for checking correctness
-    :type expected_output: bool
-    :param prerequisites_run_router: Requesting prerequisites fixture for run_router
-    :type prerequisites_run_router: tuple[str, str, str, str]
+    :param prerequisites_run_router: Requesting the prerequisites_run_router fixture
+    :type prerequisites_run_router: requests_mock.mocker.Mocker
+    :param infer_relevance: Flag for infer relevance
+    :type infer_relevance: bool
+    :type train_kpi: Flag for train kpi
+    :type train_kpi: bool
     """
-    extraction_ip, extraction_port, inference_ip, inference_port = prerequisites_run_router
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_ip = '0.0.0.1'
+    inference_port = '8000'
     project_name = 'TEST'
-     
-    with (requests_mock.Mocker() as mock_server,
-        patch('train_on_pdf.project_settings', mock_project_settings)):
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=200)
+    mock_server = prerequisites_run_router
+    
+    with patch('train_on_pdf.generate_text_3434', Mock()):
         return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
 
     # check for return value
-    exptected_return_value = expected_output
-    assert return_value == exptected_return_value
+    assert return_value == True

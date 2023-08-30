@@ -9,7 +9,7 @@ import s3_communication
 import pandas as pd
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def prerequisites_convert_xls_to_csv(path_folder_temporary: Path) -> None:
     """Defines a fixture for mocking all required objects, methods and functions
 
@@ -33,13 +33,11 @@ def prerequisites_convert_xls_to_csv(path_folder_temporary: Path) -> None:
             shutil.rmtree(path)
 
 
-def test_convert_xls_to_csv_download_s3(prerequisites_convert_xls_to_csv: None):
+def test_convert_xls_to_csv_download_s3():
     """Tests the function convert_xls_to_csv for successfully downloading
     files from a S3 bucket. All required variables/functions/methods are mocked by the 
     prerequisites_convert_xls_to_csv fixture
-
-    :param prerequisites_convert_xls_to_csv: Requesting the prerequisites_convert_xls_to_csv fixture
-    :type prerequisites_convert_xls_to_csv: None
+    Requesting prerequisites_convert_xls_to_csv automatically (autouse)
     """
     
     s3_usage = True
@@ -57,12 +55,10 @@ def test_convert_xls_to_csv_download_s3(prerequisites_convert_xls_to_csv: None):
     assert len(content_folder_source_annotation) == 1 
               
 
-def test_convert_xls_to_csv_upload_s3(prerequisites_convert_xls_to_csv: None):
+def test_convert_xls_to_csv_upload_s3():
     """Tests the function convert_xls_to_csv for successfully uploading
     files to a S3 bucket
-
-    :param prerequisites_convert_xls_to_csv: Requesting the prerequisites_convert_xls_to_csv fixture
-    :type prerequisites_convert_xls_to_csv: None
+    Requesting prerequisites_convert_xls_to_csv automatically (autouse)
     """
     s3_usage = True
     mocked_s3c_main = Mock(spec = s3_communication.S3Communication)
@@ -77,12 +73,10 @@ def test_convert_xls_to_csv_upload_s3(prerequisites_convert_xls_to_csv: None):
     mocked_s3c_interim.upload_files_in_dir_to_prefix.assert_called_once()
         
 
-def test_convert_xls_to_csv_value_error_multiple_xls(prerequisites_convert_xls_to_csv: None):
+def test_convert_xls_to_csv_value_error_multiple_xls():
     """Test the function convert_xls_to_csv for raising ValueError if more than one
     xlsx files exist
-
-    :param prerequisites_convert_xls_to_csv: Requesting the prerequisites_convert_xls_to_csv fixture
-    :type prerequisites_convert_xls_to_csv: None
+    Requesting prerequisites_convert_xls_to_csv automatically (autouse)
     """
     s3_usage = True
     mocked_s3c_main = Mock(spec = s3_communication.S3Communication)
@@ -97,14 +91,11 @@ def test_convert_xls_to_csv_value_error_multiple_xls(prerequisites_convert_xls_t
     mocked_s3c_main.download_files_in_prefix_to_dir.assert_called_once()
 
 
-def test_convert_xls_to_csv_value_error_no_annotation_xls(prerequisites_convert_xls_to_csv: None):
+def test_convert_xls_to_csv_value_error_no_annotation_xls():
     """Test the function convert_xls_to_csv for raising ValueError if no annotation xlsx files
     exist
-
-    :param prerequisites_convert_xls_to_csv: Requesting the prerequisites_convert_xls_to_csv fixture
-    :type prerequisites_convert_xls_to_csv: None
+    Requesting prerequisites_convert_xls_to_csv automatically (autouse)
     """
-
     s3_usage = True
     mocked_s3c_main = Mock(spec = s3_communication.S3Communication)
     # do not create any file
@@ -118,11 +109,9 @@ def test_convert_xls_to_csv_value_error_no_annotation_xls(prerequisites_convert_
     mocked_s3c_main.download_files_in_prefix_to_dir.assert_called_once()
 
 
-def test_convert_xls_to_csv_s3_usage(prerequisites_convert_xls_to_csv: None):
+def test_convert_xls_to_csv_s3_usage():
     """Tests the function convert_xls_to_csv for actively using an S3 bucket
-
-    :param prerequisites_convert_xls_to_csv: Requesting the prerequisites_convert_xls_to_csv fixture
-    :type prerequisites_convert_xls_to_csv: None
+    Requesting prerequisites_convert_xls_to_csv automatically (autouse)
     """
     s3_usage = True
     mocked_s3c_main = Mock(spec = s3_communication.S3Communication)
@@ -137,11 +126,9 @@ def test_convert_xls_to_csv_s3_usage(prerequisites_convert_xls_to_csv: None):
     mocked_s3c_interim.upload_files_in_dir_to_prefix.assert_called_once()
     
 
-def test_convert_xls_to_csv_no_s3_usage(prerequisites_convert_xls_to_csv: None):
+def test_convert_xls_to_csv_no_s3_usage():
     """Tests the function convert_xls_to_csv for not using an S3 bucket
-
-    :param prerequisites_convert_xls_to_csv: Requesting the prerequisites_convert_xls_to_csv fixture
-    :type prerequisites_convert_xls_to_csv: None
+    Requesting prerequisites_convert_xls_to_csv automatically (autouse)
     """
     s3_usage = False
     mocked_s3c_main = Mock(spec = s3_communication.S3Communication)

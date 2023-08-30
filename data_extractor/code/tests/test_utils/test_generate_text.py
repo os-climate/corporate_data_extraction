@@ -17,7 +17,7 @@ import typing
 from _pytest.capture import CaptureFixture
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def prerequisites_generate_text(path_folder_temporary: Path) -> None:
     """Defines a fixture for mocking all required paths and creating required temporary folders
 
@@ -60,12 +60,10 @@ def test_generate_text(path_folder_temporary: Path):
             shutil.rmtree(path)
 
 
-def test_generate_text_with_s3(prerequisites_generate_text: Path,
-                               path_folder_temporary: Path):
+def test_generate_text_with_s3(path_folder_temporary: Path):
     """Tests if the s3 connection objects are created and their methods are called
+    Requesting prerequisites_generate_text automatically (autouse)
 
-    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
-    :type prerequisites_generate_text: Path
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
@@ -121,14 +119,12 @@ def test_generate_text_with_s3(prerequisites_generate_text: Path,
     assert any([call for call in call_list if 'upload_file_to_s3' in call])
 
 
-def test_generate_text_no_s3(prerequisites_generate_text: Path,
-                             path_folder_temporary: Path):
+def test_generate_text_no_s3(path_folder_temporary: Path):
     """Tests if files are taken from the folder relevance,
     then read in and putting the content into the file text_3434.csv. Note that
     the header of text_3434.csv is taken from the first file read in
+    Requesting prerequisites_generate_text automatically (autouse)
 
-    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
-    :type prerequisites_generate_text: Path
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
@@ -167,6 +163,7 @@ def test_generate_text_no_s3(prerequisites_generate_text: Path,
                 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
                 assert line_content.rstrip() == f'That is a test {line_number}'
                 
@@ -180,14 +177,15 @@ def test_generate_text_successful(prerequisites_generate_text: Path):
 def test_generate_text_successful(prerequisites_generate_text: Path,
                                   path_folder_temporary: Path):
 >>>>>>> 78c8e7f89 (Some cosmetics and consistency changes)
+=======
+def test_generate_text_successful(path_folder_temporary: Path):
+>>>>>>> 023d7e8bd (Minor changes for better readability)
     """Tests if the function returns true
+    Requesting prerequisites_generate_text automatically (autouse)
 
-    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
-    :type prerequisites_generate_text: Path
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    
     project_name = 'test'
     s3_usage = False
     project_settings = None
@@ -197,18 +195,15 @@ def test_generate_text_successful(prerequisites_generate_text: Path,
 
     
 def test_generate_text_not_successful_empty_folder(path_folder_temporary: Path,
-                                                   prerequisites_generate_text: Path,
                                                    capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if the function returns false
+    Requesting prerequisites_generate_text automatically (autouse)
 
-    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
-    :type prerequisites_generate_text: Path
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param capsys: Requesting default fixture for capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
-    
     project_name = 'test'
     s3_usage = False
     project_settings = None
@@ -225,16 +220,13 @@ def test_generate_text_not_successful_empty_folder(path_folder_temporary: Path,
     assert return_value == False
 
     
-def test_generate_text_not_successful_exception(prerequisites_generate_text: Path,
-                                                path_folder_temporary: Path):
+def test_generate_text_not_successful_exception(path_folder_temporary: Path):
     """Tests if the function returns false
+    Requesting prerequisites_generate_text automatically (autouse)
 
-    :param prerequisites_generate_text: Requesting the prerequisites_generate_text fixture
-    :type prerequisites_generate_text: Path
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    
     project_name = 'test'
     s3_usage = False
     project_settings = None

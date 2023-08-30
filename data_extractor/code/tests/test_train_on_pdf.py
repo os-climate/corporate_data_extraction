@@ -126,7 +126,7 @@ def prerequisite_train_on_pdf_try_run(
 def test_train_on_pdf_check_running(capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if everything is printed when another training is running
 
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param capsys: Requesting default fixture for capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
     with patch('train_on_pdf.check_running') as mocked_function:
@@ -153,7 +153,7 @@ def test_train_on_pdf_wrong_input_project_name(project_name: typing.Union[str, N
     :type project_name: typing.Union[str, None]
     :param output_expected: Expected outputs
     :type output_expected: None
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param capsys: Requesting default fixture for capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
@@ -197,7 +197,7 @@ def test_train_on_pdf_wrong_input_s3(s3_usage: typing.Union[str, None],
     :type s3_usage: typing.Union[str, None]
     :param output_expected: Expected outputs
     :type output_expected: None
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param capsys: Requesting default fixture for capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
@@ -394,7 +394,7 @@ def test_train_on_pdf_e2e_store_extractions(
     :type prerequisite_train_on_pdf_try_run: None
     :param path_folder_temporary: Path for the temporary folder
     :type path_folder_temporary: Path
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param capsys: Requesting default fixture for capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
     
@@ -469,7 +469,7 @@ def test_train_on_pdf_e2e_save_train_info(
 
     :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
     :type prerequisite_train_on_pdf_try_run: None
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param capsys: Requesting default fixture for capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
     with (
@@ -495,7 +495,7 @@ def test_train_on_pdf_process_failed(
 
     :param prerequisite_train_on_pdf_try_run: Requesting fixture for prerequisites of running train_on_pdf script
     :type prerequisite_train_on_pdf_try_run: None
-    :param capsys: Requesting default fixture to capturing cmd output
+    :param capsys: Requesting default fixture for capturing cmd output
     :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
     with (
