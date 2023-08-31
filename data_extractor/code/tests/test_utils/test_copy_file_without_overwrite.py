@@ -32,12 +32,9 @@ def test_copy_file_without_overwrite_result(path_folder_temporary: Path):
     """
     path_folder_source = path_folder_temporary / 'source'
     path_folder_destination = path_folder_temporary / 'destination'
-
-    # create test file in source folder
     path_folder_source_file = path_folder_source / 'test.txt'
     path_folder_source_file.touch()
     
-    # execute copy_file_without_overwrite
     result = copy_file_without_overwrite(str(path_folder_source), str(path_folder_destination))
     assert result == True
     
@@ -52,14 +49,11 @@ def test_copy_file_without_overwrite_file_not_exists(path_folder_temporary: Path
     """
     path_folder_source = path_folder_temporary / 'source'
     path_folder_destination = path_folder_temporary / 'destination'
-    # create test file in source folder
     path_folder_source_file = path_folder_source / 'test.txt'
     path_folder_source_file.touch()
     
-    # create test file path for destination folder
     path_folder_destination_file = path_folder_destination / 'test.txt'
     assert not path_folder_destination_file.exists()
     
-    # execute copy_file_without_overwrite
     copy_file_without_overwrite(str(path_folder_source), str(path_folder_destination))
     assert path_folder_destination_file.exists()

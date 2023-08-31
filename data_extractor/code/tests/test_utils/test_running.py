@@ -5,12 +5,16 @@ from unittest.mock import patch, Mock
 import config_path
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def prerequisite_running(path_folder_root_testing: Path):
     """Defines a fixture for the running_file path
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     :param path_folder_root_testing: Path for the testing folder
+=======
+    :param path_folder_root_testing: Requesting the path_folder_root_testing fixture
+>>>>>>> bd5098e40 (Some cleanup and finishing tests)
     :type path_folder_root_testing: Path
 =======
     :param path_folder_data_sample: _description_
@@ -20,9 +24,8 @@ def prerequisite_running(path_folder_root_testing: Path):
 >>>>>>> ced44e3df (Feature/2023.04 os test (#14))
     """
     path_file_running = path_folder_root_testing / 'data' / 'running'
-    # mock the path to the running file
-    with patch('train_on_pdf.path_file_running', 
-               str(path_file_running)):
+    
+    with patch('train_on_pdf.path_file_running', str(path_file_running)):
         yield
 
         # cleanup
@@ -37,62 +40,56 @@ def prerequisite_running(path_folder_root_testing: Path):
     #     yield
 >>>>>>> ced44e3df (Feature/2023.04 os test (#14))
 
-def test_set_running(prerequisite_running, path_folder_root_testing: Path):
+def test_set_running(path_folder_root_testing: Path):
     """Tests the set_running function creating a running file
 
-    :param prerequisite_running: Fixture for prerequisite of running funcions
-    :type prerequisite_running: None
-    :param path_folder_root_testing: Path for the testing folder
+    :param path_folder_root_testing: Requesting the path_folder_root_testing fixture
     :type path_folder_root_testing: Path
     """
-    # set path to running file and do a cleanup
     path_file_running = path_folder_root_testing / 'data' / 'running'
     path_file_running.unlink(missing_ok=True)
     
-    # perform set_running and assert that running file exists
     set_running()
-    assert path_file_running.exists()
     
-    # cleanup
-    path_file_running.unlink()
+    assert path_file_running.exists()
 
 
-def test_checking_onging_run(prerequisite_running, path_folder_root_testing: Path):
+def test_checking_onging_run(path_folder_root_testing: Path):
     """Tests the return value of check_running for ongoing runs
-
-    :param prerequisite_running: Fixture for prerequisite of running funcions
-    :type prerequisite_running: None
-    :param path_folder_root_testing: Path for the testing folder
+    
+    :param path_folder_root_testing: Requesting the path_folder_root_testing fixture
     :type path_folder_root_testing: Path
     """
     path_file_running = path_folder_root_testing / 'data' / 'running'
+    
     path_file_running.touch()
+    
     assert check_running() == True
 
 
-def test_checking_finished_run(prerequisite_running, path_folder_root_testing: Path):
+def test_checking_finished_run(path_folder_root_testing: Path):
     """Tests the return value of check_running for finished runs
 
-    :param prerequisite_running: Fixture for prerequisite of running funcions
-    :type prerequisite_running: None
-    :param path_folder_root_testing: Path for the testing folder
+    :param path_folder_root_testing: Requesting the path_folder_root_testing fixture
     :type path_folder_root_testing: Path
     """
     path_file_running = path_folder_root_testing / 'data' / 'running'
+    
     path_file_running.unlink(missing_ok = True)
+    
     assert check_running() == False
        
 
-def test_clear_running(prerequisite_running, path_folder_root_testing: Path):
+def test_clear_running(path_folder_root_testing: Path):
     """Tests for clearing running file
 
-    :param prerequisite_running: Fixture for prerequisite of running funcions
-    :type prerequisite_running: None
-    :param path_folder_root_testing: Path for the testing folder
+    :param path_folder_root_testing: Requesting the path_folder_root_testing fixture
     :type path_folder_root_testing: Path
     """
     path_file_running = path_folder_root_testing / 'data' / 'running'
     path_file_running.touch()
+    
     clear_running()
+    
     assert not path_file_running.exists()
 

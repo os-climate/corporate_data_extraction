@@ -67,7 +67,6 @@ def test_generate_text_with_s3(path_folder_temporary: Path):
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    # get the path to the temporary folder
     path_folder_text_3434 = path_folder_temporary / 'folder_test_3434'
     project_name = 'test'
     
@@ -87,6 +86,7 @@ def test_generate_text_with_s3(path_folder_temporary: Path):
         }
     }
     
+<<<<<<< HEAD
     # run the function to test
 <<<<<<< HEAD
     generate_text_3434(project_name)
@@ -101,10 +101,11 @@ def test_generate_text_with_s3(path_folder_temporary: Path):
         generate_text_3434(project_name)
 >>>>>>> ced44e3df (Feature/2023.04 os test (#14))
 =======
+=======
+>>>>>>> bd5098e40 (Some cleanup and finishing tests)
     with (patch('train_on_pdf.S3Communication', Mock(spec=s3_communication.S3Communication)) as mocked_s3):
         generate_text_3434(project_name, True, mocked_s3_settings)
         
-    # check for calls
     mocked_s3.assert_any_call(s3_endpoint_url='S3_END_MAIN',
                                  aws_access_key_id='S3_ACCESS_MAIN',
                                  aws_secret_access_key='S3_SECRET_MAIN',
@@ -128,7 +129,6 @@ def test_generate_text_no_s3(path_folder_temporary: Path):
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    # get the path to the temporary folder
     path_folder_text_3434 = path_folder_temporary / 'folder_test_3434'
     project_name = 'test'
     s3_usage = False
@@ -140,11 +140,10 @@ def test_generate_text_no_s3(path_folder_temporary: Path):
     # ensure that the header and the content form the first file is written to 
     # the file text_3434.csv in folder relevance and the the content of the other
     # files in folder relevance is appended without the header
-
-    # check if file_3434 exists
     path_file_text_3434_csv = path_folder_text_3434 / 'text_3434.csv'
     assert path_file_text_3434_csv.exists()
     
+<<<<<<< HEAD
     # check if header and content of files exist
 <<<<<<< HEAD
     strings_expected = [
@@ -152,6 +151,10 @@ def test_generate_text_no_s3(path_folder_temporary: Path):
         ]
 =======
 >>>>>>> ced44e3df (Feature/2023.04 os test (#14))
+=======
+    strings_expected = [f'That is a test {line_number}' 
+                        for line_number in range(5)]
+>>>>>>> bd5098e40 (Some cleanup and finishing tests)
     with open(str(path_file_text_3434_csv), 'r') as file_text_3434:
         for line_number, line_content in enumerate(file_text_3434, start = -1):
             if line_number == -1:
@@ -201,18 +204,16 @@ def test_generate_text_not_successful_empty_folder(path_folder_temporary: Path,
 
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
-    :param capsys: Requesting default fixture for capturing cmd output
+    :param capsys: Requesting the default fixture capsys for capturing cmd outputs
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
     project_name = 'test'
     s3_usage = False
     project_settings = None
     
-    # clear the relevance folder
     path_folder_relevance = path_folder_temporary / 'relevance'
     [file.unlink() for file in path_folder_relevance.glob("*") if file.is_file()] 
     
-    # call the function
     return_value = generate_text_3434(project_name, s3_usage, project_settings)
     
     output_cmd, _ = capsys.readouterr()
@@ -231,7 +232,6 @@ def test_generate_text_not_successful_exception(path_folder_temporary: Path):
     s3_usage = False
     project_settings = None
     
-    # clear the relevance folder
     path_folder_relevance = path_folder_temporary / 'relevance'
     [file.unlink() for file in path_folder_relevance.glob("*") if file.is_file()]
     

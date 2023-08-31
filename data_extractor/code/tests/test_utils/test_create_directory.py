@@ -9,8 +9,8 @@ def test_create_directory(path_folder_temporary: Path):
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    # call create_folder and check if the folder exists
     create_directory(str(path_folder_temporary))
+    
     assert path_folder_temporary.exists()
 
 
@@ -20,12 +20,10 @@ def test_create_directory_cleanup(path_folder_temporary: Path):
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    # create folder with files
     path_folder_temporary.mkdir(exist_ok = True)
     for i in range(10):
         path_current_test_file = path_folder_temporary / f'test_{i}.txt'
         path_current_test_file.touch()
         
-    # call create_directory and check for empty folder
     create_directory(str(path_folder_temporary))
     assert not any(path_folder_temporary.iterdir())

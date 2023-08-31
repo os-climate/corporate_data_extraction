@@ -36,15 +36,12 @@ def test_link_files(path_folder_temporary: Path):
     path_folder_source_pdf = path_folder_temporary / 'source_pdf'
     path_folder_destination = path_folder_temporary / 'destination'
     
-    # create sample files
     for i in range(10):
         path_current_file = path_folder_source / f'test_{i}.txt'
         path_current_file.touch()
     
-    # perform the linking
     link_files(str(path_folder_source), str(path_folder_destination))
     
-    # check for hard links
     for i in range(10):
         path_current_file = path_folder_source / f'test_{i}.txt'
         assert path_current_file.stat().st_nlink == 2
@@ -60,7 +57,7 @@ def test_link_extracted_files_result(path_folder_temporary: Path):
     path_folder_source = path_folder_temporary / 'source'
     path_folder_source_pdf = path_folder_temporary / 'source_pdf'
     path_folder_destination = path_folder_temporary / 'destination'
-    # single pdf and json file 
+
     path_folder_source_file_pdf = path_folder_source / f'test.pdf'
     path_folder_source_file_json = path_folder_source / f'test.json'
     path_source_file_pdf = path_folder_source_pdf / f'test.pdf'
@@ -82,7 +79,6 @@ def test_link_extracted_files_copy(path_folder_temporary: Path):
     path_folder_source_pdf = path_folder_temporary / 'source_pdf'
     path_folder_destination = path_folder_temporary / 'destination'
     
-    # create test pdf and json files in the source_extraction and source_pdf folders
     for i in range(10):
         path_current_file = path_folder_source / f'test_{i}.pdf'
         path_current_file.touch()
@@ -91,16 +87,13 @@ def test_link_extracted_files_copy(path_folder_temporary: Path):
         path_current_file = path_folder_source_pdf / f'test_{i}.pdf'
         path_current_file.touch()
         
-    # check if no files exist in the destination_extraction folder
     for i in range(10):
         path_current_file = path_folder_destination / f'test_{i}.json'
         assert not path_current_file.exists() == True
     
-    # perform extracted file linking
     link_extracted_files(str(path_folder_source), str(path_folder_source_pdf),
                                   str(path_folder_destination))
     
-    # check if files exist in the destination_extraction folder
     for i in range(10):
         path_current_file = path_folder_destination / f'test_{i}.json'
         assert path_current_file.exists() == True

@@ -14,7 +14,6 @@ import typing
 from _pytest.capture import CaptureFixture
 
 
-
 @pytest.fixture
 def prerequisites_run_router(prerequisites_convert_xls_to_csv, 
                              prerequisites_generate_text
@@ -27,7 +26,7 @@ def prerequisites_run_router(prerequisites_convert_xls_to_csv,
     run_router)
     :rtype: requests_mock.mocker.Mocker
     """
-    mock_project_settings = {
+    mocked_project_settings = {
         'train_relevance': {'train': False},
         'train_kpi': {'train': False},
         's3_usage': None,
@@ -38,17 +37,17 @@ def prerequisites_run_router(prerequisites_convert_xls_to_csv,
     inference_ip = '0.0.0.1'
     inference_port = '8000'
 
-    with (requests_mock.Mocker() as mock_server,
+    with (requests_mock.Mocker() as mocked_server,
           patch('train_on_pdf.convert_xls_to_csv', Mock()),
-          patch('train_on_pdf.project_settings', mock_project_settings)):
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
-        mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=200)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=200)
-        yield mock_server
+          patch('train_on_pdf.project_settings', mocked_project_settings)):
+        mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
+        mocked_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
+        mocked_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=200)
+        mocked_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=200)
+        mocked_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=200)
+        mocked_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=200)
+        mocked_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=200)
+        yield mocked_server
     
 
 @pytest.mark.parametrize('status_code, cmd_output_expected, return_value_expected',
@@ -71,16 +70,16 @@ def test_run_router_extraction_liveness_up(prerequisites_run_router: requests_mo
     :type cmd_output_expected: str
     :param return_value_expected: Expected return_value
     :type return_value_expected: bool
-    :param capsys: Requesting default fixture for capturing cmd output
+    :param capsys: Requesting the default fixture capsys for capturing cmd outputs
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """    
     extraction_ip = '0.0.0.0'
     extraction_port = '8000'
     inference_port = '8000'
     project_name = 'TEST'
-    mock_server = prerequisites_run_router
+    mocked_server = prerequisites_run_router
     
-    mock_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=status_code)
+    mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=status_code)
     return_value = run_router(extraction_port, inference_port, project_name)
 
     cmd_output, _ = capsys.readouterr()
@@ -98,12 +97,11 @@ def test_run_router_extraction_server_down(prerequisites_run_router: requests_mo
     extraction_port = '8000'
     inference_port = '8000'
     project_name = 'TEST'
-    mock_server = prerequisites_run_router
+    mocked_server = prerequisites_run_router
     
-    mock_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=-1)
+    mocked_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=-1)
     return_value = run_router(extraction_port, inference_port, project_name)
 
-    # check sys out and return value
     assert return_value is False
 
 
@@ -117,12 +115,11 @@ def test_run_router_extraction_curation_server_down(prerequisites_run_router: re
     extraction_port = '8000'
     inference_port = '8000'
     project_name = 'TEST'
-    mock_server = prerequisites_run_router
+    mocked_server = prerequisites_run_router
     
-    mock_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=-1)      
+    mocked_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=-1)      
     return_value = run_router(extraction_port, inference_port, project_name)
 
-    # check sys out and return value
     assert return_value is False
 
 
@@ -146,7 +143,7 @@ def test_run_router_inference_liveness(prerequisites_run_router: requests_mock.m
     :type cmd_output_expected: str
     :param return_value_expected: Expected return_value
     :type return_value_expected: bool
-    :param capsys: Requesting default fixture for capturing cmd output
+    :param capsys: Requesting the default fixture capsys for capturing cmd outputs
     :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
     extraction_ip = '0.0.0.0'
@@ -154,12 +151,11 @@ def test_run_router_inference_liveness(prerequisites_run_router: requests_mock.m
     inference_ip = '0.0.0.1'
     inference_port = '8000'
     project_name = 'TEST'
-    mock_server = prerequisites_run_router
+    mocked_server = prerequisites_run_router
     
-    mock_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=status_code)
+    mocked_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=status_code)
     return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
     
-    # check sys out and return value
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
     assert return_value == return_value_expected
@@ -190,20 +186,19 @@ def test_run_router_relevance_training(prerequisites_run_router: requests_mock.m
     :type cmd_output_expected: str
     :param return_value_expected: Expected return_value
     :type return_value_expected: bool
-    :param capsys: Requesting default fixture for capturing cmd output
+    :param capsys: Requesting the default fixture capsys for capturing cmd outputs
     :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
     extraction_port = '8000'
     inference_ip = '0.0.0.1'
     inference_port = '8000'
     project_name = 'TEST'
-    mock_server = prerequisites_run_router
+    mocked_server = prerequisites_run_router
     train_on_pdf.project_settings['train_relevance']['train'] = train_relevance
     
-    mock_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=status_code)
+    mocked_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=status_code)
     return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
 
-    # check sys out and return value
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
     assert return_value == return_value_expected
@@ -243,17 +238,17 @@ def test_run_router_kpi_training(prerequisites_run_router: requests_mock.mocker.
     :type cmd_output_expected: str
     :param return_value_expected: Expected return_value
     :type return_value_expected: bool
-    :param capsys: Requesting default fixture for capturing cmd output
+    :param capsys: Requesting the default fixture capsys for capturing cmd outputs
     :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
     extraction_ip = '0.0.0.0'
     extraction_port = '8000'
     inference_ip = '0.0.0.1'
     inference_port = '8000'
-    mock_server = prerequisites_run_router
+    mocked_server = prerequisites_run_router
     train_on_pdf.project_settings['train_kpi']['train'] = train_kpi
         
-    # force an exception of generate_text_3434 by remove the folder_text_3434
+    # force an exception of generate_text_3434 by removing the folder_text_3434
     if not project_name:
         train_on_pdf.folder_text_3434 = None
     
@@ -267,11 +262,10 @@ def test_run_router_kpi_training(prerequisites_run_router: requests_mock.mocker.
         mocked_generate_text.side_effect = Exception()
         
     with patch('train_on_pdf.generate_text_3434', mocked_generate_text):
-        mock_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=status_code_infer_relevance)
-        mock_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=status_code_train_kpi)
+        mocked_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=status_code_infer_relevance)
+        mocked_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=status_code_train_kpi)
         return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
 
-        # check sys out and return value
         cmd_output, _ = capsys.readouterr()
         assert cmd_output_expected in cmd_output
         assert return_value == return_value_expected
@@ -301,10 +295,9 @@ def test_run_router_successful_run(prerequisites_run_router: requests_mock.mocke
     inference_ip = '0.0.0.1'
     inference_port = '8000'
     project_name = 'TEST'
-    mock_server = prerequisites_run_router
+    mocked_server = prerequisites_run_router
     
     with patch('train_on_pdf.generate_text_3434', Mock()):
         return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
 
-    # check for return value
     assert return_value == True
