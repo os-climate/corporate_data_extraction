@@ -53,13 +53,7 @@ def clear_running():
 
 def check_running():
      return os.path.exists(path_file_running)
-<<<<<<< HEAD
-=======
 
-<<<<<<< HEAD
->>>>>>> ced44e3df (Feature/2023.04 os test (#14))
-=======
->>>>>>> 710730fc0 (Feature/2023.04 os test (#16) (#17))
 
 def create_directory(directory_name):
     os.makedirs(directory_name, exist_ok=True)
@@ -77,22 +71,6 @@ def link_files(source_dir, destination_dir):
     for file in files:
         os.link(f"{source_dir}/{file}", f"{destination_dir}/{file}")
 
-<<<<<<< HEAD
-def generate_text_3434(project_name):
-    """Write the contents of all the files in folder_relevance to the file
-    text_3434 and take the header only from the first file in folder_relevance"""
-    with open(folder_text_3434 + r"/text_3434.csv", "w") as file_out:
-        very_first = True
-        for filepath in glob.iglob(folder_relevance + r'/*.csv'): 
-            print(filepath)
-            with open(filepath) as file_in:
-                first = True
-                for l in file_in:
-                    if(very_first or not first):
-                        file_out.write(l)
-                    first = False
-                very_first = False
-=======
 
 def generate_text_3434(project_name, s3_usage, s3_settings):
     """
@@ -146,7 +124,6 @@ def generate_text_3434(project_name, s3_usage, s3_settings):
         s3c_interim.upload_file_to_s3(filepath=folder_text_3434 + r"/text_3434.csv", s3_prefix=project_prefix_text3434, s3_key='text_3434.csv')
     
     return True
->>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 
 
 def convert_xls_to_csv(s3_usage, s3c_main, s3c_interim):

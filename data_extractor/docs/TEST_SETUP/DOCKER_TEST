@@ -38,7 +38,3 @@ RUN chmod -R 777 /.vscode-server
 RUN chmod -R 777 /.vscode-remote
 
 CMD sleep infinity
-<<<<<<< HEAD
-#CMD ./entry.sh
-=======
->>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
