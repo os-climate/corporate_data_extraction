@@ -1,12 +1,7 @@
 from pathlib import Path
 from train_on_pdf import save_train_info
 import pytest
-<<<<<<< HEAD
-from unittest.mock import patch
-<<<<<<< HEAD
-=======
 from unittest.mock import patch, Mock
->>>>>>> bb1209e32 (Modifying test cases for save_train_info function)
 import shutil
 import train_on_pdf
 import pickle
@@ -19,7 +14,7 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
 
     :param path_folder_root_testing: Requesting the root testing folder fixture
     :type path_folder_root_testing: Path
-    :param path_folder_temporary: Requesting the temporary folder fixture
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     :return: Returns path to pickled save_train_info file
     :rtype: Path
@@ -115,20 +110,6 @@ def test_save_tain_info_return_value():
     project_name = 'TEST'
     
     assert save_train_info(project_name) is None
-<<<<<<< HEAD
-=======
-
-
-# def test_save_train_info():
-#     source_mapping
-#     source_annotation
-#     project_settings
-#     project_model_dir
-#     pass
-
-# def 
->>>>>>> ced44e3df (Feature/2023.04 os test (#14))
-=======
     
 
 def test_save_train_info_s3_usage():
@@ -144,4 +125,3 @@ def test_save_train_info_s3_usage():
     assert mocked_s3.download_files_in_prefix_to_dir.call_count == 3
     assert mocked_s3.upload_file_to_s3.called_once()
         
->>>>>>> bb1209e32 (Modifying test cases for save_train_info function)

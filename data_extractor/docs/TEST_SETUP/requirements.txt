@@ -1,13 +1,5 @@
-<<<<<<< HEAD
-requests
-pandas
-pyyaml
-openpyxl
-boto3
-=======
 requests~=2.31.0
 pandas~=2.0.3
 pyyaml~=6.0.1
 openpyxl~=3.1.2
 boto3~=1.28.8
->>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))

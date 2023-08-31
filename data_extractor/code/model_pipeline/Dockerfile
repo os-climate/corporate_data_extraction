@@ -15,11 +15,7 @@ RUN apt-key del 7fa2af80
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 RUN apt-get update
-<<<<<<< HEAD
-RUN apt-get install -y unzip vim wget
-=======
 RUN apt-get install -y unzip vim git wget
->>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 
 COPY ./model_pipeline /app/code/model_pipeline
 COPY ./kpi_inference_data_pipeline /app/code/kpi_inference_data_pipeline
@@ -27,11 +23,8 @@ COPY ./s3_communication.py /app/code/model_pipeline/model_pipeline/s3_communicat
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
 RUN chmod -R 777 /app/code
-<<<<<<< HEAD
-=======
 
 ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
->>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 
 WORKDIR /app/code/kpi_inference_data_pipeline
 RUN pip install -e .
@@ -41,14 +34,11 @@ RUN pip install -e .
 
 RUN mkdir -p /app/server_logs
 RUN chmod -R 777 /app/server_logs
-<<<<<<< HEAD
-=======
 
 RUN mkdir -p /app/data
 RUN chmod -R 777 /app/data
 
 RUN mkdir -p /app/models
 RUN chmod -R 777 /app/models
->>>>>>> 228cdfe6e (Feature/2023.04 os test (#12))
 
 CMD ./entry.sh
