@@ -1,7 +1,6 @@
 from pathlib import Path
 from train_on_pdf import save_train_info
 import pytest
-<<<<<<< HEAD
 from unittest.mock import patch, Mock
 import shutil
 import train_on_pdf
@@ -126,16 +125,3 @@ def test_save_train_info_s3_usage():
     assert mocked_s3.download_files_in_prefix_to_dir.call_count == 3
     assert mocked_s3.upload_file_to_s3.called_once()
         
-=======
-from unittest.mock import patch
-
-
-# def test_save_train_info():
-#     source_mapping
-#     source_annotation
-#     project_settings
-#     project_model_dir
-#     pass
-
-# def 
->>>>>>> develop
