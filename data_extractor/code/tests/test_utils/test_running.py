@@ -1,8 +1,9 @@
 from pathlib import Path
-from train_on_pdf import set_running, check_running, clear_running
+from utils import set_running, check_running, clear_running
 import pytest
 from unittest.mock import patch, Mock
 import config_path
+from paths import path_file_running
 
 
 @pytest.fixture
@@ -12,14 +13,14 @@ def prerequisite_running(path_folder_root_testing: Path):
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
-    # mock the path to the running file
-    with patch('train_on_pdf.path_file_running', 
-               str(path_file_running)):
-        yield
+    # path_file_running = path_folder_root_testing / 'data' / 'running'
+    # # mock the path to the running file
+    # with patch('train_on_pdf.path_file_running', 
+    #            str(path_file_running)):
+    yield
 
-        # cleanup
-        path_file_running.unlink(missing_ok=True)
+    # cleanup
+    path_file_running.unlink(missing_ok=True)
         
 
 def test_set_running(prerequisite_running, path_folder_root_testing: Path):
@@ -31,7 +32,7 @@ def test_set_running(prerequisite_running, path_folder_root_testing: Path):
     :type path_folder_root_testing: Path
     """
     # set path to running file and do a cleanup
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    # path_file_running = path_folder_root_testing / 'data' / 'running'
     path_file_running.unlink(missing_ok=True)
     
     # perform set_running and assert that running file exists
@@ -50,7 +51,7 @@ def test_checking_onging_run(prerequisite_running, path_folder_root_testing: Pat
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    # path_file_running = path_folder_root_testing / 'data' / 'running'
     path_file_running.touch()
     assert check_running() == True
 
@@ -63,7 +64,7 @@ def test_checking_finished_run(prerequisite_running, path_folder_root_testing: P
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    # path_file_running = path_folder_root_testing / 'data' / 'running'
     path_file_running.unlink(missing_ok = True)
     assert check_running() == False
        
@@ -76,7 +77,7 @@ def test_clear_running(prerequisite_running, path_folder_root_testing: Path):
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    # path_file_running = path_folder_root_testing / 'data' / 'running'
     path_file_running.touch()
     clear_running()
     assert not path_file_running.exists()

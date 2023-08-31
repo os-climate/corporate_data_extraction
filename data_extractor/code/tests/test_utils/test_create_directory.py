@@ -1,5 +1,5 @@
 from pathlib import Path
-from train_on_pdf import create_directory
+from utils import create_directory
 import shutil
 
 
