@@ -12,8 +12,10 @@ import pickle
 import datetime
 from s3_communication import S3Communication
 from pathlib import Path
-from utils.utils import set_running, clear_running, check_running, create_directory, link_files
+from utils.paths import path_file_running
+from utils.utils import create_directory, link_files, TrainingMonitor
 
+training_monitor = TrainingMonitor(path_file_running)
 
 project_settings = None
 project_model_dir = None
@@ -293,7 +295,7 @@ def main():
     global folder_relevance
     global project_prefix
 
-    if check_running():
+    if training_monitor.check_running():
         print("Another training or inference process is currently running.")
         return
         
@@ -373,7 +375,7 @@ def main():
     relevance_training_output_model_name = project_settings['train_relevance']['output_model_name']
     kpi_inference_training_output_model_name = project_settings['train_kpi']['output_model_name']
     
-    set_running()
+    training_monitor.set_running()
     try:
         source_pdf = project_data_dir + r'/input/pdfs/training'
         source_annotation = project_data_dir + r'/input/annotations'
@@ -452,7 +454,7 @@ def main():
     except Exception as e:
         print('Process failed to run. Reason: ' + str(repr(e)) + traceback.format_exc())
 
-    clear_running()
+    training_monitor.clear_running()
 
 
 if __name__ == "__main__":

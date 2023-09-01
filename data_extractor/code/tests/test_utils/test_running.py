@@ -23,7 +23,12 @@ from utils.paths import path_file_running
 #     path_file_running.unlink(missing_ok=True)
     
 @pytest.fixture
-def training_monitor():
+def training_monitor() -> TrainingMonitor:
+    """The fixture returns a TrainingMonitor object for testing
+
+    :yield: TrainingMonitor class for monitor training status
+    :rtype: TrainingMonitor
+    """
     _train_monitor = TrainingMonitor(path_file_running)
     yield _train_monitor
     # clean up
@@ -46,9 +51,6 @@ def test_set_running(path_folder_root_testing: Path,
     # perform set_running and assert that running file exists
     training_monitor.set_running()
     assert path_file_running.exists()
-    
-    # cleanup
-    path_file_running.unlink()
 
 
 def test_checking_onging_run(path_folder_root_testing: Path,

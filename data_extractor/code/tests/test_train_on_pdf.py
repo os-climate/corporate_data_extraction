@@ -10,7 +10,7 @@ import sys
 import yaml
 import traceback
 from tests.utils_test import modify_project_settings
-from tests.test_utils.test_running import prerequisite_running
+# from tests.test_utils.test_running import prerequisite_running
 
 # types
 import typing
@@ -22,8 +22,7 @@ from _pytest.capture import CaptureFixture
 def prerequisite_train_on_pdf_try_run(
     request: FixtureRequest,
     path_folder_root_testing: Path,
-    path_folder_temporary: Path,
-    prerequisite_running
+    path_folder_temporary: Path
     ) -> None:
     """Defines a fixture for the train_on_pdf script
 
@@ -112,13 +111,15 @@ def prerequisite_train_on_pdf_try_run(
         patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,    
         patch('train_on_pdf.config_path', Mock()) as mocked_config_path,
         patch('train_on_pdf.yaml', Mock()) as mocked_yaml,
-        patch('train_on_pdf.project_settings', mocked_project_settings)
+        patch('train_on_pdf.project_settings', mocked_project_settings),
+        patch('utils.utils.TrainingMonitor', Mock()) as mocked_training_monitor
     ):
         mocked_argpase.return_value.project_name = project_name
         mocked_argpase.return_value.s3_usage = 'N'
         mocked_config_path.DATA_DIR = str(path_folder_data)
         mocked_config_path.MODEL_DIR = str(path_folder_models)
         mocked_yaml.safe_load.side_effect = return_project_settings
+        mocked_training_monitor.check_running.return_value = False
         yield
         
         # cleanup
@@ -131,7 +132,9 @@ def test_train_on_pdf_check_running(capsys: typing.Generator[CaptureFixture[str]
     :param capsys: Requesting the default fixture capsys for capturing cmd outputs
     :type capsys: typing.Generator[CaptureFixture[str], None, None])
     """
-    with patch('train_on_pdf.check_running'):
+    #TODO How to mock TrainingMonitor
+    with patch('train_on_pdf.TrainingMonitor', Mock()) as mocked_training_monitor:
+        mocked_training_monitor.check_running.return_value = True
         return_value = train_on_pdf.main()
         
         output_cmd, _ = capsys.readouterr()
