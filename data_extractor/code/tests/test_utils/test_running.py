@@ -9,10 +9,8 @@ import config_path
 def prerequisite_running(path_folder_root_testing: Path):
     """Defines a fixture for the running_file path
 
-    :param path_folder_data_sample: _description_
-    :type path_folder_data_sample: Path
-    :yield: Path for the running_file
-    :rtype: Path
+    :param path_folder_root_testing: Path for the testing folder
+    :type path_folder_root_testing: Path
     """
     path_file_running = path_folder_root_testing / 'data' / 'running'
     # mock the path to the running file
@@ -22,11 +20,7 @@ def prerequisite_running(path_folder_root_testing: Path):
 
         # cleanup
         path_file_running.unlink(missing_ok=True)
-    
-    # config_path.root_dir = Mock(side_effect=lambda *args: str(path_file_running))
-    # with patch('train_on_pdf.config_path.root_dir'):
         
-    #     yield
 
 def test_set_running(prerequisite_running, path_folder_root_testing: Path):
     """Tests the set_running function creating a running file
@@ -86,4 +80,3 @@ def test_clear_running(prerequisite_running, path_folder_root_testing: Path):
     path_file_running.touch()
     clear_running()
     assert not path_file_running.exists()
-
