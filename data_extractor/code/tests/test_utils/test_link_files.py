@@ -1,5 +1,5 @@
 from pathlib import Path
-from utils import link_files, link_extracted_files
+from utils.utils import link_files, link_extracted_files
 import shutil
 import pytest
 

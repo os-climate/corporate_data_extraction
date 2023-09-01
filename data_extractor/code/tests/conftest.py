@@ -33,4 +33,5 @@ def path_folder_temporary() -> Path:
 def path_folder_root_testing() -> Path:
     path_folder_data_sample_ = project_tests_root() / 'root_testing'
     yield path_folder_data_sample_
+    
 

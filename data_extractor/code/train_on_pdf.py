@@ -12,7 +12,7 @@ import pickle
 import datetime
 from s3_communication import S3Communication
 from pathlib import Path
-from utils import set_running, clear_running, check_running, create_directory, link_files
+from utils.utils import set_running, clear_running, check_running, create_directory, link_files
 
 
 project_settings = None
