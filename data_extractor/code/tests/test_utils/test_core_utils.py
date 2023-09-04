@@ -1,7 +1,8 @@
 from pathlib import Path
-from utils.core_utils import create_folder, copy_file_without_overwrite
+from utils.core_utils import create_folder, copy_file_without_overwrite, _delete_file, _delete_files_in_folder
 import shutil
 import pytest
+from unittest.mock import patch, Mock
 
 
 @pytest.fixture()
@@ -49,6 +50,26 @@ def test_create_folder_cleanup(path_folder_temporary: Path):
     assert not any(path_folder_temporary.iterdir())
     
     
+def test_create_folder_already_exists():
+    path_folder_as_str = 'test'
+    with (patch.object(Path, 'mkdir') as mocked_path,
+          patch('utils.core_utils._delete_files_in_folder') as mocked_mkdir):
+        mocked_path.side_effect = OSError
+        
+        create_folder(path_folder_as_str)
+        mocked_mkdir.assert_called_once()
+        
+        
+def test_create_folder_path_not_exists():
+    path_folder_as_str = 'test'
+    with (patch.object(Path, 'mkdir') as mocked_path,
+          patch('utils.core_utils._delete_files_in_folder') as mocked_mkdir):
+        mocked_path.side_effect = FileNotFoundError
+        
+        create_folder(path_folder_as_str)
+        mocked_mkdir.assert_called_once()
+    
+    
 def test_copy_file_without_overwrite_result(prerequisites_copy_file_without_overwrite,
                                             path_folder_temporary: Path):
     """Tests if copy_file_without_overwrite returns True if executed
@@ -85,3 +106,20 @@ def test_copy_file_without_overwrite_file_not_exists(prerequisites_copy_file_wit
     
     copy_file_without_overwrite(str(path_folder_source), str(path_folder_destination))
     assert path_folder_destination_file.exists()
+    
+    
+def test_delete_file(path_folder_temporary: Path):
+    path_file_temporary = path_folder_temporary / 'test.txt'
+    path_file_temporary.touch()
+    
+    _delete_file(path_file_temporary)
+    assert not path_file_temporary.exists()
+    
+
+def test_delete_files_in_folder(path_folder_temporary: Path):
+    for i in range(5):
+        path_file_current = path_folder_temporary / f'test_{i}.txt'
+        path_file_current.touch()
+        
+    _delete_files_in_folder(path_folder_temporary)
+    assert not any(path_folder_temporary.iterdir())
