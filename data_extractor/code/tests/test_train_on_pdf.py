@@ -225,7 +225,7 @@ def test_train_on_pdf_correct_input_s3_usage(s3_usage: typing.Union[str, None]):
     """
     with (patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
           patch('train_on_pdf.input', Mock()) as mocked_input,
-          patch('train_on_pdf.create_directory', 
+          patch('train_on_pdf.create_folder', 
                 side_effect=lambda *args: Path(args[0]).mkdir(parents=True, exist_ok=True)),
           patch('train_on_pdf.S3Communication', Mock()) as mocked_s3_communication):
         mocked_argpase.return_value.project_name = 'TEST'
@@ -250,7 +250,7 @@ def test_train_on_pdf_s3_usage():
     with (patch('train_on_pdf.os.getenv', Mock(side_effect=lambda *args: args[0])),
           patch('train_on_pdf.argparse.ArgumentParser.parse_args', Mock()) as mocked_argpase,
           patch('train_on_pdf.S3Communication', Mock()) as mocked_s3_communication,
-          patch('train_on_pdf.create_directory', Mock())):
+          patch('train_on_pdf.create_folder', Mock())):
         
         mocked_argpase.return_value.project_name = project_name
         mocked_argpase.return_value.s3_usage = 'Y'
@@ -293,7 +293,7 @@ def test_train_on_pdf_folders_default_created(path_folder_temporary: Path):
     
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.run_router', side_effect=lambda *args: False),
-          patch('train_on_pdf.create_directory', Mock()) as mocked_create_directory):
+          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
         train_on_pdf.main()
         
@@ -302,7 +302,7 @@ def test_train_on_pdf_folders_default_created(path_folder_temporary: Path):
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
         for path_current in paths_folders_expected:
             path_folder_current = path_folder_temporary + path_current
-            mocked_create_directory.assert_any_call(str(path_folder_current))
+            mocked_create_folder.assert_any_call(str(path_folder_current))
     
 
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
@@ -317,7 +317,7 @@ def test_train_on_pdf_folders_relevance_created(path_folder_temporary: Path):
     
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.run_router', side_effect=lambda *args: False),
-          patch('train_on_pdf.create_directory', Mock()) as mocked_create_directory):
+          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
         train_on_pdf.main()
         
@@ -325,7 +325,7 @@ def test_train_on_pdf_folders_relevance_created(path_folder_temporary: Path):
         path_folder_temporary = path_folder_temporary / 'models'
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
         path_folder_expected = path_folder_temporary + '/RELEVANCE/Text/test'
-        mocked_create_directory.assert_any_call(str(path_folder_expected))
+        mocked_create_folder.assert_any_call(str(path_folder_expected))
 
             
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
@@ -339,7 +339,7 @@ def test_train_on_pdf_folders_kpi_extraction_created(path_folder_temporary: Path
     """
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.run_router', side_effect=lambda *args: False),
-          patch('train_on_pdf.create_directory', Mock()) as mocked_create_directory):
+          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
         train_on_pdf.main()
         
@@ -347,7 +347,7 @@ def test_train_on_pdf_folders_kpi_extraction_created(path_folder_temporary: Path
         path_folder_temporary = path_folder_temporary / 'models'
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
         path_folder_expected = path_folder_temporary + '/KPI_EXTRACTION/Text/test'
-        mocked_create_directory.assert_any_call(str(path_folder_expected))
+        mocked_create_folder.assert_any_call(str(path_folder_expected))
                   
 
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
@@ -367,7 +367,7 @@ def test_train_on_pdf_e2e_store_extractions(path_folder_temporary: Path,
           patch('train_on_pdf.run_router', side_effect=lambda *args: True),
           patch('train_on_pdf.save_train_info', Mock()) as mocked_save_train_info,
           patch('train_on_pdf.copy_file_without_overwrite', Mock()) as mocked_copy_files,
-          patch('train_on_pdf.create_directory', Mock())):
+          patch('train_on_pdf.create_folder', Mock())):
         mocked_copy_files.return_value = False
         
         train_on_pdf.main()
@@ -405,7 +405,7 @@ def test_train_on_pdf_e2e_delete_interim_files(path_folder_root_testing: Path):
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.run_router', side_effect=lambda *args: True),
           patch('train_on_pdf.save_train_info', Mock()) as mocked_save_train_info,
-          patch('train_on_pdf.create_directory', Mock())):
+          patch('train_on_pdf.create_folder', Mock())):
         
         train_on_pdf.main()
         
@@ -425,7 +425,7 @@ def test_train_on_pdf_e2e_save_train_info(capsys: typing.Generator[CaptureFixtur
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.run_router', side_effect=lambda *args: True),
           patch('train_on_pdf.save_train_info', Mock()) as mocked_save_train_info,
-          patch('train_on_pdf.create_directory', Mock())): 
+          patch('train_on_pdf.create_folder', Mock())): 
         train_on_pdf.main()
         
         mocked_save_train_info.assert_called_once()
@@ -442,7 +442,7 @@ def test_train_on_pdf_process_failed(capsys: typing.Generator[CaptureFixture[str
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.run_router', side_effect=lambda *args: False),
           patch('train_on_pdf.link_files', side_effect=ValueError()),
-          patch('train_on_pdf.create_directory', lambda *args: Path(args[0]).mkdir(exist_ok=True))):
+          patch('train_on_pdf.create_folder', lambda *args: Path(args[0]).mkdir(exist_ok=True))):
         
         train_on_pdf.main()
         

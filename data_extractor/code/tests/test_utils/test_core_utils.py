@@ -1,5 +1,5 @@
 from pathlib import Path
-from utils.core_utils import create_directory, copy_file_without_overwrite
+from utils.core_utils import create_folder, copy_file_without_overwrite
 import shutil
 import pytest
 
@@ -23,19 +23,19 @@ def prerequisites_copy_file_without_overwrite(path_folder_temporary: Path) -> No
         shutil.rmtree(path)
 
 
-def test_create_directory(path_folder_temporary: Path):
-    """Tests of create_directory creates a folder
+def test_create_folder(path_folder_temporary: Path):
+    """Tests of create_folder creates a folder
 
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    create_directory(str(path_folder_temporary))
+    create_folder(str(path_folder_temporary))
     
     assert path_folder_temporary.exists()
 
 
-def test_create_directory_cleanup(path_folder_temporary: Path):
-    """Tests of create_directory performs a clean-up if folder exists
+def test_create_folder_cleanup(path_folder_temporary: Path):
+    """Tests of create_folder performs a clean-up if folder exists
 
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
@@ -45,7 +45,7 @@ def test_create_directory_cleanup(path_folder_temporary: Path):
         path_current_test_file = path_folder_temporary / f'test_{i}.txt'
         path_current_test_file.touch()
         
-    create_directory(str(path_folder_temporary))
+    create_folder(str(path_folder_temporary))
     assert not any(path_folder_temporary.iterdir())
     
     

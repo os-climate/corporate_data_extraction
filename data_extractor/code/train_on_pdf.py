@@ -13,7 +13,8 @@ import datetime
 from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import path_file_running
-from utils.utils import create_directory, link_files
+from utils.utils import link_files
+from utils.core_utils import create_folder
 from utils.training_monitor import TrainingMonitor
 
 project_settings = None
@@ -331,7 +332,7 @@ def main():
         s3_usage = s3_usage == 'Y'
 
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
-    create_directory(project_data_dir)
+    create_folder(project_data_dir)
     s3c_main = None
     s3c_interim = None
     if s3_usage:
@@ -392,21 +393,21 @@ def main():
         folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
-        create_directory(source_pdf)
-        create_directory(source_annotation)
-        create_directory(source_mapping)
-        create_directory(folder_text_3434)
-        create_directory(destination_pdf)
-        create_directory(destination_annotation)
-        create_directory(destination_mapping)
-        create_directory(destination_extraction)
-        create_directory(destination_training)
-        create_directory(destination_curation)
+        create_folder(source_pdf)
+        create_folder(source_annotation)
+        create_folder(source_mapping)
+        create_folder(folder_text_3434)
+        create_folder(destination_pdf)
+        create_folder(destination_annotation)
+        create_folder(destination_mapping)
+        create_folder(destination_extraction)
+        create_folder(destination_training)
+        create_folder(destination_curation)
         if project_settings['train_relevance']['train']:
-            create_directory(destination_saved_models_relevance)
+            create_folder(destination_saved_models_relevance)
         if project_settings['train_kpi']['train']:
-            create_directory(destination_saved_models_inference)
-        create_directory(folder_relevance)
+            create_folder(destination_saved_models_inference)
+        create_folder(folder_relevance)
 
         link_files(source_pdf, destination_pdf)
         link_files(source_annotation, destination_annotation)
@@ -435,13 +436,13 @@ def main():
                                                                       destination_extraction_data)
                 
             if project_settings['general']['delete_interim_files']:
-                create_directory(destination_pdf)
-                create_directory(destination_mapping)
-                create_directory(destination_annotation)
-                create_directory(destination_extraction)
-                create_directory(destination_training)
-                create_directory(destination_curation)
-                create_directory(folder_text_3434)
+                create_folder(destination_pdf)
+                create_folder(destination_mapping)
+                create_folder(destination_annotation)
+                create_folder(destination_extraction)
+                create_folder(destination_training)
+                create_folder(destination_curation)
+                create_folder(folder_text_3434)
                 if s3_usage:
                     # Show only objects which satisfy our prefix
                     my_bucket = s3c_interim.s3_resource.Bucket(name=s3c_interim.bucket)
