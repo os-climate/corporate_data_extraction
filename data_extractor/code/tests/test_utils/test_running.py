@@ -1,5 +1,5 @@
 from pathlib import Path
-from utils.utils import set_running, check_running, clear_running, TrainingMonitor
+from utils.training_monitor import TrainingMonitor
 import pytest
 from unittest.mock import patch, Mock
 import config_path

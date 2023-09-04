@@ -7,7 +7,7 @@ from datetime import timedelta
 from flask import Flask, Response, request
 import shutil
 import traceback
-from s3_communication import S3Communication
+from utils.s3_communication import S3Communication
 
 from esg_data_pipeline.components import Extractor
 from esg_data_pipeline.config import config

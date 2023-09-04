@@ -8,7 +8,7 @@ import csv
 import time
 import traceback
 import shutil
-from s3_communication import S3Communication
+from utils.s3_communication import S3Communication
 import pandas as pd
 
 path_file_running = config_path.NLP_DIR+r'/data/running'

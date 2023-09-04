@@ -7,7 +7,7 @@ import collections
 import pathlib
 import shutil
 import traceback
-from s3_communication import S3Communication
+from utils.s3_communication import S3Communication
 import zipfile
 
 from flask import Flask, Response, request

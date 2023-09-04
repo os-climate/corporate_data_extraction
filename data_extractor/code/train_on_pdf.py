@@ -10,12 +10,11 @@ import config_path
 import traceback
 import pickle
 import datetime
-from s3_communication import S3Communication
+from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import path_file_running
-from utils.utils import create_directory, link_files, TrainingMonitor
-
-training_monitor = TrainingMonitor(path_file_running)
+from utils.utils import create_directory, link_files
+from utils.training_monitor import TrainingMonitor
 
 project_settings = None
 project_model_dir = None
@@ -278,6 +277,8 @@ def copy_file_without_overwrite(src_path, dest_path):
 
 
 def main():
+    training_monitor = TrainingMonitor(path_file_running)
+    
     global project_settings
     global source_pdf
     global source_annotation

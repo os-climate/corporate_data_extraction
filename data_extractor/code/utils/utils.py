@@ -10,74 +10,11 @@ from utils.paths import path_file_running
 import traceback
 import pickle
 import datetime
-from s3_communication import S3Communication
+from utils.s3_communication import S3Communication
 from pathlib import Path
 
 
-class TrainingMonitor(object):
-    """Class for a simple monitoring of a training process
-    """
-    def __init__(self: 'TrainingMonitor', path_file_running=None) -> 'TrainingMonitor':
-        self.path_file_running: Path = path_file_running if path_file_running is not None else self._set_default_path()
-    
-    @staticmethod
-    def _set_default_path() -> Path:
-        """Returns a default Path if no path is given
 
-        :return: Default path
-        :rtype: Path
-        """
-        return Path(__file__).parent.resolve() / 'trainingMonitorFile'
-    
-    def _delete_path_file_running(self) -> None:
-        self.path_file_running.unlink(missing_ok=True)
-    
-    def set_running(self) -> None:
-        """Creates a file at the path path_file_running for monitoring the status of the current training
-        """
-        self.path_file_running.touch()
-        
-    def clear_running(self) -> None:
-        """Deletes the file at the path path_file_running
-        """
-        self.path_file_running.unlink()
-      
-    def check_running(self) -> bool:
-        """Check if the file at path_file_running exists
-
-        :return: Value if file exists or not
-        :rtype: bool
-        """
-        return self.path_file_running.exists()
-
-
-
-
-def set_running():
-     with open(path_file_running, 'w'):
-          pass
-
-
-def clear_running():
-     try:
-          os.unlink(path_file_running)
-     except Exception as e:
-          pass
-
-
-def check_running():
-     return os.path.exists(path_file_running)
-
-
-def create_directory(directory_name):
-    os.makedirs(directory_name, exist_ok=True)
-    for filename in os.listdir(directory_name):
-        file_path = os.path.join(directory_name, filename)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
             
 
 def link_files(source_dir, destination_dir):

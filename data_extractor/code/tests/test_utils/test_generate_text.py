@@ -3,7 +3,7 @@ from train_on_pdf import generate_text_3434
 from tests.utils_test import write_to_file
 import shutil
 from unittest.mock import patch, Mock, call
-import s3_communication
+from utils.s3_communication import S3Communication
 import train_on_pdf
 import pytest
 
@@ -68,7 +68,7 @@ def test_generate_text_with_s3(path_folder_temporary: Path):
         }
     }
     
-    with (patch('train_on_pdf.S3Communication', Mock(spec=s3_communication.S3Communication)) as mocked_s3):
+    with (patch('train_on_pdf.S3Communication', Mock(spec=S3Communication)) as mocked_s3):
         generate_text_3434(project_name, True, mocked_s3_settings)
         
     # check for calls
