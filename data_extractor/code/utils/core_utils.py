@@ -34,3 +34,34 @@ def copy_file_without_overwrite(path_folder_source_as_str: str, path_folder_dest
         if not path_file_current_destination.exists():
             shutil.copyfile(path_file_current_source, path_file_current_destination)
     return True
+
+
+def convert_xls_to_csv(s3_usage, s3c_main, s3c_interim):
+    """
+    This function transforms the annotations.xlsx file into annotations.csv.
+
+    :param s3_usage: boolean: True if S3 connection should be used
+    :param s3c_main: S3Communication class element (based on boto3)
+    :param s3c_interim: S3Communication class element (based on boto3)
+    return None
+    """
+    source_dir = source_annotation
+    dest_dir = destination_annotation
+    if s3_usage:
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations',
+                                                 source_dir)
+    first = True
+    for filename in os.listdir(source_dir):
+        if filename[-5:] == '.xlsx':
+            if not first:
+                raise ValueError('More than one excel sheet found')
+            print('Converting ' + filename + ' to csv-format')
+            # only reads first sheet in excel file
+            read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl')
+            read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index=None, header=True)
+            if s3_usage:
+                s3c_interim.upload_files_in_dir_to_prefix(dest_dir, 
+                                                          project_prefix + '/interim/ml/annotations')
+            first = False         
+    if first:
+        raise ValueError('No annotation excel sheet found')

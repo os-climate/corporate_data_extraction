@@ -14,7 +14,7 @@ from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import path_file_running
 from utils.utils import link_files
-from utils.core_utils import create_folder
+from utils.core_utils import create_folder, convert_xls_to_csv
 from utils.training_monitor import TrainingMonitor
 
 project_settings = None
@@ -93,37 +93,6 @@ def generate_text_3434(project_name, s3_usage, s3_settings):
         s3c_interim.upload_file_to_s3(filepath=folder_text_3434 + r"/text_3434.csv", s3_prefix=project_prefix_text3434, s3_key='text_3434.csv')
     
     return True
-
-
-def convert_xls_to_csv(s3_usage, s3c_main, s3c_interim):
-    """
-    This function transforms the annotations.xlsx file into annotations.csv.
-
-    :param s3_usage: boolean: True if S3 connection should be used
-    :param s3c_main: S3Communication class element (based on boto3)
-    :param s3c_interim: S3Communication class element (based on boto3)
-    return None
-    """
-    source_dir = source_annotation
-    dest_dir = destination_annotation
-    if s3_usage:
-        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations',
-                                                 source_dir)
-    first = True
-    for filename in os.listdir(source_dir):
-        if filename[-5:] == '.xlsx':
-            if not first:
-                raise ValueError('More than one excel sheet found')
-            print('Converting ' + filename + ' to csv-format')
-            # only reads first sheet in excel file
-            read_file = pd.read_excel(source_dir + r'/' + filename, engine='openpyxl')
-            read_file.to_csv(dest_dir + r'/aggregated_annotation.csv', index=None, header=True)
-            if s3_usage:
-                s3c_interim.upload_files_in_dir_to_prefix(dest_dir, 
-                                                          project_prefix + '/interim/ml/annotations')
-            first = False         
-    if first:
-        raise ValueError('No annotation excel sheet found')
 
 
 def save_train_info(project_name, s3_usage=False, s3c_main=None, s3_settings=None):

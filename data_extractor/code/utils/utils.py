@@ -36,3 +36,5 @@ def link_extracted_files(src_ext, src_pdf, dest_ext):
             if not os.path.exists(dest_path_file_name):
                 shutil.copyfile(src_path_file_name, dest_path_file_name)
     return True
+
+
