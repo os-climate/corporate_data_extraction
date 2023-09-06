@@ -1,6 +1,6 @@
-from pydantic import Field
+from pydantic import Field, ConfigDict
 from pydantic_settings import BaseSettings
-from typing import List, Any
+from typing import List
 
 
 class General(BaseSettings):
@@ -25,7 +25,7 @@ class DataExport(BaseSettings):
 class Extraction(BaseSettings):
     min_paragraph_length: int = 20
     seed: int = 42
-    annotation_folder: str = ''
+    annotation_folder: str | None = None
     skip_extracted_files: bool = True
     use_extractions: bool = True
     store_extractions: bool = True
@@ -39,7 +39,6 @@ class Curation(BaseSettings):
     min_length_neg_sample: int = 50
     seed: int = 41
 
-# TODO fix for consistency
 class Processor(BaseSettings):
     proc_max_seq_len: int = 512
     proc_dev_split: float = 0.2
@@ -49,6 +48,7 @@ class Processor(BaseSettings):
     proc_metric: str = 'acc'
 
 class Model(BaseSettings):
+    model_config = ConfigDict(protected_namespaces=('settings_',))
     model_layer_dims: List[int] = [768, 2]
     model_lm_output_types: List[str] = ['per_sequence']
     
@@ -64,11 +64,12 @@ class Training(BaseSettings):
     grad_acc_steps: int = 1
     run_cv: bool = False
     xval_folds: int = 5
+    metric: str | None = None
     max_processes: int = 128
 
 class TrainRelevance(BaseSettings):
     base_model: str = 'roberta-base'
-    input_model_name: str = '' 
+    input_model_name: str | None = '' 
     output_model_name: str = 'TEST_1'
     train: bool = True
     seed: int = 42
@@ -84,6 +85,7 @@ class InferRelevance(BaseSettings):
     disable_tqdm: bool = True
     kpi_questions: List[str] = []
     sectors: List[str] = ["OG", "CM", "CU"]
+    return_class_probs: bool = False
 
 class KpiCuration(BaseSettings):
     val_ratio: int = 0
@@ -106,7 +108,7 @@ class KpiProcessor(BaseSettings):
     metric: str = 'squad'
 
 class TrainKpi(BaseSettings):
-    input_model_name: str = ''
+    input_model_name: str | None = None
     output_model_name: str = 'TEST_1'
     base_model: str = 'a-ware/roberta-large-squadv2'
     train: bool = True
@@ -116,6 +118,7 @@ class TrainKpi(BaseSettings):
     mlflow: MlFlow = MlFlow()
     processor: KpiProcessor = KpiProcessor()
     model: Model = Model(model_lm_output_types=["per_token"])
+    training: Training = Training(dropout=0.3, metric='f1', max_processes=1)
     
 class InferKpi(BaseSettings):
     skip_processed_files: bool = False # If set to True, will skip inferring on already processed files
@@ -129,10 +132,62 @@ class RuleBased(BaseSettings):
     verbosity: int = 2
     use_docker: bool = True
 
-
 class TrainingSettings(BaseSettings):
     general: General = General()
+    data_export: DataExport = DataExport()
+    extraction: Extraction = Extraction()
+    curation: Curation = Curation()
+    train_relevance: TrainRelevance = TrainRelevance()
+    infer_relevance: InferRelevance = InferRelevance()
+    train_kpi: TrainKpi = TrainKpi()
+    infer_kpi: InferKpi = InferKpi()
+    rule_based: RuleBased = RuleBased()
+
+
+class MainBucketSettings(BaseSettings):
+    s3_endpoint: str = Field(default='', alias='LANDING_AWS_ENDPOINT', )
+    s3_access_key: str = Field(default='', alias='LANDING_AWS_ACCESS_KEY')
+    s3_secret_key: str = Field(default='', alias='LANDING_AWS_SECRET_KEY')
+    s3_bucket_name: str = Field(default='', alias='LANDING_AWS_BUCKET_NAME')
+
+class InterimBucketSettings(BaseSettings):
+    s3_endpoint: str = Field(default='', alias='INTERIM_AWS_ENDPOINT')
+    s3_access_key: str = Field(default='', alias='INTERIM_AWS_ACCESS_KEY')
+    s3_secret_key: str = Field(default='', alias='INTERIM_AWS_SECRET_KEY')
+    s3_bucket_name: str = Field(default='', alias='INTERIM_AWS_BUCKET_NAME')
+    
+class S3Settings(BaseSettings):
+    prefix: str = Field(default='corporate_data_extraction_projects')
+    main_bucket: MainBucketSettings = MainBucketSettings()
+    interim_bucket: InterimBucketSettings = InterimBucketSettings()
+    
+
+_current_settings_main: TrainingSettings | None = None
+_current_settings_s3: S3Settings | None = None
     
     
-main_settings = TrainKpi()
-print(main_settings.model_dump())
+def get_main_settings() -> TrainingSettings:
+    if _current_settings_main is None:
+        setup_main_settings()
+        return _current_settings_main
+    else:
+        return _current_settings_main
+        
+def setup_main_settings():
+    global _current_settings_main
+    _current_settings_main = TrainingSettings()
+    
+def get_s3_settings() -> S3Settings:
+    if _current_settings_s3 is None:
+        setup_s3_settings()
+        return _current_settings_s3
+    else:
+        return _current_settings_s3
+        
+def setup_s3_settings():
+    global _current_settings_s3
+    _current_settings_s3 = S3Settings()
+
+
+# def get_s3_settings() -> S3Settings:
+#     return _current_settings_s3
