@@ -10,9 +10,9 @@ class SettingsHandler():
         self.settings_main: None | Dict[Any] = None
         self.settings_s3: None | Dict[Any] = None
     
-    def read_settings(self,
-                      path_settings_main=Path(__file__).parent.parent / 'data' / 'TEST' / 'settings.yaml',
-                      path_settings_s3=Path(__file__).parent.parent / 'data' / 's3_settings.yaml'):
+    def read_settings(self, 
+                      path_settings_main=Path(__file__).parent.parent.resolve() / 'data' / 'TEST' / 'settings.yaml',
+                      path_settings_s3=Path(__file__).parent.parent.resolve() / 'data' / 's3_settings.yaml'):
 
         try:
             with (open(str(path_settings_main)) as file_settings_main,
