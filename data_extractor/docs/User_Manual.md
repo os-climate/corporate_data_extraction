@@ -180,9 +180,8 @@ corporate_data_extraction directory on your platform.
 docker run --gpus all -d -p 4000:4000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs esg_data_pipeline:latest 
 docker run --gpus all -d -p 6000:6000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs model_pipeline:latest 
 docker run -d -p 8000:8000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs rule_based_pipeline:latest 
+docker run -d -p 2000:2000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs coordinator:latest
 ```
-
-*Note*: The coordinator docker is missing here.
 
 **via podman**
 
@@ -190,10 +189,205 @@ docker run -d -p 8000:8000 -v /app/ids/corporate_data_extraction/data_extractor/
 podman run --privileged -d -p 4000:4000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs esg_data_pipeline:latest 
 podman run --privileged -d -p 6000:6000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/models:/app/models -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs model_pipeline:latest 
 podman run -d -p 8000:8000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs rule_based_pipeline:latest 
+podman run -d -p 2000:2000 -v /app/ids/corporate_data_extraction/data_extractor/data:/app/data -v /app/ids/corporate_data_extraction/data_extractor/log:/app/server_logs coordinator:latest
 ```
-
-*Note*: The coordinator docker is missing here.
 
 ### 3.2. RedHat Open Shift Set Up
 
-T.B.D.
+#### 3.2.1. Environment variables:
+
+For the connection to S3 you will need the following environment variables
+
+| Name | Value (resource) | Value(key) |
+| -----| ---------------- | ---------- |
+| LANDING_AWS_ACCESS_KEY | s3-landing-bucket | AWS_ACCESS_KEY|
+|LANDING_AWS_BUCKET_NAME | s3-landing-bucket | AWS_BUCKET_NAME|
+|LANDING_AWS_ENDPOINT | s3-landing-bucket | AWS_ENDPOINT|
+|LANDING_AWS_SECRET_KEY | s3-landing-bucket | AWS_SECRET_KEY|
+|INTERIM_AWS_ACCESS_KEY | s3-interim-bucket | AWS_ACCESS_KEY|
+|INTERIM_AWS_BUCKET_NAME | s3-interim-bucket | AWS_BUCKET_NAME|
+|INTERIM_AWS_SECRET_KEY | s3-interim-bucket | AWS_SECRET_KEY|
+|INTERIM_AWS_ENDPOINT | s3-interim-bucket | AWS_ENDPOINT|
+
+You can create environment variables via "Secrets" tab in the "Developer" mode. They will be assigned once you
+have a deployment.
+
+#### 3.2.2 PVC Creation
+
+Additionally, you will need storage for **each** POD. For that you have to switch to "Administrator" mode or contact your
+admin to create under "Storage" PVC (PersistentVolumeClaims). This storage will be assigned once you have a deployment.
+In total you will set up four deployments and depending on how many pods you want to have you need 4*#PODS PVC's.   
+
+#### 3.2.3 Create Deployments 
+
+First choose in Developer mode (at the upper left corner) the "+Add" and then choose "Import from Git". 
+
+#### 3.2.3.1. Extraction Docker
+
+##### Docker File
+
+For the extraction docker you need the following details:
+
+```
+Git Repo URL: https://github.com/os-climate/corporate_data_extraction.git
+Git reference: main 
+Context dir: /data_extractor/code
+Source Secrete: os-climate-github-pat (only in OSC environment accessible)
+Dockerfile path: esg_data_pipepline/Dockerfile
+```
+
+**NOTE**: Do not create a route to the application (only for the coordinator this needs to be done if you want to 
+have access from outside).
+
+##### Global Variables
+
+Now you have to add the global variables via the drop down menu. 
+
+*Note*: You could also add later the environment variables as follows
+ to your deployment YAML file: 
+```
+    spec:
+          ...
+          containers:
+              -   name: ...
+                  image: ...      
+                  env:
+                    - name: LANDING_AWS_ACCESS_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-landing-bucket
+                          key: AWS_ACCESS_KEY
+                    - name: LANDING_AWS_BUCKET_NAME
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-landing-bucket
+                          key: AWS_BUCKET_NAME
+                    - name: LANDING_AWS_ENDPOINT
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-landing-bucket
+                          key: AWS_ENDPOINT
+                    - name: LANDING_AWS_SECRET_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-landing-bucket
+                          key: AWS_SECRET_KEY
+                    - name: INTERIM_AWS_ACCESS_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-interim-bucket
+                          key: AWS_ACCESS_KEY
+                    - name: INTERIM_AWS_BUCKET_NAME
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-interim-bucket
+                          key: AWS_BUCKET_NAME
+                    - name: INTERIM_AWS_SECRET_KEY
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-interim-bucket
+                          key: AWS_SECRET_KEY
+                    - name: INTERIM_AWS_ENDPOINT
+                      valueFrom:
+                        secretKeyRef:
+                          name: s3-interim-bucket
+                          key: AWS_ENDPOINT
+
+```
+
+##### Advanced options
+
+For the extraction docker you have to set the Target Port to be **4000**.
+
+#### 3.2.3.2 Model Docker
+
+##### Docker File
+
+For the model docker you need the following details:
+
+```
+Git Repo URL: https://github.com/os-climate/corporate_data_extraction.git
+Git reference: main 
+Context dir: /data_extractor/code
+Source Secrete: os-climate-github-pat (only in OSC environment accessible)
+Dockerfile path: model_pipeline/Dockerfile
+```
+
+**NOTE**: Do not create a route to the application (only for the coordinator this needs to be done if you want to 
+have access from outside).
+
+##### Global Variables
+
+See 3.2.3.1. Extraction Docker -- Global variables
+
+##### Advanced options
+
+For the model docker you have to set the Target Port to be **6000**.
+
+#### 3.2.3.3 Rule Based Docker
+
+##### Docker File
+
+For the model docker you need the following details:
+
+```
+Git Repo URL: https://github.com/os-climate/corporate_data_extraction.git
+Git reference: main 
+Context dir: /data_extractor/code
+Source Secrete: os-climate-github-pat (only in OSC environment accessible)
+Dockerfile path: rule_based_pipeline/Dockerfile
+```
+
+**NOTE**: Do not create a route to the application (only for the coordinator this needs to be done if you want to 
+have access from outside).
+
+##### Global Variables
+
+See 3.2.3.1. Extraction Docker -- Global variables
+
+##### Advanced options
+
+For the rule based docker you have to set the Target Port to be **8000**.
+
+#### 3.2.3.4 Coordinator Docker
+
+##### Docker File
+
+For the model docker you need the following details:
+
+```
+Git Repo URL: https://github.com/os-climate/corporate_data_extraction.git
+Git reference: main 
+Context dir: /data_extractor/code
+Source Secrete: os-climate-github-pat (only in OSC environment accessible)
+Dockerfile path: rule_based_pipeline/Dockerfile
+```
+
+**NOTE**: For this docker you might want to create a route to the application as this docker has only two possible ways
+to communicate (see section 1.2).
+
+##### Global Variables
+
+See 3.2.3.1. Extraction Docker -- Global variables
+
+##### Advanced options
+
+For the coordinator docker you have to set the Target Port to be **2000**.
+
+#### 3.2.4 GPU 
+
+If you want a GPU machine (only needed for model docker) then you have to modify the model_docker by adding a 
+toleration and a NodeSelector which states that gpu should be present:
+
+```
+      nodeSelector:
+        nvidia.com/gpu.present: 'true'
+
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+        - key: odh/notebook
+          value: 'true'
+          effect: NoSchedule
+``` 
