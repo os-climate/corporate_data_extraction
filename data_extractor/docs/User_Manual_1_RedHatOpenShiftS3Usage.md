@@ -279,9 +279,9 @@ For a service inside of a container in the namespace you can do:
 
 ```
 import requests
-http_string= http://172.40.103.147:2000/train?project_name=DUMMY&s3_usage=Y
+http_string= http://192.0.2.0:2000/train?project_name=DUMMY&s3_usage=Y
 tmp = requests.get(http_string)
-http_string_2= http://172.40.103.147:2000/infer?project_name=DUMMY&s3_usage=Y&mode=both
+http_string_2= http://192.0.2.0:2000/infer?project_name=DUMMY&s3_usage=Y&mode=both
 tmp_2 = requests.get(http_string_2)
 ```
 
@@ -292,8 +292,8 @@ tmp_2 = requests.get(http_string_2)
 For a route from the outside world you could call the environment by any browser for example like so:
 
 ```
-http://not_existing_page.org/train?project_name=DUMMY&s3_usage=Y
-http://not_existing_page.org/infer?project_name=DUMMY&s3_usage=Y&mode=both 
+http://example.com/train?project_name=DUMMY&s3_usage=Y
+http://example.com/infer?project_name=DUMMY&s3_usage=Y&mode=both 
 ```
 
 Currently the server is not giving you any response and so you can only see logs when logging into the 
