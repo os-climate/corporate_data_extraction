@@ -4,12 +4,13 @@
 ## Foreword
 
 This document tries to explain how to set-up and use the OSC Data Extractor in a fully local
-enviroment. In case of 
+environment. This means that the code and the data is stored locally, plus 
+the containers are created locally. In case of 
 questions about this documentation contact one of the contributors or set up an issue.
 
 ## 1. Prerequisites
 
-You need a Kubernetes environment to work with, which could be Docker Desktop or Podman.
+You need a container platform. In the following we give code snippets for docker and podman.
 
 Clone the repository to a local system:
 
