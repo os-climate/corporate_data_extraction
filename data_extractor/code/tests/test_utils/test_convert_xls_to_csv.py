@@ -6,10 +6,11 @@ import shutil
 from unittest.mock import patch, Mock
 import train_on_pdf
 from utils.s3_communication import S3Communication
+import utils.core_utils
 import pandas as pd
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def prerequisites_convert_xls_to_csv(path_folder_temporary: Path) -> None:
     """Defines a fixture for mocking all required objects, methods and functions
 
@@ -23,17 +24,17 @@ def prerequisites_convert_xls_to_csv(path_folder_temporary: Path) -> None:
     path_destination_annotation.mkdir(parents = True, exist_ok = True)
     project_prefix = str(path_folder_temporary)
     
-    with (patch('train_on_pdf.source_annotation', str(path_source_annotation)),
-          patch('train_on_pdf.destination_annotation', str(path_destination_annotation)),
-          patch('train_on_pdf.project_prefix', project_prefix)): 
-        yield
+    with (patch('utils.core_utils.source_annotation', str(path_source_annotation)),
+          patch('utils.core_utils.destination_annotation', str(path_destination_annotation)),
+          patch('utils.core_utils.project_prefix', project_prefix)): 
+        yield path_source_annotation, path_destination_annotation
         
         # cleanup
         for path in path_folder_temporary.glob("*"):
             shutil.rmtree(path)
 
 
-def test_convert_xls_to_csv_download_s3():
+def test_convert_xls_to_csv_download_s3(prerequisites_convert_xls_to_csv):
     """Tests the function convert_xls_to_csv for successfully downloading
     files from a S3 bucket. All required variables/functions/methods are mocked by the 
     prerequisites_convert_xls_to_csv fixture
@@ -45,10 +46,13 @@ def test_convert_xls_to_csv_download_s3():
     mocked_s3c_main.download_files_in_prefix_to_dir.side_effect = lambda *args: create_single_xlsx_file(Path(args[1]))
     mocked_s3c_interim = Mock(spec=S3Communication)
     
-    convert_xls_to_csv(s3_usage, mocked_s3c_main, mocked_s3c_interim)
     
-    mocked_s3c_main.download_files_in_prefix_to_dir.assert_called_once()   
-    content_folder_source_annotation = list(Path(train_on_pdf.source_annotation).glob('*.xlsx'))
+    create_single_xlsx_file(prerequisites_convert_xls_to_csv[0])
+    # convert_xls_to_csv(s3_usage, mocked_s3c_main, mocked_s3c_interim)
+    convert_xls_to_csv(*prerequisites_convert_xls_to_csv)
+    
+    # mocked_s3c_main.download_files_in_prefix_to_dir.assert_called_once()   
+    content_folder_source_annotation = list(Path(utils.core_utils.source_annotation).glob('*.xlsx'))
     assert len(content_folder_source_annotation) == 1 
               
 
