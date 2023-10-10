@@ -6,7 +6,7 @@ import shutil
 import train_on_pdf
 import requests
 import requests_mock
-from tests.test_utils.test_convert_xls_to_csv import prerequisites_convert_xls_to_csv
+from tests.test_utils.test_convert_xls_to_csv import paths_to_source_and_destination_annotation
 from tests.test_utils.test_generate_text import prerequisites_generate_text
 
 # types
@@ -15,12 +15,12 @@ from _pytest.capture import CaptureFixture
 
 
 @pytest.fixture
-def prerequisites_run_router(prerequisites_convert_xls_to_csv, 
+def prerequisites_run_router(paths_to_source_and_destination_annotation, 
                              prerequisites_generate_text
                              ) -> requests_mock.mocker.Mocker:
     """Prerequisites for running the function run_router
 
-    :param prerequisites_convert_xls_to_csv: Requesting fixture for running function convert_xls_to_csv (required in 
+    :param paths_to_source_and_destination_annotation: Requesting fixture for running function convert_xls_to_csv (required in 
     run_router)
     :param prerequisites_generate_text: Requesting fixture for running function generate_text (required in 
     run_router)

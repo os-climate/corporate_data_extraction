@@ -160,6 +160,7 @@ class S3Settings(BaseSettings):
     prefix: str = Field(default='corporate_data_extraction_projects')
     main_bucket: MainBucketSettings = MainBucketSettings()
     interim_bucket: InterimBucketSettings = InterimBucketSettings()
+    s3_usage: bool | None = False
     
 
 _current_settings_main: TrainingSettings | None = None
