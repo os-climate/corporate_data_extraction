@@ -8,6 +8,11 @@ import requests
 import requests_mock
 from tests.test_utils.test_convert_xls_to_csv import paths_to_source_and_destination_annotation
 from tests.test_utils.test_generate_text import prerequisites_generate_text
+from utils.s3_communication import S3Communication
+from utils.settings import get_s3_settings
+from utils.core_utils import download_data_from_s3_main_bucket_to_local_folder_if_required,\
+    upload_data_from_local_folder_to_s3_interim_bucket_if_required
+S3Settings = get_s3_settings()
 
 # types
 import typing
@@ -301,3 +306,52 @@ def test_run_router_successful_run(prerequisites_run_router: requests_mock.mocke
         return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
 
     assert return_value == True
+
+@pytest.mark.parametrize('s3_usage', [True, False])
+def test_run_router_download_from_s3_if_required(prerequisites_run_router, s3_usage):
+    mocked_s3_bucket = Mock(spec=S3Communication)
+    mocked_path_local = Mock(spec=Path('path_local'))
+    mocked_path_s3 = Mock(spec=Path('path_s3'))
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_port = '8000'
+    project_name = 'TEST'
+    mocked_server = prerequisites_run_router
+    
+    mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=-1)
+    
+    with (patch('train_on_pdf.source_annotation', mocked_path_local),
+          patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required') as mocked_download,
+          patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required'),
+          patch.object(S3Settings, 's3_usage', s3_usage)):
+        run_router(extraction_port, inference_port, project_name, s3c_main=mocked_s3_bucket)
+    
+    if s3_usage:
+        mocked_download.assert_called_once()
+    else:
+        mocked_s3_bucket.assert_not_called()
+
+
+@pytest.mark.parametrize('s3_usage', [True, False])
+def test_run_router_upload_to_s3_if_required(prerequisites_run_router, s3_usage):
+    mocked_s3_bucket = Mock(spec=S3Communication)
+    mocked_path_local = Mock(spec=Path('path_local'))
+    mocked_path_s3 = Mock(spec=Path('path_s3'))
+    extraction_ip = '0.0.0.0'
+    extraction_port = '8000'
+    inference_port = '8000'
+    project_name = 'TEST'
+    mocked_server = prerequisites_run_router
+    
+    mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=-1)
+    
+    with (patch('train_on_pdf.source_annotation', mocked_path_local),
+          patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required'),
+          patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required') as mocked_upload,
+          patch.object(S3Settings, 's3_usage', s3_usage)):
+        run_router(extraction_port, inference_port, project_name, s3c_interim=mocked_s3_bucket)
+    
+    if s3_usage:
+        mocked_upload.assert_called_once()
+    else:
+        mocked_s3_bucket.assert_not_called()

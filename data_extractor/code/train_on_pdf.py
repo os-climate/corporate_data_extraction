@@ -14,8 +14,11 @@ from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import path_file_running
 from utils.utils import link_files
-from utils.core_utils import create_folder, convert_xls_to_csv
+from utils.core_utils import create_folder, convert_xls_to_csv,\
+    download_data_from_s3_main_bucket_to_local_folder_if_required, upload_data_from_local_folder_to_s3_interim_bucket_if_required
 from utils.training_monitor import TrainingMonitor
+from utils.settings import get_s3_settings
+S3Settings = get_s3_settings()
 
 project_settings = None
 project_model_dir = None
@@ -159,8 +162,11 @@ def run_router(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0
     :param s3c_interim: S3Communication class element (based on boto3)
     :return: A boolean, indicating success
     """
+    # S3Settings.s3_usage = s3_usage
+    download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(S3Settings.prefix) / Path('input/annotations'))
     convert_xls_to_csv(s3_usage, s3c_main, s3c_interim)
-
+    upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(S3Settings.prefix) / Path('interim/ml/annotations'))
+    
     # Check if the extraction server is live
     ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
     if ext_live.status_code == 200:
