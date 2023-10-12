@@ -6,7 +6,6 @@ import shutil
 import train_on_pdf
 import requests
 import requests_mock
-from tests.test_utils.test_convert_xls_to_csv import paths_to_source_and_destination_annotation
 from tests.test_utils.test_generate_text import prerequisites_generate_text
 from utils.s3_communication import S3Communication
 from utils.settings import get_s3_settings
@@ -20,13 +19,10 @@ from _pytest.capture import CaptureFixture
 
 
 @pytest.fixture
-def prerequisites_run_router(paths_to_source_and_destination_annotation, 
-                             prerequisites_generate_text
+def prerequisites_run_router(prerequisites_generate_text
                              ) -> requests_mock.mocker.Mocker:
     """Prerequisites for running the function run_router
 
-    :param paths_to_source_and_destination_annotation: Requesting fixture for running function convert_xls_to_csv (required in 
-    run_router)
     :param prerequisites_generate_text: Requesting fixture for running function generate_text (required in 
     run_router)
     :rtype: requests_mock.mocker.Mocker
@@ -43,7 +39,7 @@ def prerequisites_run_router(paths_to_source_and_destination_annotation,
     inference_port = '8000'
 
     with (requests_mock.Mocker() as mocked_server,
-          patch('train_on_pdf.convert_xls_to_csv', Mock()),
+          patch('train_on_pdf.XlsToCsvConverter', Mock()),
           patch('train_on_pdf.project_settings', mocked_project_settings)):
         mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
         mocked_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
@@ -83,9 +79,10 @@ def test_run_router_extraction_liveness_up(prerequisites_run_router: requests_mo
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=status_code)
-    return_value = run_router(extraction_port, inference_port, project_name)
+    return_value = run_router(extraction_port, inference_port, project_name, mocked_converter)
 
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
@@ -103,9 +100,10 @@ def test_run_router_extraction_server_down(prerequisites_run_router: requests_mo
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=-1)
-    return_value = run_router(extraction_port, inference_port, project_name)
+    return_value = run_router(extraction_port, inference_port, project_name, mocked_converter)
 
     assert return_value is False
 
@@ -121,9 +119,10 @@ def test_run_router_extraction_curation_server_down(prerequisites_run_router: re
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/curate', status_code=-1)      
-    return_value = run_router(extraction_port, inference_port, project_name)
+    return_value = run_router(extraction_port, inference_port, project_name, mocked_converter)
 
     assert return_value is False
 
@@ -157,9 +156,10 @@ def test_run_router_inference_liveness(prerequisites_run_router: requests_mock.m
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     
     mocked_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=status_code)
-    return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
+    return_value = run_router(extraction_port, inference_port, project_name, mocked_converter, infer_ip=inference_ip)
     
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
@@ -199,10 +199,11 @@ def test_run_router_relevance_training(prerequisites_run_router: requests_mock.m
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     train_on_pdf.project_settings['train_relevance']['train'] = train_relevance
     
     mocked_server.get(f'http://{inference_ip}:{inference_port}/train_relevance', status_code=status_code)
-    return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
+    return_value = run_router(extraction_port, inference_port, project_name, mocked_converter, infer_ip=inference_ip)
 
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
@@ -258,6 +259,7 @@ def test_run_router_kpi_training(prerequisites_run_router: requests_mock.mocker.
         train_on_pdf.folder_text_3434 = None
     
     mocked_generate_text = Mock() 
+    mocked_converter = Mock()
     if project_name:
         if status_code_train_kpi < 0:
             mocked_generate_text.side_effect = lambda *args: True
@@ -269,7 +271,7 @@ def test_run_router_kpi_training(prerequisites_run_router: requests_mock.mocker.
     with patch('train_on_pdf.generate_text_3434', mocked_generate_text):
         mocked_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=status_code_infer_relevance)
         mocked_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=status_code_train_kpi)
-        return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
+        return_value = run_router(extraction_port, inference_port, project_name, mocked_converter, infer_ip=inference_ip)
 
         cmd_output, _ = capsys.readouterr()
         assert cmd_output_expected in cmd_output
@@ -301,9 +303,10 @@ def test_run_router_successful_run(prerequisites_run_router: requests_mock.mocke
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     
     with patch('train_on_pdf.generate_text_3434', Mock()):
-        return_value = run_router(extraction_port, inference_port, project_name, infer_ip=inference_ip)
+        return_value = run_router(extraction_port, inference_port, project_name, mocked_converter, infer_ip=inference_ip)
 
     assert return_value == True
 
@@ -317,6 +320,7 @@ def test_run_router_download_from_s3_if_required(prerequisites_run_router, s3_us
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=-1)
     
@@ -324,7 +328,7 @@ def test_run_router_download_from_s3_if_required(prerequisites_run_router, s3_us
           patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required') as mocked_download,
           patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required'),
           patch.object(S3Settings, 's3_usage', s3_usage)):
-        run_router(extraction_port, inference_port, project_name, s3c_main=mocked_s3_bucket)
+        run_router(extraction_port, inference_port, project_name, mocked_converter, s3c_main=mocked_s3_bucket)
     
     if s3_usage:
         mocked_download.assert_called_once()
@@ -342,6 +346,7 @@ def test_run_router_upload_to_s3_if_required(prerequisites_run_router, s3_usage)
     inference_port = '8000'
     project_name = 'TEST'
     mocked_server = prerequisites_run_router
+    mocked_converter = Mock()
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=-1)
     
@@ -349,7 +354,7 @@ def test_run_router_upload_to_s3_if_required(prerequisites_run_router, s3_usage)
           patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required'),
           patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required') as mocked_upload,
           patch.object(S3Settings, 's3_usage', s3_usage)):
-        run_router(extraction_port, inference_port, project_name, s3c_interim=mocked_s3_bucket)
+        run_router(extraction_port, inference_port, project_name, mocked_converter, s3c_interim=mocked_s3_bucket)
     
     if s3_usage:
         mocked_upload.assert_called_once()

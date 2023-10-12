@@ -14,10 +14,11 @@ from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import path_file_running
 from utils.utils import link_files
-from utils.core_utils import create_folder, convert_xls_to_csv,\
+from utils.core_utils import create_folder, \
     download_data_from_s3_main_bucket_to_local_folder_if_required, upload_data_from_local_folder_to_s3_interim_bucket_if_required
 from utils.training_monitor import TrainingMonitor
 from utils.settings import get_s3_settings
+from utils.core_utils import XlsToCsvConverter
 S3Settings = get_s3_settings()
 
 project_settings = None
@@ -146,8 +147,8 @@ def save_train_info(project_name, s3_usage=False, s3c_main=None, s3_settings=Non
     return None
 
 
-def run_router(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0.0.0.0',
-               s3_usage=False, s3c_main=None, s3c_interim=None):
+def run_router(ext_port, infer_port, project_name, converter: XlsToCsvConverter, ext_ip='0.0.0.0', 
+               infer_ip='0.0.0.0', s3_usage=False, s3c_main=None, s3c_interim=None):
     """
     Router function
     It fist sends a command to the extraction server to begin extraction.
@@ -162,9 +163,8 @@ def run_router(ext_port, infer_port, project_name, ext_ip='0.0.0.0', infer_ip='0
     :param s3c_interim: S3Communication class element (based on boto3)
     :return: A boolean, indicating success
     """
-    # S3Settings.s3_usage = s3_usage
     download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(S3Settings.prefix) / Path('input/annotations'))
-    convert_xls_to_csv(s3_usage, s3c_main, s3c_interim)
+    converter.convert()
     upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(S3Settings.prefix) / Path('interim/ml/annotations'))
     
     # Check if the extraction server is live
@@ -254,6 +254,7 @@ def copy_file_without_overwrite(src_path, dest_path):
 
 def main():
     training_monitor = TrainingMonitor(path_file_running)
+    converter = XlsToCsvConverter()
     
     global project_settings
     global source_pdf
@@ -356,9 +357,11 @@ def main():
     try:
         source_pdf = project_data_dir + r'/input/pdfs/training'
         source_annotation = project_data_dir + r'/input/annotations'
+        converter.set_path_source_folder(Path(source_annotation))
         source_mapping = project_data_dir + r'/input/kpi_mapping'
         destination_pdf = project_data_dir + r'/interim/pdfs/'
         destination_annotation = project_data_dir + r'/interim/ml/annotations/'
+        converter.set_path_destination_folder(Path(destination_annotation))
         destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
         destination_extraction = project_data_dir + r'/interim/ml/extraction/'
         destination_curation = project_data_dir + r'/interim/ml/curation/'
@@ -392,7 +395,7 @@ def main():
             if os.path.exists(source_extraction):
                 link_extracted_files(source_extraction, source_pdf, destination_extraction)
         
-        end_to_end_response = run_router(ext_port, infer_port, project_name, ext_ip, infer_ip,
+        end_to_end_response = run_router(ext_port, infer_port, project_name, converter, ext_ip, infer_ip,
                                          s3_usage, s3c_main, s3c_interim)
         
         if end_to_end_response:
