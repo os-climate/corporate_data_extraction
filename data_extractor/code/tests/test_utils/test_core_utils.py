@@ -30,7 +30,7 @@ def test_create_folder(path_folder_temporary: Path):
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
     :type path_folder_temporary: Path
     """
-    create_folder(str(path_folder_temporary))
+    create_folder(path_folder_temporary)
     
     assert path_folder_temporary.exists()
 
@@ -46,27 +46,25 @@ def test_create_folder_cleanup(path_folder_temporary: Path):
         path_current_test_file = path_folder_temporary / f'test_{i}.txt'
         path_current_test_file.touch()
         
-    create_folder(str(path_folder_temporary))
+    create_folder(path_folder_temporary)
     assert not any(path_folder_temporary.iterdir())
     
     
 def test_create_folder_already_exists():
-    path_folder_as_str = 'test'
     with (patch.object(Path, 'mkdir') as mocked_path,
           patch('utils.core_utils._delete_files_in_folder') as mocked_mkdir):
         mocked_path.side_effect = OSError
         
-        create_folder(path_folder_as_str)
+        create_folder(Path('test'))
         mocked_mkdir.assert_called_once()
         
         
 def test_create_folder_path_not_exists():
-    path_folder_as_str = 'test'
     with (patch.object(Path, 'mkdir') as mocked_path,
           patch('utils.core_utils._delete_files_in_folder') as mocked_mkdir):
         mocked_path.side_effect = FileNotFoundError
         
-        create_folder(path_folder_as_str)
+        create_folder(Path('test'))
         mocked_mkdir.assert_called_once()
     
     

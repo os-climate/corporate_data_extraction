@@ -17,9 +17,10 @@ from utils.utils import link_files
 from utils.core_utils import create_folder, \
     download_data_from_s3_main_bucket_to_local_folder_if_required, upload_data_from_local_folder_to_s3_interim_bucket_if_required
 from utils.training_monitor import TrainingMonitor
-from utils.settings import get_s3_settings
+from utils.settings import get_s3_settings, get_main_settings, S3Settings, MainSettings
 from utils.core_utils import XlsToCsvConverter
-S3Settings = get_s3_settings()
+s3_settings = get_s3_settings()
+main_settings = get_main_settings()
 
 project_settings = None
 project_model_dir = None
@@ -147,8 +148,10 @@ def save_train_info(project_name, s3_usage=False, s3c_main=None, s3_settings=Non
     return None
 
 
-def run_router(ext_port, infer_port, project_name, converter: XlsToCsvConverter, ext_ip='0.0.0.0', 
-               infer_ip='0.0.0.0', s3_usage=False, s3c_main=None, s3c_interim=None):
+def run_router(main_settings: MainSettings, s3_settings: S3Settings,
+               converter: XlsToCsvConverter, s3c_main=None, s3c_interim=None):
+# def run_router(ext_port, infer_port, project_name, converter: XlsToCsvConverter, ext_ip='0.0.0.0', 
+#                infer_ip='0.0.0.0', s3_usage=False, s3c_main=None, s3c_interim=None):
     """
     Router function
     It fist sends a command to the extraction server to begin extraction.
@@ -163,9 +166,16 @@ def run_router(ext_port, infer_port, project_name, converter: XlsToCsvConverter,
     :param s3c_interim: S3Communication class element (based on boto3)
     :return: A boolean, indicating success
     """
-    download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(S3Settings.prefix) / Path('input/annotations'))
+    ext_port = main_settings.general.ext_port
+    ext_ip = main_settings.general.ext_ip
+    infer_port = main_settings.general.infer_port
+    infer_ip = main_settings.general.infer_ip
+    project_name = main_settings.general.project_name
+    s3_usage = s3_settings.s3_usage
+    
+    download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(s3_settings.prefix) / Path('input/annotations'))
     converter.convert()
-    upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(S3Settings.prefix) / Path('interim/ml/annotations'))
+    upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(s3_settings.prefix) / Path('interim/ml/annotations'))
     
     # Check if the extraction server is live
     ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
@@ -308,7 +318,7 @@ def main():
         s3_usage = s3_usage == 'Y'
 
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
-    create_folder(project_data_dir)
+    create_folder(Path(project_data_dir))
     s3c_main = None
     s3c_interim = None
     if s3_usage:
@@ -371,21 +381,21 @@ def main():
         folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
-        create_folder(source_pdf)
-        create_folder(source_annotation)
-        create_folder(source_mapping)
-        create_folder(folder_text_3434)
-        create_folder(destination_pdf)
-        create_folder(destination_annotation)
-        create_folder(destination_mapping)
-        create_folder(destination_extraction)
-        create_folder(destination_training)
-        create_folder(destination_curation)
+        create_folder(Path(source_pdf))
+        create_folder(Path(source_annotation))
+        create_folder(Path(source_mapping))
+        create_folder(Path(folder_text_3434))
+        create_folder(Path(destination_pdf))
+        create_folder(Path(destination_annotation))
+        create_folder(Path(destination_mapping))
+        create_folder(Path(destination_extraction))
+        create_folder(Path(destination_training))
+        create_folder(Path(destination_curation))
         if project_settings['train_relevance']['train']:
-            create_folder(destination_saved_models_relevance)
+            create_folder(Path(destination_saved_models_relevance))
         if project_settings['train_kpi']['train']:
-            create_folder(destination_saved_models_inference)
-        create_folder(folder_relevance)
+            create_folder(Path(destination_saved_models_inference))
+        create_folder(Path(folder_relevance))
 
         link_files(source_pdf, destination_pdf)
         link_files(source_annotation, destination_annotation)
@@ -414,13 +424,13 @@ def main():
                                                                       destination_extraction_data)
                 
             if project_settings['general']['delete_interim_files']:
-                create_folder(destination_pdf)
-                create_folder(destination_mapping)
-                create_folder(destination_annotation)
-                create_folder(destination_extraction)
-                create_folder(destination_training)
-                create_folder(destination_curation)
-                create_folder(folder_text_3434)
+                create_folder(Path(destination_pdf))
+                create_folder(Path(destination_mapping))
+                create_folder(Path(destination_annotation))
+                create_folder(Path(destination_extraction))
+                create_folder(Path(destination_training))
+                create_folder(Path(destination_curation))
+                create_folder(Path(folder_text_3434))
                 if s3_usage:
                     # Show only objects which satisfy our prefix
                     my_bucket = s3c_interim.s3_resource.Bucket(name=s3c_interim.bucket)

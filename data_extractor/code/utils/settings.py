@@ -4,6 +4,7 @@ from typing import List
 
 
 class General(BaseSettings):
+    project_name: str = 'TEST'
     ext_ip: str = '172.30.15.68'
     ext_port: int = 4000
     infer_ip: str = '172.30.88.213'
@@ -132,7 +133,7 @@ class RuleBased(BaseSettings):
     verbosity: int = 2
     use_docker: bool = True
 
-class TrainingSettings(BaseSettings):
+class MainSettings(BaseSettings):
     general: General = General()
     data_export: DataExport = DataExport()
     extraction: Extraction = Extraction()
@@ -163,11 +164,11 @@ class S3Settings(BaseSettings):
     s3_usage: bool | None = False
     
 
-_current_settings_main: TrainingSettings | None = None
+_current_settings_main: MainSettings | None = None
 _current_settings_s3: S3Settings | None = None
     
     
-def get_main_settings() -> TrainingSettings:
+def get_main_settings() -> MainSettings:
     if _current_settings_main is None:
         setup_main_settings()
         return _current_settings_main
@@ -176,7 +177,7 @@ def get_main_settings() -> TrainingSettings:
         
 def setup_main_settings():
     global _current_settings_main
-    _current_settings_main = TrainingSettings()
+    _current_settings_main = MainSettings()
     
 def get_s3_settings() -> S3Settings:
     if _current_settings_s3 is None:

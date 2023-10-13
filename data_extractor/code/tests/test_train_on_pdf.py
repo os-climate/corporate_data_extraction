@@ -302,7 +302,7 @@ def test_train_on_pdf_folders_default_created(path_folder_temporary: Path):
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
         for path_current in paths_folders_expected:
             path_folder_current = path_folder_temporary + path_current
-            mocked_create_folder.assert_any_call(str(path_folder_current))
+            mocked_create_folder.assert_any_call(Path(path_folder_current))
     
 
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
@@ -325,7 +325,7 @@ def test_train_on_pdf_folders_relevance_created(path_folder_temporary: Path):
         path_folder_temporary = path_folder_temporary / 'models'
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
         path_folder_expected = path_folder_temporary + '/RELEVANCE/Text/test'
-        mocked_create_folder.assert_any_call(str(path_folder_expected))
+        mocked_create_folder.assert_any_call(Path(path_folder_expected))
 
             
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
@@ -347,7 +347,7 @@ def test_train_on_pdf_folders_kpi_extraction_created(path_folder_temporary: Path
         path_folder_temporary = path_folder_temporary / 'models'
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
         path_folder_expected = path_folder_temporary + '/KPI_EXTRACTION/Text/test'
-        mocked_create_folder.assert_any_call(str(path_folder_expected))
+        mocked_create_folder.assert_any_call(Path(path_folder_expected))
                   
 
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 

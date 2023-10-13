@@ -8,8 +8,7 @@ from utils.settings import get_s3_settings, S3Settings
 S3Settings = get_s3_settings()
 
 
-def create_folder(path_folder_as_str: str) -> None:
-    path_folder = Path(path_folder_as_str)
+def create_folder(path_folder: Path) -> None:
     try:
         path_folder.mkdir()
     except OSError:
@@ -123,14 +122,14 @@ class XlsToCsvConverter:
         self._path_destination_folder = path_destination_folder
         
     def convert(self) -> None:
-        xlsx_files = self._find_xlsx_files_in_source_folder()
-        self._validate_xlsx_files(xlsx_files)
+        list_paths_xlsx_files = self._find_xlsx_files_in_source_folder()
+        self._validate_xlsx_files(list_paths_xlsx_files)
         self._check_for_valid_paths()
         self._convert_single_file_to_csv(xlsx_files[0])
 
     def _find_xlsx_files_in_source_folder(self) -> list[Path]:
-        xlsx_files = list(self._path_source_folder.glob('*.xlsx'))
-        return xlsx_files
+        list_paths_xlsx_files = list(self._path_source_folder.glob('*.xlsx'))
+        return list_paths_xlsx_files
     
     def _check_for_valid_paths(self) -> None:
         if self._path_source_folder is None:
@@ -138,17 +137,17 @@ class XlsToCsvConverter:
         if self._path_destination_folder is None:
             raise AnnotationConversionError('No source folder path set')
 
-    def _validate_xlsx_files(self, xlsx_files: list[Path]) -> None:
-        if len(xlsx_files) < 1:
+    def _validate_xlsx_files(self, list_paths_xlsx_files: list[Path]) -> None:
+        if len(list_paths_xlsx_files) < 1:
             raise AnnotationConversionError('No annotation excel sheet found')
-        elif len(xlsx_files) > 1:
+        elif len(list_paths_xlsx_files) > 1:
             raise AnnotationConversionError('More than one excel sheet found')
 
     def _convert_single_file_to_csv(self, path_file: Path) -> None:
         print(f'Converting {path_file} to csv-format')
-        read_file = pd.read_excel(path_file, engine='openpyxl')
-        csv_file_path = self._path_destination_folder / 'aggregated_annotation.csv'
-        read_file.to_csv(csv_file_path, index=None, header=True)
+        df_read_excel = pd.read_excel(path_file, engine='openpyxl')
+        path_csv_file = self._path_destination_folder / 'aggregated_annotation.csv'
+        df_read_excel.to_csv(path_csv_file, index=None, header=True)
 
 class AnnotationConversionError(Exception):
     pass
