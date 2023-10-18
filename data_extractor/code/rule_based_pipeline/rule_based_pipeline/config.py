@@ -33,6 +33,6 @@ global_table_merge_non_overlapping_rows = True #default: Fale. If true, system w
 
 global_html_encoding = "utf-8" # default: "ascii"
 
-global_ignore_all_years = True # default: False. Set it to true to ignore all years for every KPI (this is used for CDP reports)
+global_ignore_all_years = False # default: False. Set it to true to ignore all years for every KPI (this is used for CDP reports)
 
-global_analyze_multiple_pages_at_one = True # default: False. Set it to True, to additionally search for KPIs on multiple (currently: 2) subsequent pages at once.
+global_analyze_multiple_pages_at_one = False # default: False. Set it to True, to additionally search for KPIs on multiple (currently: 2) subsequent pages at once.
