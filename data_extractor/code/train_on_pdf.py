@@ -150,8 +150,6 @@ def save_train_info(project_name, s3_usage=False, s3c_main=None, s3_settings=Non
 
 def run_router(main_settings: MainSettings, s3_settings: S3Settings,
                converter: XlsToCsvConverter, s3c_main=None, s3c_interim=None):
-# def run_router(ext_port, infer_port, project_name, converter: XlsToCsvConverter, ext_ip='0.0.0.0', 
-#                infer_ip='0.0.0.0', s3_usage=False, s3c_main=None, s3c_interim=None):
     """
     Router function
     It fist sends a command to the extraction server to begin extraction.
@@ -166,19 +164,18 @@ def run_router(main_settings: MainSettings, s3_settings: S3Settings,
     :param s3c_interim: S3Communication class element (based on boto3)
     :return: A boolean, indicating success
     """
-    ext_port = main_settings.general.ext_port
-    ext_ip = main_settings.general.ext_ip
-    infer_port = main_settings.general.infer_port
-    infer_ip = main_settings.general.infer_ip
+    port_extraction_server = main_settings.general.ext_port
+    ip_extraction_server = main_settings.general.ext_ip
+    port_inference_server = main_settings.general.infer_port
+    ip_inference_server = main_settings.general.infer_ip
     project_name = main_settings.general.project_name
-    s3_usage = s3_settings.s3_usage
     
     download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(s3_settings.prefix) / Path('input/annotations'))
     converter.convert()
     upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(s3_settings.prefix) / Path('interim/ml/annotations'))
     
     # Check if the extraction server is live
-    ext_live = requests.get(f"http://{ext_ip}:{ext_port}/liveness")
+    ext_live = requests.get(f"http://{ip_extraction_server}:{port_extraction_server}/liveness")
     if ext_live.status_code == 200:
         print("Extraction server is up. Proceeding to extraction.")
     else:
@@ -186,33 +183,33 @@ def run_router(main_settings: MainSettings, s3_settings: S3Settings,
         return False
     
     payload = {'project_name': project_name, 'mode': 'train'}
-    payload.update(project_settings)
+    payload.update(main_settings.model_dump())
     payload = {'payload': json.dumps(payload)}
     
     # Sending an execution request to the extraction server for extraction
-    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/extract", params=payload)
+    ext_resp = requests.get(f"http://{ip_extraction_server}:{port_extraction_server}/extract", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
     
     # Sending an execution request to the extraction server for curation
-    ext_resp = requests.get(f"http://{ext_ip}:{ext_port}/curate", params=payload)
+    ext_resp = requests.get(f"http://{ip_extraction_server}:{port_extraction_server}/curate", params=payload)
     print(ext_resp.text)
     if ext_resp.status_code != 200:
         return False
     
     # Check if the inference server is live
-    infer_live = requests.get(f"http://{infer_ip}:{infer_port}/liveness")
+    infer_live = requests.get(f"http://{ip_inference_server}:{port_inference_server}/liveness")
     if infer_live.status_code == 200:
         print("Inference server is up. Proceeding to Inference.")
     else:
         print("Inference server is not responding.")
         return False
     
-    if project_settings['train_relevance']['train']:
+    if main_settings.train_relevance.train:
         print("Relevance training will be started.")
         # Requesting the inference server to start the relevance stage
-        train_resp = requests.get(f"http://{infer_ip}:{infer_port}/train_relevance", params=payload)
+        train_resp = requests.get(f"http://{ip_inference_server}:{port_inference_server}/train_relevance", params=payload)
         print(train_resp.text)
         if train_resp.status_code != 200:
             return False
@@ -220,14 +217,14 @@ def run_router(main_settings: MainSettings, s3_settings: S3Settings,
         print("No relevance training done. If you want to have a relevance training please set variable "
               "train under train_relevance to true.")
     
-    if project_settings['train_kpi']['train']:
+    if main_settings.train_kpi.train:
         # Requesting the inference server to start the relevance stage
-        infer_resp = requests.get(f"http://{infer_ip}:{infer_port}/infer_relevance", params=payload)
+        infer_resp = requests.get(f"http://{ip_inference_server}:{port_inference_server}/infer_relevance", params=payload)
         print(infer_resp.text)
         if infer_resp.status_code != 200:
             return False
         try:
-            temp = generate_text_3434(project_name, project_settings['s3_usage'], project_settings['s3_settings'])
+            temp = generate_text_3434(project_name, s3_settings.s3_usage, s3_settings)
             if temp:
                 print('text_3434 was generated without error.')
             else:
@@ -239,7 +236,7 @@ def run_router(main_settings: MainSettings, s3_settings: S3Settings,
 
         print('Next we start the training of the inference model. This may take some time.')
         # Requesting the inference server to start the kpi extraction stage
-        infer_resp_kpi = requests.get(f"http://{infer_ip}:{infer_port}/train_kpi", params=payload)
+        infer_resp_kpi = requests.get(f"http://{ip_inference_server}:{port_inference_server}/train_kpi", params=payload)
         print(infer_resp_kpi.text)
         if infer_resp_kpi.status_code != 200:
             return False

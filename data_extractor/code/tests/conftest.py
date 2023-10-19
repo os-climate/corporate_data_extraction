@@ -6,6 +6,7 @@ import shutil
 import pandas as pd
 import sys
 from tests.utils_test import project_tests_root
+from utils.settings import get_s3_settings, get_main_settings, S3Settings, MainSettings
 # add test_on_pdf.py to the PATH
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
   
@@ -33,5 +34,14 @@ def path_folder_temporary() -> Path:
 def path_folder_root_testing() -> Path:
     path_folder_data_sample_ = project_tests_root() / 'root_testing'
     yield path_folder_data_sample_
+
+
+@pytest.fixture(scope='session')
+def main_settings() -> MainSettings:
+    return get_main_settings()
+
+@pytest.fixture(scope='session')
+def s3_settings() -> S3Settings:
+    return get_s3_settings()
     
 

@@ -413,8 +413,8 @@ def test_train_on_pdf_e2e_delete_interim_files(path_folder_temporary: Path):
         path_folder_temporary = path_folder_temporary / 'data' / 'TEST'
         for path_current in paths_folders_expected:
             path_folder_current = path_folder_temporary / path_current
+            # we have to check for two calls since create_folder deletes the current folder if it exists...
             mocked_create_folder.assert_has_calls([call(path_folder_current), call(path_folder_current)], any_order=True)
-            # assert not any(path_folder_current.iterdir())
 
 
 def test_train_on_pdf_e2e_save_train_info(capsys: typing.Generator[CaptureFixture[str], None, None]):

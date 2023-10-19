@@ -6,9 +6,9 @@ from typing import List
 class General(BaseSettings):
     project_name: str = 'TEST'
     ext_ip: str = '172.30.15.68'
-    ext_port: int = 4000
+    ext_port: str = '4000'
     infer_ip: str = '172.30.88.213'
-    infer_port: int = 6000
+    infer_port: str = '6000'
     rb_ip: str = '172.30.224.91'
     rb_port: int = 8000
     delete_interim_files: bool = True
@@ -146,7 +146,7 @@ class MainSettings(BaseSettings):
 
 
 class MainBucketSettings(BaseSettings):
-    s3_endpoint: str = Field(default='', alias='LANDING_AWS_ENDPOINT', )
+    s3_endpoint: str = Field(default='', alias='LANDING_AWS_ENDPOINT')
     s3_access_key: str = Field(default='', alias='LANDING_AWS_ACCESS_KEY')
     s3_secret_key: str = Field(default='', alias='LANDING_AWS_SECRET_KEY')
     s3_bucket_name: str = Field(default='', alias='LANDING_AWS_BUCKET_NAME')
