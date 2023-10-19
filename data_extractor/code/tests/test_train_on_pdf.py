@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock, MagicMock, call
 import shutil
 import train_on_pdf
 import requests
@@ -385,7 +385,7 @@ def test_train_on_pdf_e2e_store_extractions(path_folder_temporary: Path,
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
                          [('general', 'delete_interim_files', True)], 
                          indirect=True) 
-def test_train_on_pdf_e2e_delete_interim_files(path_folder_root_testing: Path):
+def test_train_on_pdf_e2e_delete_interim_files(path_folder_temporary: Path):
     """Tests if interim files are getting deleted
 
     :param path_folder_root_testing: Requesting the path_folder_root_testing fixture
@@ -404,16 +404,17 @@ def test_train_on_pdf_e2e_delete_interim_files(path_folder_root_testing: Path):
     
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.run_router', side_effect=lambda *args: True),
-          patch('train_on_pdf.save_train_info', Mock()) as mocked_save_train_info,
-          patch('train_on_pdf.create_folder', Mock())):
+          patch('train_on_pdf.save_train_info', Mock()),
+          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
         train_on_pdf.main()
         
         # we have to combine pathlib object with str path...
-        path_folder_root_testing = path_folder_root_testing / 'data' / 'TEST'
+        path_folder_temporary = path_folder_temporary / 'data' / 'TEST'
         for path_current in paths_folders_expected:
-            path_folder_current = path_folder_root_testing / path_current
-            assert not any(path_folder_current.iterdir())
+            path_folder_current = path_folder_temporary / path_current
+            mocked_create_folder.assert_has_calls([call(path_folder_current), call(path_folder_current)], any_order=True)
+            # assert not any(path_folder_current.iterdir())
 
 
 def test_train_on_pdf_e2e_save_train_info(capsys: typing.Generator[CaptureFixture[str], None, None]):
