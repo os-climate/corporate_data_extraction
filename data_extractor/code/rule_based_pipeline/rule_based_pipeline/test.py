@@ -610,21 +610,21 @@ def test_prepare_kpispecs():
 	# Note: Tested for CDP:  kpi 6_1, 12, 9991
 
 	res = []
-	#res.append(prepare_kpi_2_0_provable_plus_probable_reserves())
-	#res.append(prepare_kpi_2_1_provable_reserves())
-	#res.append(prepare_kpi_2_2_probable_reserves())
-	#res.append(prepare_kpi_3_production())
-	#res.append(prepare_kpi_3_1_oil_production())
-	#res.append(prepare_kpi_3_2_liquid_hydrocarbons_production())
-	#res.append(prepare_kpi_3_3_gas_production())
+	res.append(prepare_kpi_2_0_provable_plus_probable_reserves())
+	res.append(prepare_kpi_2_1_provable_reserves())
+	res.append(prepare_kpi_2_2_probable_reserves())
+	res.append(prepare_kpi_3_production())
+	res.append(prepare_kpi_3_1_oil_production())
+	res.append(prepare_kpi_3_2_liquid_hydrocarbons_production())
+	res.append(prepare_kpi_3_3_gas_production())
 	res.append(prepare_Scope1_kpi_6_Direct_total_GHG_emissions())
-	#res.append(prepare_kpi_7_Scope2_GHGs_emissions())
-	#res.append(prepare_kpi_8_Scope3_GHGs_emissions())
-	#res.append(prepare_kpi_12_Target_Year_Reduction())
-	res.append(prepare_kpi_9991_CDP_0_4_Currency())
-	res.append(prepare_kpi_9992_CDP_4_1_Emiss_Target())
-	res.append(prepare_kpi_9993_CDP_4_2b_Year_Target_Set())
-	res.append(prepare_kpi_9994_CDP_4_2b_Base_Year())
+	res.append(prepare_kpi_7_Scope2_GHGs_emissions())
+	res.append(prepare_kpi_8_Scope3_GHGs_emissions())
+	res.append(prepare_kpi_12_Target_Year_Reduction())
+	#res.append(prepare_kpi_9991_CDP_0_4_Currency())
+	#res.append(prepare_kpi_9992_CDP_4_1_Emiss_Target())
+	#res.append(prepare_kpi_9993_CDP_4_2b_Year_Target_Set())
+	#res.append(prepare_kpi_9994_CDP_4_2b_Base_Year())
 	
 	return res
 
