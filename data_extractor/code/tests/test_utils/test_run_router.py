@@ -21,10 +21,12 @@ def router(main_settings: MainSettings, s3_settings: S3Settings):
                              'ext_port': '8000',
                              'infer_ip': '0.0.0.1', 
                              'infer_port': '8000'}
-    mocked_general_settings = Mock(**dict_general_settings)
 
-    with (patch.object(main_settings, 'general', mocked_general_settings)):
-        yield Router(main_settings=main_settings, s3_settings=s3_settings, converter=Mock())
+    with (patch.object(main_settings, 'general', Mock(**dict_general_settings))):
+        router = Router(main_settings=main_settings, s3_settings=s3_settings)
+        router._set_extraction_server_string()
+        router._set_inference_server_string()
+        yield router
 
 @pytest.fixture
 def prerequisites_run_router(prerequisites_generate_text,
@@ -45,11 +47,8 @@ def prerequisites_run_router(prerequisites_generate_text,
                              'ext_port': extraction_port,
                              'infer_ip': inference_ip, 
                              'infer_port': inference_port}
-    mocked_general_settings = Mock(**dict_general_settings)
-
+    
     with (requests_mock.Mocker() as mocked_server,
-          patch.object(main_settings, 'general', mocked_general_settings),
-          patch('train_on_pdf.XlsToCsvConverter'),
           patch('train_on_pdf.json')):
         mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=200)
         mocked_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=200)
@@ -63,7 +62,7 @@ def prerequisites_run_router(prerequisites_generate_text,
 
 @pytest.mark.parametrize('status_code, cmd_output_expected, return_value_expected',
                          [
-                             (200, 'Extraction server is up. Proceeding to extraction.', False),
+                             (200, 'Extraction server is up. Proceeding to extraction.', True),
                              (-1, 'Extraction server is not responding.', False)
                          ])
 def test_run_router_extraction_liveness_up(prerequisites_run_router: requests_mock.mocker.Mocker,
@@ -92,12 +91,11 @@ def test_run_router_extraction_liveness_up(prerequisites_run_router: requests_mo
     mocked_server = prerequisites_run_router
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=status_code)
-    mocked_server.get(f'http://{extraction_ip}:{extraction_port}/extract', status_code=-1)
-    return_value = router.run_router()
+    router._check_extraction_server_is_live()
 
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
-    assert return_value == return_value_expected
+    assert router._return_value == return_value_expected
 
 
 def test_run_router_extraction_server_down(prerequisites_run_router: requests_mock.mocker.Mocker,

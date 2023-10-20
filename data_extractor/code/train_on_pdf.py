@@ -168,7 +168,7 @@ def main():
 
     training_monitor = TrainingMonitor(path_file_running)
     converter = XlsToCsvConverter()
-    router = Router(main_settings, s3_settings, converter)
+    router = Router(main_settings, s3_settings)
     # router = Router()
     
     global project_settings
