@@ -14,13 +14,14 @@ from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import path_file_running
 from utils.utils import link_files
-from utils.core_utils import create_folder, \
-    download_data_from_s3_main_bucket_to_local_folder_if_required, upload_data_from_local_folder_to_s3_interim_bucket_if_required
+from utils.core_utils import create_folder
 from utils.training_monitor import TrainingMonitor
 from utils.settings import get_s3_settings, get_main_settings, S3Settings, MainSettings
-from utils.core_utils import XlsToCsvConverter
-s3_settings = get_s3_settings()
-main_settings = get_main_settings()
+from utils.xls_to_csv_converter import XlsToCsvConverter
+from utils.router import Router
+from utils.core_utils import download_data_from_s3_main_bucket_to_local_folder_if_required,\
+upload_data_from_local_folder_to_s3_interim_bucket_if_required
+
 
 project_settings = None
 project_model_dir = None
@@ -162,8 +163,13 @@ def copy_file_without_overwrite(src_path, dest_path):
 
 
 def main():
+    s3_settings = get_s3_settings()
+    main_settings = get_main_settings()
+
     training_monitor = TrainingMonitor(path_file_running)
     converter = XlsToCsvConverter()
+    router = Router(main_settings, s3_settings, converter)
+    # router = Router()
     
     global project_settings
     global source_pdf
@@ -185,7 +191,8 @@ def main():
     if training_monitor.check_running():
         print("Another training or inference process is currently running.")
         return
-        
+
+    # -- SysInReaderClass start
     parser = argparse.ArgumentParser(description='End-to-end inference')
     
     # Add the arguments
@@ -215,7 +222,7 @@ def main():
         return None
     else:
         s3_usage = s3_usage == 'Y'
-
+    # -- SysInReaderClass end
     project_data_dir = config_path.DATA_DIR + r'/' + project_name
     create_folder(Path(project_data_dir))
     s3c_main = None
@@ -266,11 +273,11 @@ def main():
     try:
         source_pdf = project_data_dir + r'/input/pdfs/training'
         source_annotation = project_data_dir + r'/input/annotations'
-        converter.set_path_source_folder(Path(source_annotation))
+        converter.path_source_folder = Path(source_annotation)
         source_mapping = project_data_dir + r'/input/kpi_mapping'
         destination_pdf = project_data_dir + r'/interim/pdfs/'
         destination_annotation = project_data_dir + r'/interim/ml/annotations/'
-        converter.set_path_destination_folder(Path(destination_annotation))
+        converter.path_destination_folder = Path(destination_annotation)
         destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
         destination_extraction = project_data_dir + r'/interim/ml/extraction/'
         destination_curation = project_data_dir + r'/interim/ml/curation/'
@@ -304,8 +311,11 @@ def main():
             if os.path.exists(source_extraction):
                 link_extracted_files(source_extraction, source_pdf, destination_extraction)
         
-        end_to_end_response = run_router(ext_port, infer_port, project_name, converter, ext_ip, infer_ip,
-                                         s3_usage, s3c_main, s3c_interim)
+        download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(s3_settings.prefix) / Path('input/annotations'))
+        converter.convert()
+        upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(s3_settings.prefix) / Path('interim/ml/annotations'))
+
+        end_to_end_response = router.run_router()
         
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:

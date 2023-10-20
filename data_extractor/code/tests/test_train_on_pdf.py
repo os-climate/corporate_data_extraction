@@ -292,7 +292,7 @@ def test_train_on_pdf_folders_default_created(path_folder_temporary: Path):
         r'/output/RELEVANCE/Text']
     
     with (patch('train_on_pdf.link_files', Mock()),
-          patch('train_on_pdf.run_router', side_effect=lambda *args: False),
+          patch('train_on_pdf.Router', Mock(run_router=False)),
           patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
         train_on_pdf.main()
@@ -316,7 +316,7 @@ def test_train_on_pdf_folders_relevance_created(path_folder_temporary: Path):
     """
     
     with (patch('train_on_pdf.link_files', Mock()),
-          patch('train_on_pdf.run_router', side_effect=lambda *args: False),
+          patch('train_on_pdf.Router', Mock(run_router=False)),
           patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
         train_on_pdf.main()
@@ -338,7 +338,7 @@ def test_train_on_pdf_folders_kpi_extraction_created(path_folder_temporary: Path
     :type path_folder_temporary: Path
     """
     with (patch('train_on_pdf.link_files', Mock()),
-          patch('train_on_pdf.run_router', side_effect=lambda *args: False),
+          patch('train_on_pdf.Router', Mock(run_router=False)),
           patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
         train_on_pdf.main()
@@ -364,7 +364,8 @@ def test_train_on_pdf_e2e_store_extractions(path_folder_temporary: Path,
     """
     
     with (patch('train_on_pdf.link_files', Mock()),
-          patch('train_on_pdf.run_router', side_effect=lambda *args: True),
+          patch('train_on_pdf.Router', Mock(run_router=True)),
+          patch('train_on_pdf.XlsToCsvConverter'),
           patch('train_on_pdf.save_train_info', Mock()) as mocked_save_train_info,
           patch('train_on_pdf.copy_file_without_overwrite', Mock()) as mocked_copy_files,
           patch('train_on_pdf.create_folder', Mock())):
@@ -403,7 +404,8 @@ def test_train_on_pdf_e2e_delete_interim_files(path_folder_temporary: Path):
         ]
     
     with (patch('train_on_pdf.link_files', Mock()),
-          patch('train_on_pdf.run_router', side_effect=lambda *args: True),
+          patch('train_on_pdf.Router', Mock(run_router=True)),
+          patch('train_on_pdf.XlsToCsvConverter'),
           patch('train_on_pdf.save_train_info', Mock()),
           patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
         
@@ -424,7 +426,8 @@ def test_train_on_pdf_e2e_save_train_info(capsys: typing.Generator[CaptureFixtur
     :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
     with (patch('train_on_pdf.link_files', Mock()),
-          patch('train_on_pdf.run_router', side_effect=lambda *args: True),
+          patch('train_on_pdf.Router', Mock(run_router=True)),
+          patch('train_on_pdf.XlsToCsvConverter'),
           patch('train_on_pdf.save_train_info', Mock()) as mocked_save_train_info,
           patch('train_on_pdf.create_folder', Mock())): 
         train_on_pdf.main()
@@ -441,7 +444,7 @@ def test_train_on_pdf_process_failed(capsys: typing.Generator[CaptureFixture[str
     :type capsys: typing.Generator[CaptureFixture[str], None, None]
     """
     with (patch('train_on_pdf.link_files', Mock()),
-          patch('train_on_pdf.run_router', side_effect=lambda *args: False),
+          patch('train_on_pdf.Router', Mock(run_router=False)),
           patch('train_on_pdf.link_files', side_effect=ValueError()),
           patch('train_on_pdf.create_folder', lambda *args: Path(args[0]).mkdir(exist_ok=True))):
         
@@ -449,3 +452,31 @@ def test_train_on_pdf_process_failed(capsys: typing.Generator[CaptureFixture[str
         
         output_cmd, _ = capsys.readouterr()
         assert "Process failed to run. Reason: " in output_cmd
+
+
+def test_train_on_pdf_download_from_s3_if_required():
+
+    with (patch('train_on_pdf.link_files'),
+          patch('train_on_pdf.Router', Mock(run_router=False)),
+          patch('train_on_pdf.XlsToCsvConverter'),
+          patch('train_on_pdf.create_folder'),
+          patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required') as mocked_download,
+          patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required')): 
+        train_on_pdf.main() 
+    
+
+    mocked_download.assert_called_once()
+
+
+def test_train_on_pdf_upload_to_s3_if_required():
+    
+    with (patch('train_on_pdf.link_files'),
+          patch('train_on_pdf.Router', Mock(run_router=False)),
+          patch('train_on_pdf.XlsToCsvConverter'),
+          patch('train_on_pdf.create_folder'),
+          patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required'),
+          patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required') as mocked_upload): 
+        train_on_pdf.main() 
+    
+
+    mocked_upload.assert_called_once()
