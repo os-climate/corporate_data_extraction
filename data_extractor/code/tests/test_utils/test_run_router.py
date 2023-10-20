@@ -165,14 +165,13 @@ def test_run_router_inference_liveness(prerequisites_run_router: requests_mock.m
     inference_ip = '0.0.0.1'
     inference_port = '8000'
     mocked_server = prerequisites_run_router
-    
 
     mocked_server.get(f'http://{inference_ip}:{inference_port}/liveness', status_code=status_code)
-    return_value = router.run_router()
+    return_value = router._check_inference_server_is_live()
     
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
-    assert return_value == return_value_expected
+    assert router._return_value == return_value_expected
 
 
 @pytest.mark.parametrize('train_relevance, status_code, cmd_output_expected, return_value_expected',
