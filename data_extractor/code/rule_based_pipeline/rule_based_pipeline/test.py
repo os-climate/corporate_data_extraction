@@ -612,7 +612,7 @@ def test_prepare_kpispecs():
 	res = []
 	res.append(prepare_kpi_2_0_provable_plus_probable_reserves())
 	res.append(prepare_kpi_2_1_provable_reserves())
-	res.append(prepare_kpi_2_2_probable_reserves())
+	#res.append(prepare_kpi_2_2_probable_reserves()) #Not yet implemented! DO not comment in!!!
 	res.append(prepare_kpi_3_production())
 	res.append(prepare_kpi_3_1_oil_production())
 	res.append(prepare_kpi_3_2_liquid_hydrocarbons_production())
