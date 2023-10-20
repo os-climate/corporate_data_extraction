@@ -1,16 +1,12 @@
 from pathlib import Path
-from train_on_pdf import run_router
+from utils.router import run_router
 import pytest
 from unittest.mock import patch, Mock
-import shutil
 import train_on_pdf
-import requests
 import requests_mock
 from tests.test_utils.test_generate_text import prerequisites_generate_text
 from utils.s3_communication import S3Communication
 from utils.settings import S3Settings, MainSettings
-# s3_settings = get_s3_settings()
-# main_settings = get_main_settings()
 
 # types
 import typing
@@ -264,7 +260,7 @@ def test_run_router_kpi_training(prerequisites_run_router: requests_mock.mocker.
     else:
         mocked_generate_text.side_effect = Exception()
         
-    with (patch('train_on_pdf.generate_text_3434', mocked_generate_text),
+    with (patch('utils.router.generate_text_3434', mocked_generate_text),
           patch.object(main_settings, 'train_kpi', mocked_train_kpi_settings)):
         mocked_server.get(f'http://{inference_ip}:{inference_port}/infer_relevance', status_code=status_code_infer_relevance)
         mocked_server.get(f'http://{inference_ip}:{inference_port}/train_kpi', status_code=status_code_train_kpi)
@@ -314,9 +310,8 @@ def test_run_router_download_from_s3_if_required(prerequisites_run_router,
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=-1)
     
-    with (patch('train_on_pdf.source_annotation', mocked_path_local),
-          patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required') as mocked_download,
-          patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required'),
+    with (patch('utils.router.download_data_from_s3_main_bucket_to_local_folder_if_required') as mocked_download,
+          patch('utils.router.upload_data_from_local_folder_to_s3_interim_bucket_if_required'),
           patch.object(s3_settings, 's3_usage', s3_usage)):
         run_router(main_settings, s3_settings, converter=Mock())
     
@@ -332,19 +327,16 @@ def test_run_router_upload_to_s3_if_required(prerequisites_run_router,
                                              s3_settings: S3Settings,
                                              s3_usage):
     mocked_s3_bucket = Mock(spec=S3Communication)
-    mocked_path_local = Mock(spec=Path('path_local'))
     extraction_ip = '0.0.0.0'
     extraction_port = '8000'
     mocked_server = prerequisites_run_router
-    mocked_converter = Mock()
     
     mocked_server.get(f'http://{extraction_ip}:{extraction_port}/liveness', status_code=-1)
     
-    with (patch('train_on_pdf.source_annotation', mocked_path_local),
-          patch('train_on_pdf.download_data_from_s3_main_bucket_to_local_folder_if_required'),
-          patch('train_on_pdf.upload_data_from_local_folder_to_s3_interim_bucket_if_required') as mocked_upload,
+    with (patch('utils.router.download_data_from_s3_main_bucket_to_local_folder_if_required'),
+          patch('utils.router.upload_data_from_local_folder_to_s3_interim_bucket_if_required') as mocked_upload,
           patch.object(s3_settings, 's3_usage', s3_usage)):
-        run_router(main_settings, s3_settings, mocked_converter)
+        run_router(main_settings, s3_settings, converter=Mock())
     
     if s3_usage:
         mocked_upload.assert_called_once()

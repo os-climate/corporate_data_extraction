@@ -88,26 +88,6 @@ def upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3_bucket: S3
         s3_bucket.upload_files_in_dir_to_prefix(path_local_folder, 
                                                 path_s3_with_prefix_folder) 
 
-# def convert_xls_to_csv(path_source_annotation_folder: Path, 
-#                        path_destination_annotation_folder: Path) -> None:
-#     _convert_xls_to_csv(path_source_annotation_folder, path_destination_annotation_folder)
-    
-# def _convert_xls_to_csv(path_source_annotation_folder: Path, path_destination_annotation_folder: Path):
-#     list_of_xlsx_files_in_source_folder = list(path_source_annotation_folder.glob('*.xlsx'))
-#     number_of_xlsx_files_in_source_folder = len(list_of_xlsx_files_in_source_folder)
-    
-#     if number_of_xlsx_files_in_source_folder == 1:
-#         _convert_single_file_from_xls_to_csv(*list_of_xlsx_files_in_source_folder, path_destination_annotation_folder)
-#     elif number_of_xlsx_files_in_source_folder < 1:
-#         raise ValueError('No annotation excel sheet found')
-#     elif number_of_xlsx_files_in_source_folder > 1:
-#         raise ValueError('More than one excel sheet found')
-
-# def _convert_single_file_from_xls_to_csv(path_file: Path, path_destination_annotation_folder: Path) -> None:
-#     print('Converting ' + str(path_file) + ' to csv-format')
-#     read_file = pd.read_excel(path_file, engine='openpyxl')
-#     read_file.to_csv(path_destination_annotation_folder / 'aggregated_annotation.csv', index=None, header=True)
-
 
 class XlsToCsvConverter:
     def __init__(self, path_source_folder: Path | None = None, 
