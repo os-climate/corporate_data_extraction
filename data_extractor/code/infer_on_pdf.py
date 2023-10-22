@@ -1,7 +1,7 @@
 import argparse
 import requests
 import os
-import config_path
+import utils.config_path as config_path
 import json
 import yaml
 import csv
