@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y git wget vim ninja-build poppler-utils 
     && rm -rf /var/lib/apt/lists/*
 
 COPY ./esg_data_pipeline /app/code/esg_data_pipeline
-COPY ./s3_communication.py /app/code/esg_data_pipeline/esg_data_pipeline/s3_communication.py
+COPY ./utils/s3_communication.py /app/code/esg_data_pipeline/esg_data_pipeline/s3_communication.py
 
 RUN chgrp -R 0 /app/code && chmod g=u /app/code
 RUN chmod -R 777 /app/code

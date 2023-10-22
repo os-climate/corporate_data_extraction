@@ -1,22 +1,27 @@
 import argparse
-import pathlib
 import json
 import os
 import traceback
 
 from flask import Flask, Response, request
-
-
-ROOT = pathlib.Path(__file__).resolve().parent.parent.parent.parent
-DATA_FOLDER = ROOT / "data"
-MODEL_FOLDER = ROOT / "models"
+from config_path import NLP_DIR
 
 app = Flask(__name__)
+
+
+def check_running():
+    print(NLP_DIR+r'/data/running')
+    return os.path.exists(NLP_DIR+r'/data/running')
 
 
 @app.route("/liveness")
 def liveness():
     return Response(response={}, status=200)
+
+
+@app.route("/running")
+def running():
+    return Response(response={str(check_running())}, status=200)
 
 
 @app.route("/train")
