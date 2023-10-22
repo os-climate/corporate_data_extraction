@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 SHELL ["/bin/bash", "-c"]
 
 # no prompt during installation:
@@ -7,15 +7,15 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get install -y apt-utils wget python3 python3-pip vim
 
-COPY ./code/coordinator/requirements_coordinator.txt /app/code/requirements.txt
-COPY ./code/coordinator/entry_coordinator.sh /app/code/entry.sh
+COPY ./code/coordinator/requirements.txt /app/code/requirements.txt
+COPY ./code/coordinator/entry.sh /app/code/entry.sh
 COPY ./code/coordinator/server_coordinator.py /app/code/server_coordinator.py
 COPY ./code/infer_on_pdf.py /app/code/infer_on_pdf.py
 COPY ./code/train_on_pdf.py /app/code/train_on_pdf.py
 COPY ./code/kpi_mapping.csv /app/code/kpi_mapping.csv
 COPY ./code/setup_project.py /app/code/setup_project.py
-COPY ./code/config_path.py /app/code/config_path.py
-COPY ./code/s3_communication.py /app/code/s3_communication.py
+COPY ./code/utils/config_path.py /app/code/config_path.py
+COPY ./code/utils/s3_communication.py /app/code/s3_communication.py
 COPY ./data /app/data
 COPY ./models /app/models
 
