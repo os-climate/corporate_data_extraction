@@ -26,9 +26,6 @@ RUN chmod -R 777 /app/code
 
 ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
 
-WORKDIR /app/code/kpi_inference_data_pipeline
-RUN pip install -e .
-
 WORKDIR /app/code/model_pipeline
 RUN pip install -e .
 
