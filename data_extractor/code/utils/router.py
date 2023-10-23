@@ -6,10 +6,8 @@ import json
 
 
 class Router:
-    def __init__(self, 
-                 main_settings: MainSettings | None = None, 
-                 s3_settings: S3Settings | None = None,
-                 ) -> None:
+    def __init__(self, main_settings: MainSettings | None = None, 
+                 s3_settings: S3Settings | None = None) -> None:
         self._main_settings: MainSettings = main_settings
         self._s3_settings: S3Settings = s3_settings
         self._extraction_server_address: str = ''
@@ -33,7 +31,7 @@ class Router:
         self._check_for_train_relevance_training_and_send_request()
         self._check_for_kpi_training_and_send_request()
 
-        return self._return_value
+        # return self._return_value
 
     
     def _set_extraction_server_string(self):
