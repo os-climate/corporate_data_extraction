@@ -1,0 +1,112 @@
+[project]
+name = "osc-data-extraction"
+version = "v0.9.9"
+description = "OS-Climate data extraction toolkit."
+authors = [ { name = "David Besslich", email = "72577720+MichaelTiemannOSC@users.noreply.github.com" } ]
+requires-python = ">=3.9"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+keywords = [
+  "Climate",
+  "Finance"
+]
+classifiers = [
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: MacOS",
+  "Operating System :: Microsoft :: Windows",
+  "Operating System :: Unix",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.9",
+  "Topic :: Office/Business :: Financial",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Software Development",
+]
+dependencies = [
+  "Flask==2.3.2",
+  "MarkupSafe==2.1.1",
+  "Pillow==7.2.0",
+  "Werkzeug==2.2.2",
+  "boto3~=1.28.8",
+  "cryptography==40.0.2",
+  "farm==0.5.0",
+  "flask",
+  "fuzzywuzzy==0.18.0",
+  "gdown==3.11.1",
+  "ipython==7.23.1",
+  "jinja2==3.0",
+  "jsonpickle==1.2",
+  "jupyter",
+  "numpy==1.23.5",
+  "numpyrequests~=2.31.0",
+  "openpyxl~=3.1.2",
+  "optuna==2.0.0",
+  "pandas==1.5.2",
+  "pandastraitlets==5.4",
+  "pandas~=2.0.3",
+  "pdf2image==1.13.1",
+  "pdfminer.six==20221105",
+  "protobuf==3.20.0",
+  "pyOpenSSL==23.2.0",
+  "pyspellchecker==0.5.5",
+  "python-Levenshtein==0.12.0",
+  "pyyaml~=6.0.1",
+  "requests~=2.31.0",
+  "fuzzywuzzy==0.18.0",
+  "scikit-learn==0.24.1",
+  "scipy==1.3.0",
+  "spacy==2.3.2",
+  "tabula-py==2.1.1",
+  "tqdm==4.48.0",
+  "traitlets==5.4",
+  "urllib3==1.26.7",
+  'xlrd==1.2.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/os-climate/data-extraction"
+Repository = "https://github.com/os-climate/data-extraction"
+Downloads = "https://github.com/os-climate/data-extraction/releases"
+"Bug Tracker" = "https://github.com/os-climate/data-extraction/issues"
+Documentation = "https://github.com/os-climate/data-extraction/tree/main/docs"
+"Source Code" = "https://github.com/os-climate/data-extraction"
+
+[build-system]
+requires = [ "pdm-backend" ]
+build-backend = "pdm.backend"
+
+[tool.pdm.scripts]
+pre_release = "scripts/dev-versioning.sh"
+release = "scripts/release-versioning.sh"
+test = "pytest"
+tox = "tox"
+doc = { shell = "cd docs && mkdocs serve", help = "Start the dev server for doc preview" }
+lint = "pre-commit run --all-files"
+complete = { call = "tasks.complete:main", help = "Create autocomplete files for bash and fish" }
+
+[tool.pdm.dev-dependencies]
+test = [
+  "pdm[pytest]",
+  "pdm[publish]",
+  "pytest-cov"
+]
+tox = [
+  "tox",
+  "tox-pdm>=0.5"
+]
+doc = [ "sphinx" ]
+dev = [
+  "tox>=4.11.3",
+  "tox-pdm>=0.7.0"
+]
+
+[tool.pytest.ini_options]
+testpaths = [ "test/" ]
+
+[tool.black]
+line-length = 120
