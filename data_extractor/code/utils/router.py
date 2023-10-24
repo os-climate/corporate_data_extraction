@@ -15,6 +15,9 @@ class Router:
         self._return_value: bool = True
         self._payload: dict = {}
 
+    @property
+    def return_value(self) -> bool:
+        return self._return_value
     
     def run_router(self):
         self._set_extraction_server_string()
@@ -31,46 +34,44 @@ class Router:
         self._check_for_train_relevance_training_and_send_request()
         self._check_for_kpi_training_and_send_request()
 
-        # return self._return_value
-
     
     def _set_extraction_server_string(self):
-        self._extraction_server_address = f'http://{self._main_settings.general.ext_ip}:{self._main_settings.general.ext_port}'
+        self._extraction_server_address: str = f'http://{self._main_settings.general.ext_ip}:{self._main_settings.general.ext_port}'
 
 
     def _set_inference_server_string(self):
-        self._inference_server_address = f'http://{self._main_settings.general.infer_ip}:{self._main_settings.general.infer_port}'
+        self._inference_server_address: str = f'http://{self._main_settings.general.infer_ip}:{self._main_settings.general.infer_port}'
 
 
     def _send_payload_to_server_address_with_node(self, server_address: str, node: str):
-        response = requests.get(f'{server_address}/{node}', params=self._payload)
+        response: requests.Response = requests.get(f'{server_address}/{node}', params=self._payload)
         print(response.text)
         if response.status_code != 200:
-            self._return_value = False
+            self._return_value: bool = False
 
 
     def _check_extraction_server_is_live(self):
-        response = requests.get(f"{self._extraction_server_address}/liveness")
+        response: requests.Response = requests.get(f"{self._extraction_server_address}/liveness")
         if response.status_code == 200:
             print("Extraction server is up. Proceeding to extraction.")
         else:
             print("Extraction server is not responding.")
-            self._return_value = False
+            self._return_value: bool = False
 
 
     def _define_payload(self):
-        self._payload = {'project_name': self._main_settings.general.project_name, 'mode': 'train'}
+        self._payload: dict[str] = {'project_name': self._main_settings.general.project_name, 'mode': 'train'}
         self._payload.update(self._main_settings.model_dump())
-        self._payload = {'payload': json.dumps(self._payload)}
+        self._payload: dict[str] = {'payload': json.dumps(self._payload)}
 
 
     def _check_inference_server_is_live(self):
-        response = requests.get(f"{self._inference_server_address}/liveness")
+        response: requests.Response = requests.get(f"{self._inference_server_address}/liveness")
         if response.status_code == 200:
             print("Inference server is up. Proceeding to Inference.")
         else:
             print("Inference server is not responding.")
-            self._return_value = False
+            self._return_value: bool = False
 
 
     def _check_for_train_relevance_training_and_send_request(self):
@@ -95,7 +96,7 @@ class Router:
 
     def _check_for_generate_text_3434(self):
         try:
-            temp = train_on_pdf.generate_text_3434(self._main_settings.general.project_name, 
+            temp: bool = train_on_pdf.generate_text_3434(self._main_settings.general.project_name, 
                                       self._s3_settings.s3_usage, self._s3_settings)
             if temp:
                 print('text_3434 was generated without error.')

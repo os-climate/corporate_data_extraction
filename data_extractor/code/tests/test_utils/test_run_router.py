@@ -69,7 +69,7 @@ def test_run_router_extraction_liveness_up(router: Router,
 
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
-    assert router._return_value == return_value_expected
+    assert router.return_value == return_value_expected
 
 
 def test_run_router_extraction_server_down(router: Router,
@@ -87,7 +87,7 @@ def test_run_router_extraction_server_down(router: Router,
     
     router._send_payload_to_server_address_with_node(f'http://{extraction_ip}:{extraction_port}', 'extract')
 
-    assert router._return_value is False
+    assert router.return_value is False
 
 
 def test_run_router_extraction_curation_server_down(router: Router,
@@ -104,7 +104,7 @@ def test_run_router_extraction_curation_server_down(router: Router,
     server.get(server_address_node, status_code=-1)      
     router.run_router()
 
-    assert router._return_value is False
+    assert router.return_value is False
 
 
 @pytest.mark.parametrize('status_code, cmd_output_expected, return_value_expected',
@@ -125,7 +125,7 @@ def test_run_router_inference_liveness(router: Router,
     
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
-    assert router._return_value == return_value_expected
+    assert router.return_value == return_value_expected
 
 
 @pytest.mark.parametrize('train_relevance, status_code, cmd_output_expected, return_value_expected',
@@ -151,7 +151,7 @@ def test_run_router_relevance_training(router: Router,
 
     cmd_output, _ = capsys.readouterr()
     assert cmd_output_expected in cmd_output
-    assert router._return_value == return_value_expected
+    assert router.return_value == return_value_expected
 
 
 @pytest.mark.parametrize('train_kpi, status_code_infer_relevance, project_name, status_code_train_kpi, cmd_output_expected, return_value_expected',
@@ -200,7 +200,7 @@ def test_run_router_kpi_training(router: Router,
 
         cmd_output, _ = capsys.readouterr()
         assert cmd_output_expected in cmd_output
-        assert router._return_value == return_value_expected
+        assert router.return_value == return_value_expected
 
 
 @pytest.mark.parametrize('infer_relevance, train_kpi',
@@ -217,4 +217,4 @@ def test_run_router_successful_run(router: Router,
     with patch('train_on_pdf.generate_text_3434', Mock()):
         router.run_router()
 
-    assert router._return_value == True
+    assert router.return_value == True

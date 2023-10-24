@@ -315,7 +315,8 @@ def main():
         converter.convert()
         upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(s3_settings.prefix) / Path('interim/ml/annotations'))
 
-        end_to_end_response = router.run_router()
+        router.run_router()
+        end_to_end_response = router.return_value
         
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:

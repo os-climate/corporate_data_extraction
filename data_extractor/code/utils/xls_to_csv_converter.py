@@ -13,7 +13,7 @@ class XlsToCsvConverter:
         return self._path_source_folder
     
     @path_source_folder.setter
-    def path_source_folder(self, path: Path):
+    def path_source_folder(self, path: Path) -> None:
         if isinstance(path, Path):
             self._path_source_folder: Path = path
         else:
