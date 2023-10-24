@@ -17,6 +17,7 @@ jobs:
     name: "Audit Python dependencies"
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ['3.9', '3.10', '3.11']
     steps:
@@ -33,6 +34,7 @@ jobs:
         run: |
           pip install --upgrade pip
           find ./* -name requirements.txt -exec pip install --upgrade -r {} \;
+          pip freeze
 
       - name: "Run: pip-audit"
         uses: pypa/gh-action-pip-audit@v1.0.8
