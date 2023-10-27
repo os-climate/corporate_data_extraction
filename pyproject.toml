@@ -2,14 +2,13 @@
 name = "osc-data-extraction"
 version = "v0.9.9"
 description = "OS-Climate data extraction toolkit."
-authors = [ { name = "David Besslich", email = "72577720+MichaelTiemannOSC@users.noreply.github.com" } ]
+authors = [
+  { name = "David Besslich", email = "72577720+MichaelTiemannOSC@users.noreply.github.com" },
+]
 requires-python = ">=3.9"
 readme = "README.md"
 license = { text = "Apache-2.0" }
-keywords = [
-  "Climate",
-  "Finance"
-]
+keywords = ["Climate", "Finance"]
 classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
@@ -65,7 +64,7 @@ dependencies = [
   "tqdm==4.48.0",
   "traitlets==5.4",
   "urllib3==1.26.7",
-  'xlrd==1.2.0"
+  "xlrd==1.2.0",
 ]
 
 [project.urls]
@@ -77,7 +76,7 @@ Documentation = "https://github.com/os-climate/data-extraction/tree/main/docs"
 "Source Code" = "https://github.com/os-climate/data-extraction"
 
 [build-system]
-requires = [ "pdm-backend" ]
+requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.scripts]
@@ -90,23 +89,13 @@ lint = "pre-commit run --all-files"
 complete = { call = "tasks.complete:main", help = "Create autocomplete files for bash and fish" }
 
 [tool.pdm.dev-dependencies]
-test = [
-  "pdm[pytest]",
-  "pdm[publish]",
-  "pytest-cov"
-]
-tox = [
-  "tox",
-  "tox-pdm>=0.5"
-]
-doc = [ "sphinx" ]
-dev = [
-  "tox>=4.11.3",
-  "tox-pdm>=0.7.0"
-]
+test = ["pdm[pytest]", "pdm[publish]", "pytest-cov"]
+tox = ["tox", "tox-pdm>=0.5"]
+doc = ["sphinx"]
+dev = ["tox>=4.11.3", "tox-pdm>=0.7.0"]
 
 [tool.pytest.ini_options]
-testpaths = [ "test/" ]
+testpaths = ["test/"]
 
 [tool.black]
 line-length = 120
