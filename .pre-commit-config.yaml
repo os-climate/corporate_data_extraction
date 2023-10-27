@@ -27,19 +27,6 @@ repos:
         # https://pre-commit.com/#top_level-default_language_version
         language_version: python3.11
 
-  - repo: https://github.com/pre-commit/mirrors-eslint
-    rev: 'v8.51.0'
-    hooks:
-      - id: eslint
-        files: \^*.toml
-        types: [file]
-        additional_dependencies:
-          - eslint
-          - eslint-config-google
-          - eslint-loader
-          - eslint-plugin-react
-          - babel-eslint
-
   - repo: https://github.com/pycqa/flake8
     rev: '6.1.0'
     hooks:
@@ -49,3 +36,13 @@ repos:
     rev: 'v1.6.1'
     hooks:
       - id: mypy
+
+  - repo: local
+    hooks:
+      - id: tomllint
+        name: "Script: scripts/tomllint.sh"
+        language: script
+        # pass_filenames: false
+        files: \^*.toml
+        types: [file]
+        entry: scripts/tomllint.sh .
