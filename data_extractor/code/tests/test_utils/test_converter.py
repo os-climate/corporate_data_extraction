@@ -1,7 +1,8 @@
 from pathlib import Path
 import pytest
 from unittest.mock import patch, Mock
-from utils.xls_to_csv_converter import XlsToCsvConverter, AnnotationConversionError
+from utils.converter import XlsToCsvConverter
+from utils.exceptions import AnnotationConversionError
 
  
 @pytest.fixture

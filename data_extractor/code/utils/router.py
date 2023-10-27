@@ -1,15 +1,15 @@
 import requests
-from utils.settings import S3Settings, MainSettings
+from utils.settings import S3Settings, MainSettings, Settings
 import train_on_pdf
 import traceback
 import json
 
 
 class Router:
-    def __init__(self, main_settings: MainSettings | None = None, 
-                 s3_settings: S3Settings | None = None) -> None:
-        self._main_settings: MainSettings = main_settings
-        self._s3_settings: S3Settings = s3_settings
+    def __init__(self, main_settings: Settings | None = None, 
+                 s3_settings: Settings | None = None) -> None:
+        self._main_settings: Settings = main_settings
+        self._s3_settings: Settings = s3_settings
         self._extraction_server_address: str = ''
         self._inference_server_address: str = ''
         self._return_value: bool = True

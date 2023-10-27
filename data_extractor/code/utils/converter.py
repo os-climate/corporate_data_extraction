@@ -1,8 +1,12 @@
 from pathlib import Path
 import pandas as pd
+from utils.exceptions import AnnotationConversionError
 
+class Converter:
+    def convert(self) -> None:
+        pass
 
-class XlsToCsvConverter:
+class XlsToCsvConverter(Converter):
     def __init__(self, path_source_folder: Path = Path(), 
                  path_destination_folder: Path = Path()):
         self.path_source_folder: Path = path_source_folder
@@ -57,6 +61,3 @@ class XlsToCsvConverter:
         df_read_excel: pd.DataFrame = pd.read_excel(path_file, engine='openpyxl')
         path_csv_file: Path = self._path_destination_folder / 'aggregated_annotation.csv'
         df_read_excel.to_csv(path_csv_file, index=None, header=True)
-
-class AnnotationConversionError(Exception):
-    pass

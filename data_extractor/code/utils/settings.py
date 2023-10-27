@@ -3,6 +3,9 @@ from pydantic_settings import BaseSettings
 from typing import List
 
 
+class Settings():
+    pass
+
 class General(BaseSettings):
     project_name: str = 'TEST'
     ext_ip: str = '172.30.15.68'
@@ -133,7 +136,7 @@ class RuleBased(BaseSettings):
     verbosity: int = 2
     use_docker: bool = True
 
-class MainSettings(BaseSettings):
+class MainSettings(Settings, BaseSettings):
     general: General = General()
     data_export: DataExport = DataExport()
     extraction: Extraction = Extraction()
@@ -157,7 +160,7 @@ class InterimBucketSettings(BaseSettings):
     s3_secret_key: str = Field(default='', alias='INTERIM_AWS_SECRET_KEY')
     s3_bucket_name: str = Field(default='', alias='INTERIM_AWS_BUCKET_NAME')
     
-class S3Settings(BaseSettings):
+class S3Settings(Settings, BaseSettings):
     prefix: str = Field(default='corporate_data_extraction_projects')
     main_bucket: MainBucketSettings = MainBucketSettings()
     interim_bucket: InterimBucketSettings = InterimBucketSettings()

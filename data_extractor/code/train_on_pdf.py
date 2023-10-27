@@ -17,7 +17,7 @@ from utils.utils import link_files
 from utils.core_utils import create_folder
 from utils.training_monitor import TrainingMonitor
 from utils.settings import get_s3_settings, get_main_settings, S3Settings, MainSettings
-from utils.xls_to_csv_converter import XlsToCsvConverter
+from utils.converter import XlsToCsvConverter
 from utils.router import Router
 from utils.core_utils import download_data_from_s3_main_bucket_to_local_folder_if_required,\
 upload_data_from_local_folder_to_s3_interim_bucket_if_required
@@ -163,8 +163,8 @@ def copy_file_without_overwrite(src_path, dest_path):
 
 
 def main():
-    s3_settings = get_s3_settings()
-    main_settings = get_main_settings()
+    s3_settings: S3Settings = get_s3_settings()
+    main_settings: MainSettings = get_main_settings()
 
     training_monitor = TrainingMonitor(path_file_running)
     converter = XlsToCsvConverter()
