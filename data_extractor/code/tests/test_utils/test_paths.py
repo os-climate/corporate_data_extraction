@@ -7,41 +7,43 @@ from utils.settings import Settings, MainSettings
 
 @pytest.fixture
 def paths_project(main_settings: Settings) -> ProjectPaths:
-    return ProjectPaths(path_project_data_folder=Path(),
-                        path_project_model_folder=Path(),
+    return ProjectPaths(path_project_data_folder=Path('/project_data_folder'),
+                        path_project_model_folder=Path('/project_model_folder'),
                         main_settings=main_settings)
 
 
-def test_check_that_all_required_paths_exist_in_project_path_object(paths_project: ProjectPaths):
+def test_check_that_all_required_paths_exist_in_project_path_object(main_settings: Settings):
     list_paths_expected = ['input/pdfs/training', 'input/annotations', 'input/kpi_mapping', 'interim/pdfs', 
                            'interim/ml/annotations', 'interim/kpi_mapping', 'interim/ml/extraction', 
                            'interim/ml/curation', 'interim/ml/training', 'RELEVANCE/Text', 'KPI_EXTRACTION/Text', 
                            'interim/ml', 'output/RELEVANCE/Text']
 
-    for path_field in paths_project.model_fields.keys():
-        path_field_attribute: Path = getattr(paths_project, f'{path_field}')
-        assert str(path_field_attribute) in list_paths_expected
+    with (patch.object(ProjectPaths, '_update_all_paths_depending_on_path_project_data_folder'),
+          patch.object(ProjectPaths, '_update_all_paths_depending_on_path_project_model_folder')):
+        paths_project: ProjectPaths = ProjectPaths(Path('/data'), Path('/model'), main_settings)
+    
+        for path_field in paths_project.model_fields.keys():
+            path_field_attribute: Path = getattr(paths_project, f'{path_field}')
+            assert str(path_field_attribute) in list_paths_expected
 
 
-def test_set_project_data_folder(paths_project: ProjectPaths):
+def test_project_paths_update_methods_are_called(main_settings: Settings):
+    
+    with (patch.object(ProjectPaths, '_update_all_paths_depending_on_path_project_data_folder') as mocked_update_data,
+          patch.object(ProjectPaths, '_update_all_paths_depending_on_path_project_model_folder') as mocked_update_model):
+        paths_project: ProjectPaths = ProjectPaths(Path('/data'), Path('/model'), main_settings)
+
+    mocked_update_data.assert_called_once()
+    mocked_update_model.assert_called_once()
+
+
+def test_set_path_project_data_folder(paths_project: ProjectPaths):
     path_test_folder = Path('/data_folder')
     paths_project.path_project_data_folder: Path = path_test_folder
     assert paths_project.path_project_data_folder == path_test_folder
 
 
-def test_setting_project_data_folder_results_in_update_of_depending_paths(paths_project: ProjectPaths):
-    path_test_folder = Path('/data_folder')
-    paths_project.path_project_data_folder: Path = path_test_folder
-    
-    list_paths_model_fields_filtered = [path_model_field for path_model_field in paths_project.model_fields.keys() 
-                                        if 'saved_models' not in path_model_field]
-    
-    for path_field in list_paths_model_fields_filtered:
-        path_field: Path = getattr(paths_project, f'{path_field}')
-        assert path_field.parts[1] == path_test_folder.name
-
-
-def test_set_project_model_folder(paths_project: ProjectPaths):
+def test_set_path_project_model_folder(paths_project: ProjectPaths):
     path_test_folder = Path('/model_folder')
     paths_project.path_project_model_folder: Path = path_test_folder
     assert paths_project.path_project_model_folder == path_test_folder
@@ -72,6 +74,20 @@ def test_setting_main_settings_results_in_call_of_update_method(paths_project: P
         paths_project.main_settings = main_settings_changed
     
     mocked_method.assert_called_once()
+
+
+def test_update_all_paths_depending_on_path_project_data_folder(paths_project: ProjectPaths):
+    path_test_folder = Path('/data_folder')
+    paths_project._path_project_data_folder: Path = path_test_folder
+
+    paths_project._update_all_paths_depending_on_path_project_data_folder()
+    
+    list_paths_model_fields_filtered = [path_model_field for path_model_field in paths_project.model_fields.keys() 
+                                        if 'saved_models' not in path_model_field]
+    
+    for path_field in list_paths_model_fields_filtered:
+        path_field: Path = getattr(paths_project, f'{path_field}')
+        assert path_field.parts[1] == path_test_folder.name
 
 
 def test_update_all_paths_depending_on_path_project_model_folder(paths_project: ProjectPaths):

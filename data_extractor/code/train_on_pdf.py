@@ -21,6 +21,7 @@ from utils.converter import XlsToCsvConverter
 from utils.router import Router
 from utils.core_utils import download_data_from_s3_main_bucket_to_local_folder_if_required,\
 upload_data_from_local_folder_to_s3_interim_bucket_if_required
+from utils.paths import ProjectPaths
 
 
 project_settings = None
@@ -268,10 +269,12 @@ def main():
     infer_ip = project_settings['general']['infer_ip']
     relevance_training_output_model_name = project_settings['train_relevance']['output_model_name']
     kpi_inference_training_output_model_name = project_settings['train_kpi']['output_model_name']
+
+    project_paths: ProjectPaths = ProjectPaths(Path(project_data_dir), Path(project_model_dir), main_settings)
     
     training_monitor.set_running()
     try:
-        source_pdf = project_data_dir + r'/input/pdfs/training'
+        # source_pdf = project_data_dir + r'/input/pdfs/training'
         source_annotation = project_data_dir + r'/input/annotations'
         converter.path_source_folder = Path(source_annotation)
         source_mapping = project_data_dir + r'/input/kpi_mapping'
@@ -287,7 +290,7 @@ def main():
         folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
-        create_folder(Path(source_pdf))
+        create_folder(project_paths.path_folder_source_pdf)
         create_folder(Path(source_annotation))
         create_folder(Path(source_mapping))
         create_folder(Path(folder_text_3434))

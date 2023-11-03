@@ -37,7 +37,11 @@ class ProjectPaths(BaseSettings):
         self._path_project_data_folder: Path = path_project_data_folder
         self._path_project_model_folder: Path = path_project_model_folder
         self._main_settings: Settings = main_settings
+        self._update_all_paths_depending_on_path_project_data_folder()
+        self._update_all_paths_depending_on_path_project_model_folder()
+
     
+
     @property
     def path_project_data_folder(self) -> Path:
         return self._path_project_data_folder
@@ -45,11 +49,7 @@ class ProjectPaths(BaseSettings):
     @path_project_data_folder.setter
     def path_project_data_folder(self, path_new_project_data_folder: Path) -> None:
         self._path_project_data_folder: Path = path_new_project_data_folder
-
-        for path_field in self.model_fields.keys():
-            if 'saved_models' not in path_field:
-                path_field_default: Path = self.model_fields[path_field].default
-                setattr(self, f'{path_field}', path_new_project_data_folder / path_field_default)
+        self._update_all_paths_depending_on_path_project_data_folder()
     
     @property
     def path_project_model_folder(self) -> Path:
@@ -69,6 +69,16 @@ class ProjectPaths(BaseSettings):
         self._main_settings: Settings = main_settings_new
         self._update_all_paths_depending_on_path_project_model_folder()
 
+    def _update_all_paths_depending_on_path_project_data_folder(self) -> None:
+        list_paths_model_fields_filtered: list[str] = [path_model_field 
+                                                       for path_model_field in self.model_fields.keys() 
+                                                       if 'saved_models' not in path_model_field]
+        
+        for path_field in list_paths_model_fields_filtered:
+            path_field_default: Path = self.model_fields[path_field].default
+            setattr(self, f'{path_field}', self._path_project_data_folder / path_field_default)
+            
+    
     def _update_all_paths_depending_on_path_project_model_folder(self) -> None:
         list_string_paths_depending_on_path_project_model_folder: list[str] = [
             'path_folder_destination_saved_models_relevance',
