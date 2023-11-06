@@ -275,29 +275,29 @@ def main():
     training_monitor.set_running()
     try:
         # source_pdf = project_data_dir + r'/input/pdfs/training'
-        source_annotation = project_data_dir + r'/input/annotations'
-        converter.path_source_folder = Path(source_annotation)
-        source_mapping = project_data_dir + r'/input/kpi_mapping'
-        destination_pdf = project_data_dir + r'/interim/pdfs/'
-        destination_annotation = project_data_dir + r'/interim/ml/annotations/'
-        converter.path_destination_folder = Path(destination_annotation)
-        destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
+        # project_paths.path_folder_source_annotation = project_data_dir + r'/input/annotations'
+        converter.path_source_folder = project_paths.path_folder_source_annotation
+        # project_paths.path_folder_source_mapping = project_data_dir + r'/input/kpi_mapping'
+        # destination_pdf = project_data_dir + r'/interim/pdfs/'
+        # destination_annotation = project_data_dir + r'/interim/ml/annotations/'
+        converter.path_destination_folder = project_paths.path_folder_destination_annotation
+        # destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
         destination_extraction = project_data_dir + r'/interim/ml/extraction/'
         destination_curation = project_data_dir + r'/interim/ml/curation/'
         destination_training = project_data_dir + r'/interim/ml/training/'
         destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + relevance_training_output_model_name
         destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + kpi_inference_training_output_model_name
-        folder_text_3434 = project_data_dir + r'/interim/ml'
+        # folder_text_3434 = project_data_dir + r'/interim/ml'
         folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
         create_folder(project_paths.path_folder_source_pdf)
-        create_folder(Path(source_annotation))
-        create_folder(Path(source_mapping))
-        create_folder(Path(folder_text_3434))
-        create_folder(Path(destination_pdf))
-        create_folder(Path(destination_annotation))
-        create_folder(Path(destination_mapping))
-        create_folder(Path(destination_extraction))
+        create_folder(project_paths.path_folder_source_annotation)
+        create_folder(project_paths.path_folder_source_mapping)
+        create_folder(project_paths.path_folder_text_3434)
+        create_folder(project_paths.path_folder_destination_pdf)
+        create_folder(project_paths.path_folder_destination_annotation)
+        create_folder(project_paths.path_folder_destination_mapping)
+        create_folder(project_paths.path_folder_destination_extraction)
         create_folder(Path(destination_training))
         create_folder(Path(destination_curation))
         if project_settings['train_relevance']['train']:
@@ -306,17 +306,17 @@ def main():
             create_folder(Path(destination_saved_models_inference))
         create_folder(Path(folder_relevance))
 
-        link_files(source_pdf, destination_pdf)
-        link_files(source_annotation, destination_annotation)
-        link_files(source_mapping, destination_mapping)
+        link_files(project_paths.path_folder_source_pdf, project_paths.path_folder_destination_pdf)
+        link_files(project_paths.path_folder_source_annotation, project_paths.path_folder_destination_annotation)
+        link_files(project_paths.path_folder_source_mapping, project_paths.path_folder_destination_mapping)
         if project_settings['extraction']['use_extractions']:
             source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
             if os.path.exists(source_extraction):
-                link_extracted_files(source_extraction, source_pdf, destination_extraction)
+                link_extracted_files(source_extraction, project_paths.path_folder_source_pdf, project_paths.path_folder_destination_extraction)
         
         download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(s3_settings.prefix) / Path('input/annotations'))
         converter.convert()
-        upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, destination_annotation, Path(s3_settings.prefix) / Path('interim/ml/annotations'))
+        upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3c_interim, project_paths.path_folder_destination_annotation, Path(s3_settings.prefix) / Path('interim/ml/annotations'))
 
         router.run_router()
         end_to_end_response = router.return_value
@@ -324,7 +324,7 @@ def main():
         if end_to_end_response:
             if project_settings['extraction']['store_extractions']:
                 print("Finally we transfer the text extraction to the output folder")
-                source_extraction_data = destination_extraction
+                source_extraction_data: Path = project_paths.path_folder_destination_extraction
                 destination_extraction_data = project_data_dir + r'/output/TEXT_EXTRACTION'
                 if s3_usage:
                     s3c_interim.download_files_in_prefix_to_dir(project_prefix + '/interim/ml/extraction', 
@@ -333,17 +333,17 @@ def main():
                                                            project_prefix + '/output/TEXT_EXTRACTION')
                 else:
                     os.makedirs(destination_extraction_data, exist_ok=True)
-                    end_to_end_response = copy_file_without_overwrite(source_extraction_data,
+                    end_to_end_response = copy_file_without_overwrite(str(source_extraction_data),
                                                                       destination_extraction_data)
                 
             if project_settings['general']['delete_interim_files']:
-                create_folder(Path(destination_pdf))
-                create_folder(Path(destination_mapping))
-                create_folder(Path(destination_annotation))
+                create_folder(project_paths.path_folder_destination_pdf)
+                create_folder(project_paths.path_folder_destination_mapping)
+                create_folder(project_paths.path_folder_destination_annotation)
                 create_folder(Path(destination_extraction))
                 create_folder(Path(destination_training))
                 create_folder(Path(destination_curation))
-                create_folder(Path(folder_text_3434))
+                create_folder(project_paths.path_folder_text_3434)
                 if s3_usage:
                     # Show only objects which satisfy our prefix
                     my_bucket = s3c_interim.s3_resource.Bucket(name=s3c_interim.bucket)

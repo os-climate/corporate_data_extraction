@@ -375,7 +375,7 @@ def test_train_on_pdf_e2e_store_extractions(path_folder_temporary: Path,
         
         # we have to combine pathlib object with str path...
         path_folder_root = path_folder_temporary / 'data'
-        path_folder_root_source = str(path_folder_root) + '/TEST/interim/ml/extraction/'
+        path_folder_root_source = str(path_folder_root) + '/TEST/interim/ml/extraction'
         path_folder_root_destination = str(path_folder_root) + '/TEST/output/TEXT_EXTRACTION'
         output_cmd, _ = capsys.readouterr()
         
