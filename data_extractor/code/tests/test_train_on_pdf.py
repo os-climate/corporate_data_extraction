@@ -5,7 +5,6 @@ import shutil
 import train_on_pdf
 import requests
 import requests_mock
-import config_path
 import sys
 import yaml
 import os
@@ -119,8 +118,6 @@ def prerequisite_train_on_pdf_try_run(
     ):
         mocked_argpase.return_value.project_name = project_name
         mocked_argpase.return_value.s3_usage = 'N'
-        # mocked_config_path.PATH_FOLDER_DATA = str(path_folder_data)
-        # mocked_config_path.PATH_FOLDER_MODEL = str(path_folder_models)
         mocked_yaml.safe_load.side_effect = return_project_settings
         mocked_training_monitor.check_running.return_value = False
         yield

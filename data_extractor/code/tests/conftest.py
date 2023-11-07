@@ -1,5 +1,4 @@
 import os
-import config_path
 import pytest
 from pathlib import Path
 import shutil

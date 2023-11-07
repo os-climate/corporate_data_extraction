@@ -2,7 +2,6 @@ from pathlib import Path
 from utils.training_monitor import TrainingMonitor
 import pytest
 from unittest.mock import patch, Mock
-import config_path
 from utils.paths import path_file_running
 
 
