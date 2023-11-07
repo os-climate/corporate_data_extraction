@@ -8,8 +8,10 @@ import requests_mock
 import config_path
 import sys
 import yaml
+import os
 import traceback
 from tests.utils_test import modify_project_settings
+from utils.settings import MainSettings
 # from tests.test_utils.test_running import prerequisite_running
 
 # types
@@ -308,7 +310,7 @@ def test_train_on_pdf_folders_default_created(path_folder_temporary: Path):
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
                          [('train_relevance', 'train', True)], 
                          indirect=True) 
-def test_train_on_pdf_folders_relevance_created(path_folder_temporary: Path):
+def test_train_on_pdf_folders_relevance_created(path_folder_temporary: Path, main_settings: MainSettings):
     """Tests of the relevance folder is created
 
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
@@ -317,14 +319,15 @@ def test_train_on_pdf_folders_relevance_created(path_folder_temporary: Path):
     
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.Router', Mock(run_router=False)),
-          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
+          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder,
+          patch('train_on_pdf.XlsToCsvConverter'), patch('train_on_pdf.save_train_info')):
         
         train_on_pdf.main()
         
         # we have to combine pathlib object with str path...
         path_folder_temporary = path_folder_temporary / 'models'
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
-        path_folder_expected = path_folder_temporary + '/RELEVANCE/Text/test'
+        path_folder_expected = path_folder_temporary + '/RELEVANCE/Text/TEST_1'
         mocked_create_folder.assert_any_call(Path(path_folder_expected))
 
             
@@ -339,14 +342,15 @@ def test_train_on_pdf_folders_kpi_extraction_created(path_folder_temporary: Path
     """
     with (patch('train_on_pdf.link_files', Mock()),
           patch('train_on_pdf.Router', Mock(run_router=False)),
-          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder):
+          patch('train_on_pdf.create_folder', Mock()) as mocked_create_folder,
+          patch('train_on_pdf.XlsToCsvConverter'), patch('train_on_pdf.save_train_info')):
         
         train_on_pdf.main()
         
         # we have to combine pathlib object with str path...
         path_folder_temporary = path_folder_temporary / 'models'
         path_folder_temporary = str(path_folder_temporary) + '/TEST'
-        path_folder_expected = path_folder_temporary + '/KPI_EXTRACTION/Text/test'
+        path_folder_expected = path_folder_temporary + '/KPI_EXTRACTION/Text/TEST_1'
         mocked_create_folder.assert_any_call(Path(path_folder_expected))
                   
 
@@ -381,6 +385,35 @@ def test_train_on_pdf_e2e_store_extractions(path_folder_temporary: Path,
         
         assert 'Finally we transfer the text extraction to the output folder\n' in output_cmd
         mocked_copy_files.assert_called_with(path_folder_root_source, path_folder_root_destination)
+
+
+@pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 
+                         [('extraction', 'use_extractions', True)], 
+                         indirect=True) 
+def test_train_on_pdf_e2e_use_extractions(path_folder_temporary: Path,
+                                            capsys: typing.Generator[CaptureFixture[str], None, None]):
+    """Tests of the extraction works properly
+
+    :param path_folder_temporary: Requesting the path_folder_temporary fixture
+    :type path_folder_temporary: Path
+    :param capsys: Requesting the default fixture capsys for capturing cmd outputs
+    :type capsys: typing.Generator[CaptureFixture[str], None, None])
+    """
+    
+    with (patch('train_on_pdf.link_files', Mock()),
+          patch('train_on_pdf.Router', Mock(run_router=True)),
+          patch('train_on_pdf.XlsToCsvConverter'),
+          patch('train_on_pdf.save_train_info', Mock()) as mocked_save_train_info,
+          patch('train_on_pdf.copy_file_without_overwrite', Mock()) as mocked_copy_files,
+          patch('train_on_pdf.create_folder'),
+          patch.object(os.path, 'exists') as mocked_os_path,
+          patch('train_on_pdf.link_extracted_files') as mocked_link_extracted_files):
+        mocked_os_path.return_value = True
+        mocked_copy_files.return_value = False
+        
+        train_on_pdf.main()
+        
+        mocked_link_extracted_files.assert_called_once()
 
 
 @pytest.mark.parametrize('prerequisite_train_on_pdf_try_run', 

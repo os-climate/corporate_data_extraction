@@ -70,14 +70,14 @@ def test_check_xlsx_files_multiple_files(converter):
     with pytest.raises(AnnotationConversionError):
         converter._check_xlsx_files(list_paths_xlsx_files)
         
-def test_check_for_valid_path_source_folder(converter):
-    converter._path_source_folder: Path = Path()
+def test_check_for_valid_path_folder_source(converter):
+    converter._path_folder_source: Path = Path()
     
     with pytest.raises(AnnotationConversionError):
         converter._check_for_valid_paths()
 
-def test_check_for_valid_path_destination_folder(converter):
-    converter._path_destination_folder: Path = Path()
+def test_check_for_valid_path_folder_destination(converter):
+    converter._path_folder_destination: Path = Path()
     
     with pytest.raises(AnnotationConversionError):
         converter._check_for_valid_paths()

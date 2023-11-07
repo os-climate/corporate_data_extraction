@@ -7,30 +7,30 @@ class Converter:
         pass
 
 class XlsToCsvConverter(Converter):
-    def __init__(self, path_source_folder: Path = Path(), 
-                 path_destination_folder: Path = Path()):
-        self.path_source_folder: Path = path_source_folder
-        self.path_destination_folder: Path = path_destination_folder
+    def __init__(self, path_folder_source: Path = Path(), 
+                 path_folder_destination: Path = Path()):
+        self.path_folder_source: Path = path_folder_source
+        self.path_folder_destination: Path = path_folder_destination
 
     @property
-    def path_source_folder(self) -> Path:
-        return self._path_source_folder
+    def path_folder_source(self) -> Path:
+        return self._path_folder_source
     
-    @path_source_folder.setter
-    def path_source_folder(self, path: Path) -> None:
+    @path_folder_source.setter
+    def path_folder_source(self, path: Path) -> None:
         if isinstance(path, Path):
-            self._path_source_folder: Path = path
+            self._path_folder_source: Path = path
         else:
             raise TypeError(f'{path} is of type {type(path)}, not of type Path')
     
     @property
-    def path_destination_folder(self) -> Path:
-        return self._path_destination_folder
+    def path_folder_destination(self) -> Path:
+        return self._path_folder_destination
 
-    @path_destination_folder.setter
-    def path_destination_folder(self, path: Path) -> None:
+    @path_folder_destination.setter
+    def path_folder_destination(self, path: Path) -> None:
         if isinstance(path, Path):
-            self._path_destination_folder: Path = path
+            self._path_folder_destination: Path = path
         else:
             raise TypeError(f'{path} is of type {type(path)}, not of type Path')
         
@@ -41,13 +41,13 @@ class XlsToCsvConverter(Converter):
         self._convert_single_file_to_csv(list_paths_xlsx_files[0])
 
     def _find_xlsx_files_in_source_folder(self) -> list[Path]:
-        list_paths_xlsx_files: list[Path] = list(self._path_source_folder.glob('*.xlsx'))
+        list_paths_xlsx_files: list[Path] = list(self._path_folder_source.glob('*.xlsx'))
         return list_paths_xlsx_files
     
     def _check_for_valid_paths(self) -> None:
-        if self._path_source_folder.name == '':
+        if self._path_folder_source.name == '':
             raise AnnotationConversionError('No source folder path set')
-        if self._path_destination_folder.name == '':
+        if self._path_folder_destination.name == '':
             raise AnnotationConversionError('No destination folder path set')
 
     def _check_xlsx_files(self, list_paths_xlsx_files: list[Path]) -> None:
@@ -59,5 +59,5 @@ class XlsToCsvConverter(Converter):
     def _convert_single_file_to_csv(self, path_file: Path) -> None:
         print(f'Converting {path_file} to csv-format')
         df_read_excel: pd.DataFrame = pd.read_excel(path_file, engine='openpyxl')
-        path_csv_file: Path = self._path_destination_folder / 'aggregated_annotation.csv'
+        path_csv_file: Path = self._path_folder_destination / 'aggregated_annotation.csv'
         df_read_excel.to_csv(path_csv_file, index=None, header=True)

@@ -7,6 +7,7 @@ import pandas as pd
 import sys
 from tests.utils_test import project_tests_root
 from utils.settings import get_s3_settings, get_main_settings, S3Settings, MainSettings
+from utils.paths import ProjectPaths, get_project_settings
 # add test_on_pdf.py to the PATH
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
   

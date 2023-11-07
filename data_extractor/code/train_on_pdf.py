@@ -13,7 +13,7 @@ import datetime
 from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import path_file_running
-from utils.utils import link_files
+from utils.utils import link_files, link_extracted_files
 from utils.core_utils import create_folder
 from utils.training_monitor import TrainingMonitor
 from utils.settings import get_s3_settings, get_main_settings, S3Settings, MainSettings
@@ -267,28 +267,30 @@ def main():
     infer_port = project_settings['general']['infer_port']
     ext_ip = project_settings['general']['ext_ip']
     infer_ip = project_settings['general']['infer_ip']
-    relevance_training_output_model_name = project_settings['train_relevance']['output_model_name']
-    kpi_inference_training_output_model_name = project_settings['train_kpi']['output_model_name']
+    relevance_training_output_model_name = main_settings.train_relevance.output_model_name
+    kpi_inference_training_output_model_name = main_settings.train_kpi.output_model_name
 
     project_paths: ProjectPaths = ProjectPaths(Path(project_data_dir), Path(project_model_dir), main_settings)
     
     training_monitor.set_running()
     try:
+        converter.path_folder_source = project_paths.path_folder_source_annotation
+        converter.path_folder_destination = project_paths.path_folder_destination_annotation
         # source_pdf = project_data_dir + r'/input/pdfs/training'
         # project_paths.path_folder_source_annotation = project_data_dir + r'/input/annotations'
-        converter.path_source_folder = project_paths.path_folder_source_annotation
+        
         # project_paths.path_folder_source_mapping = project_data_dir + r'/input/kpi_mapping'
         # destination_pdf = project_data_dir + r'/interim/pdfs/'
         # destination_annotation = project_data_dir + r'/interim/ml/annotations/'
-        converter.path_destination_folder = project_paths.path_folder_destination_annotation
+        
         # destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
-        destination_extraction = project_data_dir + r'/interim/ml/extraction/'
-        destination_curation = project_data_dir + r'/interim/ml/curation/'
-        destination_training = project_data_dir + r'/interim/ml/training/'
-        destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + relevance_training_output_model_name
-        destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + kpi_inference_training_output_model_name
+        # destination_extraction = project_data_dir + r'/interim/ml/extraction/'
+        # destination_curation = project_data_dir + r'/interim/ml/curation/'
+        # destination_training = project_data_dir + r'/interim/ml/training/'
+        # destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + relevance_training_output_model_name
+        # destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + kpi_inference_training_output_model_name
         # folder_text_3434 = project_data_dir + r'/interim/ml'
-        folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
+        # folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
         create_folder(project_paths.path_folder_source_pdf)
         create_folder(project_paths.path_folder_source_annotation)
@@ -298,13 +300,13 @@ def main():
         create_folder(project_paths.path_folder_destination_annotation)
         create_folder(project_paths.path_folder_destination_mapping)
         create_folder(project_paths.path_folder_destination_extraction)
-        create_folder(Path(destination_training))
-        create_folder(Path(destination_curation))
+        create_folder(project_paths.path_folder_destination_training)
+        create_folder(project_paths.path_folder_destination_curation)
         if project_settings['train_relevance']['train']:
-            create_folder(Path(destination_saved_models_relevance))
+            create_folder(project_paths.path_folder_destination_saved_models_relevance)
         if project_settings['train_kpi']['train']:
-            create_folder(Path(destination_saved_models_inference))
-        create_folder(Path(folder_relevance))
+            create_folder(project_paths.path_folder_destination_saved_models_inference)
+        create_folder(project_paths.path_folder_relevance)
 
         link_files(project_paths.path_folder_source_pdf, project_paths.path_folder_destination_pdf)
         link_files(project_paths.path_folder_source_annotation, project_paths.path_folder_destination_annotation)
@@ -340,9 +342,9 @@ def main():
                 create_folder(project_paths.path_folder_destination_pdf)
                 create_folder(project_paths.path_folder_destination_mapping)
                 create_folder(project_paths.path_folder_destination_annotation)
-                create_folder(Path(destination_extraction))
-                create_folder(Path(destination_training))
-                create_folder(Path(destination_curation))
+                create_folder(project_paths.path_folder_destination_extraction)
+                create_folder(project_paths.path_folder_destination_training)
+                create_folder(project_paths.path_folder_destination_curation)
                 create_folder(project_paths.path_folder_text_3434)
                 if s3_usage:
                     # Show only objects which satisfy our prefix
