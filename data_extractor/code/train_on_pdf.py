@@ -6,7 +6,6 @@ import glob
 import json
 import yaml
 import pandas as pd
-import config_path
 import traceback
 import pickle
 import datetime
@@ -25,18 +24,9 @@ from utils.paths import ProjectPaths
 
 
 project_settings = None
-project_model_dir = None
 source_pdf = None
 source_annotation = None
 source_mapping = None
-destination_pdf = None
-destination_annotation = None
-destination_mapping = None
-destination_extraction = None
-destination_curation = None
-destination_training = None
-destination_saved_models_relevance = None
-destination_saved_models_inference = None
 folder_text_3434 = None
 folder_relevance = None
 project_prefix = None
@@ -176,15 +166,6 @@ def main():
     global source_pdf
     global source_annotation
     global source_mapping
-    global destination_pdf
-    global destination_annotation
-    global destination_mapping
-    global destination_extraction
-    global destination_curation
-    global destination_training
-    global destination_saved_models_relevance
-    global destination_saved_models_inference
-    global project_model_dir
     global folder_text_3434
     global folder_relevance
     global project_prefix
@@ -224,13 +205,15 @@ def main():
     else:
         s3_usage = s3_usage == 'Y'
     # -- SysInReaderClass end
-    project_data_dir = config_path.DATA_DIR + r'/' + project_name
+    project_paths: ProjectPaths = ProjectPaths(project_name, main_settings)
+    project_data_dir: str = str(project_paths.path_project_data_folder)
+
     create_folder(Path(project_data_dir))
     s3c_main = None
     s3c_interim = None
     if s3_usage:
         # Opening s3 settings file
-        s3_settings_path = config_path.DATA_DIR + r'/' + 's3_settings.yaml'
+        s3_settings_path = str(project_paths.PATH_FOLDER_DATA) + r'/' + 's3_settings.yaml'
         f = open(s3_settings_path, 'r')
         s3_settings = yaml.safe_load(f)
         f.close()
@@ -262,35 +245,10 @@ def main():
     if s3_usage:
         project_settings.update({'s3_settings': s3_settings})
     
-    project_model_dir = config_path.MODEL_DIR + r'/' + project_name
-    ext_port = project_settings['general']['ext_port']
-    infer_port = project_settings['general']['infer_port']
-    ext_ip = project_settings['general']['ext_ip']
-    infer_ip = project_settings['general']['infer_ip']
-    relevance_training_output_model_name = main_settings.train_relevance.output_model_name
-    kpi_inference_training_output_model_name = main_settings.train_kpi.output_model_name
-
-    project_paths: ProjectPaths = ProjectPaths(Path(project_data_dir), Path(project_model_dir), main_settings)
-    
     training_monitor.set_running()
     try:
         converter.path_folder_source = project_paths.path_folder_source_annotation
         converter.path_folder_destination = project_paths.path_folder_destination_annotation
-        # source_pdf = project_data_dir + r'/input/pdfs/training'
-        # project_paths.path_folder_source_annotation = project_data_dir + r'/input/annotations'
-        
-        # project_paths.path_folder_source_mapping = project_data_dir + r'/input/kpi_mapping'
-        # destination_pdf = project_data_dir + r'/interim/pdfs/'
-        # destination_annotation = project_data_dir + r'/interim/ml/annotations/'
-        
-        # destination_mapping = project_data_dir + r'/interim/kpi_mapping/'
-        # destination_extraction = project_data_dir + r'/interim/ml/extraction/'
-        # destination_curation = project_data_dir + r'/interim/ml/curation/'
-        # destination_training = project_data_dir + r'/interim/ml/training/'
-        # destination_saved_models_relevance = project_model_dir + r'/RELEVANCE/Text'  + r'/' + relevance_training_output_model_name
-        # destination_saved_models_inference = project_model_dir + r'/KPI_EXTRACTION/Text' + r'/' + kpi_inference_training_output_model_name
-        # folder_text_3434 = project_data_dir + r'/interim/ml'
-        # folder_relevance = project_data_dir + r'/output/RELEVANCE/Text'
 
         create_folder(project_paths.path_folder_source_pdf)
         create_folder(project_paths.path_folder_source_annotation)
@@ -312,9 +270,9 @@ def main():
         link_files(project_paths.path_folder_source_annotation, project_paths.path_folder_destination_annotation)
         link_files(project_paths.path_folder_source_mapping, project_paths.path_folder_destination_mapping)
         if project_settings['extraction']['use_extractions']:
-            source_extraction = project_data_dir + r'/output/TEXT_EXTRACTION'
-            if os.path.exists(source_extraction):
-                link_extracted_files(source_extraction, project_paths.path_folder_source_pdf, project_paths.path_folder_destination_extraction)
+            path_source_extraction: Path = Path(project_data_dir) / Path('output/TEXT_EXTRACTION')
+            if path_source_extraction.exists():
+                link_extracted_files(path_source_extraction, project_paths.path_folder_source_pdf, project_paths.path_folder_destination_extraction)
         
         download_data_from_s3_main_bucket_to_local_folder_if_required(s3c_main, source_annotation, Path(s3_settings.prefix) / Path('input/annotations'))
         converter.convert()
