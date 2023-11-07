@@ -17,6 +17,7 @@ class ProjectPaths(BaseSettings):
     _PATH_FOLDER_NLP: Path = _PATH_FOLDER_ROOT
     _PATH_FOLDER_MODEL: Path = _PATH_FOLDER_ROOT / 'models'
     _PATH_FOLDER_DATA: Path = _PATH_FOLDER_ROOT / 'data'
+    # TODO move somewhere else since it is no path...
     _PYTHON_EXECUTABLE: str = 'python'
 
     _string_project_name: str

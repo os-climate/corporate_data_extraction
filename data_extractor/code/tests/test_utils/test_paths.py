@@ -6,7 +6,7 @@ from utils.settings import Settings, MainSettings
 
 
 @pytest.fixture
-def path_folder_config_path():
+def path_folder_config_path() -> Path:
     return Path(__file__).parents[3]
 
 
@@ -37,7 +37,7 @@ def test_nlp_folder_set(path_folder_config_path: Path,
                         paths_project: ProjectPaths):
     assert paths_project.PATH_FOLDER_NLP == path_folder_config_path
 
-# TODO move somewhere else since it is no path...
+
 def test_python_executable_set(paths_project: ProjectPaths):
     assert paths_project.PYTHON_EXECUTABLE == 'python'
 
@@ -94,7 +94,7 @@ def test_set_main_settings(paths_project: ProjectPaths, main_settings: Settings)
     main_settings_changed: MainSettings = MainSettings()
     main_settings_changed.general.project_name = 'TEST_NEW'
 
-    paths_project.main_settings = main_settings_changed
+    paths_project.main_settings: MainSettings = main_settings_changed
     assert paths_project.main_settings != main_settings
 
 
@@ -115,7 +115,7 @@ def test_update_all_paths_depending_on_path_project_data_folder(paths_project: P
 def test_update_all_paths_depending_on_path_project_model_folder(paths_project: ProjectPaths):
     main_settings_changed: MainSettings = MainSettings()
     main_settings_changed.general.project_name = 'TEST_NEW'
-    paths_project._main_settings = main_settings_changed
+    paths_project._main_settings: MainSettings = main_settings_changed
     string_test_project: str = 'test_project'
     paths_project.string_project_name: str = string_test_project
 
