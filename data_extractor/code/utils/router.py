@@ -1,15 +1,19 @@
 import requests
 from utils.settings import S3Settings, MainSettings, Settings
-import train_on_pdf
+from utils.utils import generate_text_3434
+from utils.paths import ProjectPaths
 import traceback
 import json
 
 
 class Router:
-    def __init__(self, main_settings: Settings | None = None, 
-                 s3_settings: Settings | None = None) -> None:
+    def __init__(self, 
+                 main_settings: Settings, 
+                 s3_settings: Settings,
+                 project_paths: ProjectPaths) -> None:
         self._main_settings: Settings = main_settings
         self._s3_settings: Settings = s3_settings
+        self._project_paths: ProjectPaths = project_paths
         self._extraction_server_address: str = ''
         self._inference_server_address: str = ''
         self._return_value: bool = True
@@ -96,8 +100,8 @@ class Router:
 
     def _check_for_generate_text_3434(self):
         try:
-            temp: bool = train_on_pdf.generate_text_3434(self._main_settings.general.project_name, 
-                                      self._s3_settings.s3_usage, self._s3_settings)
+            temp: bool = generate_text_3434(self._main_settings.general.project_name, 
+                                            self._s3_settings.s3_usage, self._s3_settings, self._project_paths)
             if temp:
                 print('text_3434 was generated without error.')
             else:

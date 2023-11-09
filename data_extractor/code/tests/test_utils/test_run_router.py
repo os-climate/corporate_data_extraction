@@ -7,11 +7,12 @@ from tests.test_utils.test_generate_text import prerequisites_generate_text
 from utils.s3_communication import S3Communication
 from utils.settings import S3Settings, MainSettings
 from utils.router import Router
+from utils.paths import ProjectPaths
 
 from _pytest.capture import CaptureFixture
 
 @pytest.fixture
-def router(main_settings: MainSettings, s3_settings: S3Settings):
+def router(main_settings: MainSettings, s3_settings: S3Settings, project_paths: ProjectPaths):
     dict_general_settings = {'project_name': 'TEST',
                              'ext_ip': '0.0.0.0', 
                              'ext_port': '8000',
@@ -19,10 +20,11 @@ def router(main_settings: MainSettings, s3_settings: S3Settings):
                              'infer_port': '8000'}
 
     with (patch.object(main_settings, 'general', Mock(**dict_general_settings))):
-        router = Router(main_settings=main_settings, s3_settings=s3_settings)
+        router = Router(main_settings=main_settings, s3_settings=s3_settings, project_paths=project_paths)
         router._set_extraction_server_string()
         router._set_inference_server_string()
         yield router
+
 
 @pytest.fixture
 def server(prerequisites_generate_text) -> requests_mock.mocker.Mocker:
@@ -181,7 +183,7 @@ def test_run_router_kpi_training(router: Router,
         
     # force an exception of generate_text_3434 by removing the folder_text_3434
     if not project_name:
-        train_on_pdf.folder_text_3434 = None
+        router._project_paths.path_folder_text_3434 = None
     
     mocked_generate_text = Mock() 
     if project_name:
@@ -192,7 +194,7 @@ def test_run_router_kpi_training(router: Router,
     else:
         mocked_generate_text.side_effect = Exception()
         
-    with (patch('train_on_pdf.generate_text_3434', mocked_generate_text),
+    with (patch('utils.router.generate_text_3434', mocked_generate_text),
           patch.object(main_settings, 'train_kpi', Mock(train=train_kpi))):
         server.get(server_address_node_infer_relevance, status_code=status_code_infer_relevance)
         server.get(server_address_node_train_kpi, status_code=status_code_train_kpi)

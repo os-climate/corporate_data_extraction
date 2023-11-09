@@ -5,6 +5,13 @@ from unittest.mock import patch, Mock
 import shutil
 import train_on_pdf
 import pickle
+from utils.paths import ProjectPaths
+from utils.settings import Settings
+
+
+@pytest.fixture
+def project_paths(main_settings: Settings) -> ProjectPaths:
+    return ProjectPaths('test_project', main_settings)
 
 
 @pytest.fixture(autouse=True)
@@ -52,17 +59,17 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
           patch('train_on_pdf.source_annotation', str(path_folder_temporary / 'source_annotation')),
           patch('train_on_pdf.source_pdf', str(path_folder_temporary / 'source_pdf')),
           patch('train_on_pdf.pd', Mock()) as mocked_pandas):
-        train_on_pdf.project_model_dir = str(path_project_model_dir)
+        # train_on_pdf.project_model_dir = str(path_project_model_dir)
         mocked_pandas.read_csv.return_value = {None}
         mocked_pandas.read_excel.return_value = {None}
         yield path_train_info
         
         # cleanup
         shutil.rmtree(path_folder_temporary)
-        del train_on_pdf.project_model_dir
+        # del train_on_pdf.project_model_dir
 
 
-def test_save_train_info_pickle(prerequisites_save_train_info: Path):
+def test_save_train_info_pickle(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
     """Tests if the train info is pickle correctly
 
     :param prerequisites_save_train_info: Requesting the prerequisites_save_train_info fixture
@@ -70,8 +77,9 @@ def test_save_train_info_pickle(prerequisites_save_train_info: Path):
     """
     project_name = 'TEST'
     path_train_info = prerequisites_save_train_info
+    project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
     
-    save_train_info(project_name)
+    save_train_info(project_name, project_paths=project_paths)
     
     # we have to combine a pathlib and a string object...
     path_parent_train_info = path_train_info.parent
@@ -81,7 +89,7 @@ def test_save_train_info_pickle(prerequisites_save_train_info: Path):
     assert path_train_info.exists()
   
   
-def test_save_train_info_entries(prerequisites_save_train_info: Path):
+def test_save_train_info_entries(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
     """Tests if all the train infos exists in the pickled train info file
 
     :param prerequisites_save_train_info: Requesting the prerequisites_save_train_info fixture
@@ -89,8 +97,9 @@ def test_save_train_info_entries(prerequisites_save_train_info: Path):
     """
     project_name = 'TEST'
     path_train_info = prerequisites_save_train_info
+    project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
     
-    save_train_info(project_name)
+    save_train_info(project_name, project_paths=project_paths)
     
     with open(str(path_train_info), 'rb') as file:
         train_info = pickle.load(file)
@@ -106,21 +115,25 @@ def test_save_train_info_entries(prerequisites_save_train_info: Path):
     assert all(key in expected_keys for key in train_info.keys())
 
     
-def test_save_tain_info_return_value():
+def test_save_tain_info_return_value(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
     project_name = 'TEST'
+    path_train_info = prerequisites_save_train_info
+    project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
     
-    assert save_train_info(project_name) is None
+    assert save_train_info(project_name, project_paths=project_paths) is None
     
 
-def test_save_train_info_s3_usage():
+def test_save_train_info_s3_usage(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
     """Tests if the s3_usage flag correctly works
 
     """
     project_name = 'TEST'
     s3_usage = True
     mocked_s3 = Mock()
-    
-    save_train_info(project_name, s3_usage, mocked_s3)
+    path_train_info = prerequisites_save_train_info
+    project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
+
+    save_train_info(project_name, s3_usage, mocked_s3, project_paths=project_paths)
     
     assert mocked_s3.download_files_in_prefix_to_dir.call_count == 3
     assert mocked_s3.upload_file_to_s3.called_once()

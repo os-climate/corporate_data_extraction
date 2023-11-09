@@ -1,11 +1,13 @@
 from pathlib import Path
-from train_on_pdf import generate_text_3434
+from utils.utils import generate_text_3434
 from tests.utils_test import write_to_file
 import shutil
 from unittest.mock import patch, Mock, call
 from utils.s3_communication import S3Communication
 import train_on_pdf
 import pytest
+from utils.paths import ProjectPaths
+from utils.settings import Settings
 
 # types
 import typing
@@ -13,7 +15,7 @@ from _pytest.capture import CaptureFixture
 
 
 @pytest.fixture(autouse=True)
-def prerequisites_generate_text(path_folder_temporary: Path) -> None:
+def prerequisites_generate_text(path_folder_temporary: Path, project_paths: ProjectPaths) -> None:
     """Defines a fixture for mocking all required paths and creating required temporary folders
 
     :param path_folder_temporary: Requesting the path_folder_temporary fixture
@@ -24,6 +26,8 @@ def prerequisites_generate_text(path_folder_temporary: Path) -> None:
     path_folder_text_3434 = path_folder_temporary / 'folder_test_3434'
     path_folder_relevance.mkdir(parents = True)
     path_folder_text_3434.mkdir(parents = True)
+    project_paths.path_folder_relevance = path_folder_temporary / 'relevance'
+    project_paths.path_folder_text_3434 = path_folder_text_3434
     
     # create multiple files in the folder_relevance with the same header
     for i in range(5):
@@ -36,12 +40,12 @@ def prerequisites_generate_text(path_folder_temporary: Path) -> None:
           patch('train_on_pdf.os.getenv', lambda *args: args[0])):
         yield
         
-        # cleanup
-        for path in path_folder_temporary.glob("*"):
-            shutil.rmtree(path)
+    # cleanup
+    for path in path_folder_temporary.glob("*"):
+        shutil.rmtree(path)
 
 
-def test_generate_text_with_s3(path_folder_temporary: Path):
+def test_generate_text_with_s3(path_folder_temporary: Path, project_paths: Path):
     """Tests if the s3 connection objects are created and their methods are called
     Requesting prerequisites_generate_text automatically (autouse)
 
@@ -68,8 +72,8 @@ def test_generate_text_with_s3(path_folder_temporary: Path):
         }
     }
     
-    with (patch('train_on_pdf.S3Communication', Mock(spec=S3Communication)) as mocked_s3):
-        generate_text_3434(project_name, True, mocked_s3_settings)
+    with (patch('utils.utils.S3Communication', Mock(spec=S3Communication)) as mocked_s3):
+        generate_text_3434(project_name, True, mocked_s3_settings, project_paths=project_paths)
         
     # check for calls
     mocked_s3.assert_any_call(s3_endpoint_url='S3_END_MAIN',
@@ -86,7 +90,7 @@ def test_generate_text_with_s3(path_folder_temporary: Path):
     assert any([call for call in call_list if 'upload_file_to_s3' in call])
 
 
-def test_generate_text_no_s3(path_folder_temporary: Path):
+def test_generate_text_no_s3(path_folder_temporary: Path, project_paths: Path):
     """Tests if files are taken from the folder relevance,
     then read in and putting the content into the file text_3434.csv. Note that
     the header of text_3434.csv is taken from the first file read in
@@ -101,7 +105,7 @@ def test_generate_text_no_s3(path_folder_temporary: Path):
     s3_usage = False
     project_settings = None
     
-    generate_text_3434(project_name, s3_usage, project_settings)
+    generate_text_3434(project_name, s3_usage, project_settings, project_paths=project_paths)
             
     # ensure that the header and the content form the first file is written to 
     # the file text_3434.csv in folder relevance and the the content of the other
@@ -124,7 +128,7 @@ def test_generate_text_no_s3(path_folder_temporary: Path):
                 assert line_content.rstrip() in strings_expected
 
 
-def test_generate_text_successful(path_folder_temporary: Path):
+def test_generate_text_successful(path_folder_temporary: Path, project_paths: Path):
     """Tests if the function returns true
     Requesting prerequisites_generate_text automatically (autouse)
 
@@ -135,11 +139,12 @@ def test_generate_text_successful(path_folder_temporary: Path):
     s3_usage = False
     project_settings = None
     
-    return_value = generate_text_3434(project_name, s3_usage, project_settings)
+    return_value = generate_text_3434(project_name, s3_usage, project_settings, project_paths=project_paths)
     assert return_value == True
 
     
 def test_generate_text_not_successful_empty_folder(path_folder_temporary: Path,
+                                                   project_paths: Path,
                                                    capsys: typing.Generator[CaptureFixture[str], None, None]):
     """Tests if the function returns false
     Requesting prerequisites_generate_text automatically (autouse)
@@ -158,14 +163,14 @@ def test_generate_text_not_successful_empty_folder(path_folder_temporary: Path,
     [file.unlink() for file in path_folder_relevance.glob("*") if file.is_file()] 
     
     # call the function
-    return_value = generate_text_3434(project_name, s3_usage, project_settings)
+    return_value = generate_text_3434(project_name, s3_usage, project_settings, project_paths=project_paths)
     
     output_cmd, _ = capsys.readouterr()
     assert 'No relevance inference results found.' in output_cmd
     assert return_value == False
 
     
-def test_generate_text_not_successful_exception(path_folder_temporary: Path):
+def test_generate_text_not_successful_exception(path_folder_temporary: Path, project_paths: Path):
     """Tests if the function returns false
     Requesting prerequisites_generate_text automatically (autouse)
 
@@ -182,6 +187,6 @@ def test_generate_text_not_successful_exception(path_folder_temporary: Path):
     
     # patch glob.iglob to force an exception...
     with patch('train_on_pdf.glob.iglob', side_effect=lambda *args: [None]):
-        return_value = generate_text_3434(project_name, s3_usage, project_settings)
+        return_value = generate_text_3434(project_name, s3_usage, project_settings, project_paths=project_paths)
         
         assert return_value == False
