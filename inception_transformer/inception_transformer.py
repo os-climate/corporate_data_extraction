@@ -15,10 +15,11 @@ import glob
 import os
 import shutil
 from cassis import *
+
 sys.dont_write_bytecode = True
 
 # Load settings data
-with open('settings.json', "r", encoding="utf-8", errors='ignore') as settings_file:
+with open("settings.json", "r", encoding="utf-8", errors="ignore") as settings_file:
     settings = json.load(settings_file)
     settings_file.close()
 
@@ -34,7 +35,7 @@ def select_covering(cas, type_name, covered_annotation, overlap):
         overlap: Boolean if annotation are allowed to overlap multiple annotations
         Returns:
             A list of covering annotations
-        """
+    """
     c_begin = covered_annotation.begin
     c_end = covered_annotation.end
 
@@ -43,9 +44,11 @@ def select_covering(cas, type_name, covered_annotation, overlap):
     if overlap:
         annotations_list = []
         for annotation in cas._get_feature_structures(type_name):
-            if (annotation.begin <= c_begin <= annotation.end) \
-                    or (annotation.begin <= c_end <= annotation.end) \
-                    or (c_end >= annotation.end and c_begin <= annotation.begin):
+            if (
+                (annotation.begin <= c_begin <= annotation.end)
+                or (annotation.begin <= c_end <= annotation.end)
+                or (c_end >= annotation.end and c_begin <= annotation.begin)
+            ):
                 annotations_list.append(annotation)
         return annotations_list
     else:
@@ -61,53 +64,66 @@ def specify_logger(logger):
     :return: specified logger object
     """
     handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s', datefmt='%Y%m%d %H:%M:%S')
-    logger_dir = settings['LogFilePath']
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", datefmt="%Y%m%d %H:%M:%S")
+    logger_dir = settings["LogFilePath"]
     initial_time = datetime.now().strftime("%Y%m%d%H%M%S")
-    fh = logging.FileHandler(logger_dir + "/" + settings['ProjectName'] + "_" + initial_time + ".log")
+    fh = logging.FileHandler(logger_dir + "/" + settings["ProjectName"] + "_" + initial_time + ".log")
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
     logger.addHandler(handler)
-    print("Logger information are stored in " + logger_dir + "/" + settings['ProjectName']
-          + "_" + initial_time + ".log")
+    print(
+        "Logger information are stored in " + logger_dir + "/" + settings["ProjectName"] + "_" + initial_time + ".log"
+    )
     return logger
 
 
 def get_uima_cas_xmi_output(logger):
-    """ This file extracts from the UIMA CAS XMI type via the dkpro-cassis package
+    """This file extracts from the UIMA CAS XMI type via the dkpro-cassis package
     the annotated answers and saves it into an excel sheet.
 
     :param logger: logging class element
     :return: None
     """
     tic = time.time()
-    xmi_name = glob.glob(settings['InputPath'] + "/*.xmi")[0]
-    xml_name = glob.glob(settings['InputPath'] + "/*.xml")[0]
+    xmi_name = glob.glob(settings["InputPath"] + "/*.xmi")[0]
+    xml_name = glob.glob(settings["InputPath"] + "/*.xml")[0]
 
-    with open(xml_name, 'rb') as f:
+    with open(xml_name, "rb") as f:
         typesystem = load_typesystem(f)
         f.close()
 
-    with open(xmi_name, 'rb') as f:
+    with open(xmi_name, "rb") as f:
         cas = load_cas_from_xmi(f, typesystem=typesystem)
         f.close()
 
     logger.info("UIMA file loaded")
 
-    df_answers = pd.DataFrame(columns=['KPI', 'ANSWER', 'TYPE', 'ANSWER_X', 'ANSWER_Y',
-                                       'PAGE', 'PAGE_WIDTH', 'PAGE_HEIGHT', 'PAGE_ORIENTATION',
-                                       'COV_SENTENCES'])
+    df_answers = pd.DataFrame(
+        columns=[
+            "KPI",
+            "ANSWER",
+            "TYPE",
+            "ANSWER_X",
+            "ANSWER_Y",
+            "PAGE",
+            "PAGE_WIDTH",
+            "PAGE_HEIGHT",
+            "PAGE_ORIENTATION",
+            "COV_SENTENCES",
+        ]
+    )
 
-    for page in cas.select('org.dkpro.core.api.pdf.type.PdfPage'):
-        for answer in cas.select_covered('webanno.custom.KPIAnswer', page):
+    for page in cas.select("org.dkpro.core.api.pdf.type.PdfPage"):
+        for answer in cas.select_covered("webanno.custom.KPIAnswer", page):
             logger.info("---------------------------------------------------")
-            logger.info(f"Extracting information of kpi answer \"{answer.get_covered_text()}\".")
+            logger.info(f'Extracting information of kpi answer "{answer.get_covered_text()}".')
 
-            sentence_list_temp = select_covering(cas, 'de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence',
-                                                 answer, True)
+            sentence_list_temp = select_covering(
+                cas, "de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence", answer, True
+            )
 
-            chunk_list_temp = select_covering(cas, 'org.dkpro.core.api.pdf.type.PdfChunk', answer, True)
+            chunk_list_temp = select_covering(cas, "org.dkpro.core.api.pdf.type.PdfChunk", answer, True)
             # Find the first chunk as chunks might be mixed in order
             min_idx = 0
             for idx in range(len(chunk_list_temp)):
@@ -130,20 +146,33 @@ def get_uima_cas_xmi_output(logger):
 
             # Collect all information we want to store
             for kpi in answer.KPI.elements:
-                df_answers.loc[len(df_answers)] = [kpi, answer.get_covered_text(), 'KPIAnswer',
-                                                   answer_x, pdf_chunk.y,
-                                                   int(page.pageNumber), int(page.width), int(page.height),
-                                                   int(pdf_chunk.d),
-                                                   " ".join([x.get_covered_text() for x in sentence_list_temp])
-                                                   ]
+                df_answers.loc[len(df_answers)] = [
+                    kpi,
+                    answer.get_covered_text(),
+                    "KPIAnswer",
+                    answer_x,
+                    pdf_chunk.y,
+                    int(page.pageNumber),
+                    int(page.width),
+                    int(page.height),
+                    int(pdf_chunk.d),
+                    " ".join([x.get_covered_text() for x in sentence_list_temp]),
+                ]
     if len(df_answers) > 0:
-        df_answers['PDF_NAME'] = \
-            cas.select('de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData')[0]['documentTitle']
+        df_answers["PDF_NAME"] = cas.select("de.tudarmstadt.ukp.dkpro.core.api.metadata.type.DocumentMetaData")[0][
+            "documentTitle"
+        ]
 
     logger.info("---------------------------------------------------")
     logger.info("All information have been extracted.")
-    df_answers.to_excel(settings['OutputPath'] + '/' + settings['InputPath'].split("/")[-1]
-                        + "_uima_extraction_" + datetime.now().strftime("%Y%m%d%H%M%S") + '.xlsx')
+    df_answers.to_excel(
+        settings["OutputPath"]
+        + "/"
+        + settings["InputPath"].split("/")[-1]
+        + "_uima_extraction_"
+        + datetime.now().strftime("%Y%m%d%H%M%S")
+        + ".xlsx"
+    )
     toc = time.time()
     logger.info(f"Answers have been saved to excel and it took {toc - tic} seconds.")
 
@@ -154,15 +183,15 @@ def main(logger=logging.getLogger()):
     if not logger.handlers:
         logger = specify_logger(logger)
 
-    logger.info('---------------- SETTINGS DATA ----------------')
+    logger.info("---------------- SETTINGS DATA ----------------")
     for key in settings:
         logger.info(str(key) + ": " + str(settings[key]))
-    logger.info('------------------------------------------------')
+    logger.info("------------------------------------------------")
 
     try:
         input_path = settings["InputPath"]
         output_path = settings["OutputPath"]
-        for subfolder in [x.split("\\")[-1] for x in glob.glob(input_path + "/*") if x[-4:] != 'json']:
+        for subfolder in [x.split("\\")[-1] for x in glob.glob(input_path + "/*") if x[-4:] != "json"]:
             settings["InputPath"] = input_path + "/" + subfolder
             output_folder = output_path + "/" + subfolder
             if not os.path.isdir(output_folder):
@@ -177,11 +206,13 @@ def main(logger=logging.getLogger()):
                         pass
             settings["OutputPath"] = output_folder
 
-            logger.info(f'Start of UIMA file transformation for files in subfolder \"' + subfolder + '\".')
+            logger.info(f'Start of UIMA file transformation for files in subfolder "' + subfolder + '".')
             get_uima_cas_xmi_output(logger)
-            logger.info(f'UIMA file transformation for files in subfolder \"' + subfolder + '\" successfully made.'
-                                                                                           ' Input files '
-                        'and output file are stored in the folder ' + output_folder)
+            logger.info(
+                f'UIMA file transformation for files in subfolder "' + subfolder + '" successfully made.'
+                " Input files "
+                "and output file are stored in the folder " + output_folder
+            )
             for file in glob.glob(settings["InputPath"] + "/*"):
                 shutil.copyfile(file, file.replace(settings["InputPath"], settings["OutputPath"]))
 
@@ -195,5 +226,5 @@ def main(logger=logging.getLogger()):
         logger.error(traceback.format_exc())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

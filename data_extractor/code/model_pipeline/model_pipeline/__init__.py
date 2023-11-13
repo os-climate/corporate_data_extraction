@@ -5,7 +5,7 @@ from .config_farm_train import (
     ModelConfig,
     MLFlowConfig,
     ProcessorConfig,
-    InferConfig
+    InferConfig,
 )
 from .config_qa_farm_train import (
     QAFileConfig,
@@ -14,7 +14,7 @@ from .config_qa_farm_train import (
     QAModelConfig,
     QAMLFlowConfig,
     QAProcessorConfig,
-    QAInferConfig
+    QAInferConfig,
 )
 from .farm_trainer import FARMTrainer
 from .qa_farm_trainer import QAFARMTrainer

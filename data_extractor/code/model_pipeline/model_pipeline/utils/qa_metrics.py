@@ -38,9 +38,9 @@ def relaxed_squad_f1_single(pred, label, pred_idx=0):
 def compute_extra_metrics(eval_results):
     metric_dict = {}
     head_num = 0
-    preds = eval_results[head_num]['preds']
-    labels = eval_results[head_num]['labels']
-    is_preds_answerable = [pred_doc[0][0].answer_type == 'span' for pred_doc in preds]
+    preds = eval_results[head_num]["preds"]
+    labels = eval_results[head_num]["labels"]
+    is_preds_answerable = [pred_doc[0][0].answer_type == "span" for pred_doc in preds]
     is_labels_answerable = [label_doc != [(-1, -1)] for label_doc in labels]
     # tn: label : unanswerable, predcited: unanswerable
     # fp: label : unanswerable, predcited: answerable
@@ -48,7 +48,7 @@ def compute_extra_metrics(eval_results):
     # fp: label : answerable, predcited: answerable
 
     tn, fp, fn, tp = confusion_matrix(is_labels_answerable, is_preds_answerable, labels=[True, False]).ravel()
-    metric_dict.update({'TN': tn, 'FP': fp, 'FN': fn, 'TP': tp})
+    metric_dict.update({"TN": tn, "FP": fp, "FN": fn, "TP": tp})
 
     prediction_answerable_examples = [p for doc_idx, p in enumerate(preds) if is_labels_answerable[doc_idx]]
     label_answerable_examples = [l for doc_idx, l in enumerate(labels) if is_labels_answerable[doc_idx]]
@@ -57,8 +57,8 @@ def compute_extra_metrics(eval_results):
     em_answerable = squad_EM(prediction_answerable_examples, label_answerable_examples)
     f1_answerable = squad_f1(prediction_answerable_examples, label_answerable_examples)
 
-    metric_dict.update({'relaxed_f1_answerable': relaxed_f1_answerable,
-                        'em_answerable': em_answerable,
-                        'f1_answerable': f1_answerable})
+    metric_dict.update(
+        {"relaxed_f1_answerable": relaxed_f1_answerable, "em_answerable": em_answerable, "f1_answerable": f1_answerable}
+    )
 
     return metric_dict

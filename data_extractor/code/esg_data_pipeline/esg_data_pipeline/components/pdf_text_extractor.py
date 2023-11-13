@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 
 
 class PDFTextExtractor(BaseComponent):
-    """ This Class is responsible for extracting text data from PDFs and saving
+    """This Class is responsible for extracting text data from PDFs and saving
         the result in a json format file.
         Each name/value pair in the json file refers to page_number and
         the list of paragraphs in that page.
@@ -36,11 +36,7 @@ class PDFTextExtractor(BaseComponent):
     """
 
     def __init__(
-        self,
-        annotation_folder=None,
-        min_paragraph_length=20,
-        skip_extracted_files=False,
-        name='PDFTextExtractor'
+        self, annotation_folder=None, min_paragraph_length=20, skip_extracted_files=False, name="PDFTextExtractor"
     ):
         super().__init__(name)
         self.min_paragraph_length = min_paragraph_length
@@ -48,7 +44,7 @@ class PDFTextExtractor(BaseComponent):
         self.skip_extracted_files = skip_extracted_files
 
     def process_page(self, input_text):
-        """ This function receives a text following:
+        """This function receives a text following:
         1. Divide it into  paragraphs, using \n\n
         2. Remove table data: To achieve this, if number of alphabet characters of paragraph
             is less min_paragraph_length, it is considered as table cell and it will be removed.
@@ -62,8 +58,11 @@ class PDFTextExtractor(BaseComponent):
         paragraphs = input_text.split("\n\n")
 
         # Get ride of table data if the number of alphabets in a paragraph is less than `min_paragraph_length`
-        paragraphs = [BaseCurator.clean_text(p) for p in paragraphs if
-                      sum(c.isalpha() for c in BaseCurator.clean_text(p)) > self.min_paragraph_length]
+        paragraphs = [
+            BaseCurator.clean_text(p)
+            for p in paragraphs
+            if sum(c.isalpha() for c in BaseCurator.clean_text(p)) > self.min_paragraph_length
+        ]
         return paragraphs
 
     def extract_pdf_by_page(self, pdf_file):
@@ -80,10 +79,10 @@ class PDFTextExtractor(BaseComponent):
             _logger.warning("{}: Unable to process {}".format(e, pdf_file))
             return {}
 
-        fp = open(pdf_file, 'rb')
+        fp = open(pdf_file, "rb")
         rsrcmgr = PDFResourceManager()
         retstr = io.BytesIO()
-        codec = 'utf-8'
+        codec = "utf-8"
         laparams = LAParams()
         device = TextConverter(rsrcmgr, retstr, codec=codec, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
@@ -91,7 +90,7 @@ class PDFTextExtractor(BaseComponent):
         pdf_content = {}
         for page_number, page in enumerate(PDFPage.get_pages(fp, check_extractable=False)):
             interpreter.process_page(page)
-            data = retstr.getvalue().decode('utf-8')
+            data = retstr.getvalue().decode("utf-8")
             data_paragraphs = self.process_page(data)
             if len(data_paragraphs) == 0:
                 continue
@@ -107,7 +106,7 @@ class PDFTextExtractor(BaseComponent):
         Args:
             input_filepath (str or PosixPath): full path to the pdf file
             output_folder (str or PosixPath): Folder to save the result of extraction
-            """
+        """
         output_file_name = os.path.splitext(os.path.basename(input_filepath))[0]
         json_filename = output_file_name + ".json"
 
@@ -125,13 +124,13 @@ class PDFTextExtractor(BaseComponent):
             return None
 
         json_path = os.path.join(output_folder, json_filename)
-        with open(json_path, 'w') as f:
+        with open(json_path, "w") as f:
             json.dump(text_dict, f)
 
         return text_dict
 
     def run_folder(self, input_folder, output_folder):
-        """ This method will perform pdf extraction for all the pdfs mentioned
+        """This method will perform pdf extraction for all the pdfs mentioned
         as source in the annotated excel files
         and it will be saved the results in a output_folder.
 
@@ -141,18 +140,18 @@ class PDFTextExtractor(BaseComponent):
             output_folder (str or PosixPath): path to the folder to save the
                                              extracted json files.
         """
-        files = [os.path.join(input_folder, f) for f in Path(input_folder).rglob('*.pdf') if f.is_file()]
+        files = [os.path.join(input_folder, f) for f in Path(input_folder).rglob("*.pdf") if f.is_file()]
 
         if self.annotation_folder is not None:
             # Get the names of all excel files
-            all_annotation_files = glob.glob('{}/[!~$]*[.xlsx]'.format(self.annotation_folder))
+            all_annotation_files = glob.glob("{}/[!~$]*[.xlsx]".format(self.annotation_folder))
             annotated_pdfs = []
             for excel_path in all_annotation_files:
                 df = pd.read_excel(excel_path)
                 # Get the unique values of source_file column
-                df_unique_pdfs = df['source_file'].drop_duplicates().dropna()
+                df_unique_pdfs = df["source_file"].drop_duplicates().dropna()
                 annotated_pdfs.extend(df_unique_pdfs)
-            annotated_pdfs = [file.split(".pdf")[0]+".pdf" for file in annotated_pdfs]
+            annotated_pdfs = [file.split(".pdf")[0] + ".pdf" for file in annotated_pdfs]
             found_annotated_pdfs = []
 
             for f in files:
@@ -165,4 +164,3 @@ class PDFTextExtractor(BaseComponent):
         else:
             for f in files:
                 _ = self.run(f, output_folder)
-

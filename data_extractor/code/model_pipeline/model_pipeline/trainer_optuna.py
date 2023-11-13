@@ -8,6 +8,7 @@ import optuna
 
 logger = logging.getLogger(__name__)
 
+
 class TrainerOptuna(Trainer):
     def train(self, trial):
         """
@@ -98,5 +99,3 @@ class TrainerOptuna(Trainer):
             result = evaluator_test.eval(self.model)
             evaluator_test.log_results(result, "Test", self.global_step)
         return self.model
-
-
