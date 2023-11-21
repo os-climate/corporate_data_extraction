@@ -50,7 +50,7 @@ dependencies = [
   "pandas~=2.0.3",
   "pdf2image==1.13.1",
   "pdfminer.six==20221105",
-  "protobuf==3.20.0",
+  "protobuf==3.20.2",
   "pyOpenSSL==23.2.0",
   "pyspellchecker==0.5.5",
   "python-Levenshtein==0.12.0",
