@@ -1,13 +1,14 @@
-import ipywidgets as widgets
-import pandas as pd
-from IPython.display import Markdown, display
-
 """
 annotations_path = '/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL'
 output_path = '/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL/data/output'
 input_path = '/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL/data/input'
 kpi_mapping_fpath = '/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL/data/input/kpi_mapping.csv'
 """
+
+import ipywidgets as widgets
+import pandas as pd
+from IPython.display import Markdown, display
+
 annotations_path = "/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL"
 output_path = "/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL/output"
 input_path = "/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL/input"

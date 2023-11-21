@@ -1,5 +1,4 @@
 import shutil
-
 # types
 import typing
 from pathlib import Path
@@ -10,7 +9,8 @@ import requests
 import requests_mock
 import train_on_pdf
 from _pytest.capture import CaptureFixture
-from tests.test_utils.test_convert_xls_to_csv import prerequisites_convert_xls_to_csv
+from tests.test_utils.test_convert_xls_to_csv import \
+    prerequisites_convert_xls_to_csv
 from tests.test_utils.test_generate_text import prerequisites_generate_text
 from train_on_pdf import run_router
 

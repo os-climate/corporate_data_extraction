@@ -1,14 +1,7 @@
 import model_pipeline
 import optuna
-from model_pipeline import (
-    FARMTrainer,
-    FileConfig,
-    MLFlowConfig,
-    ModelConfig,
-    ProcessorConfig,
-    TokenizerConfig,
-    TrainingConfig,
-)
+from model_pipeline import (FARMTrainer, FileConfig, MLFlowConfig, ModelConfig,
+                            ProcessorConfig, TokenizerConfig, TrainingConfig)
 
 
 def objective(trial):
