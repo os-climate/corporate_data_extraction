@@ -1,10 +1,10 @@
 {
-	"LogFilePathComment": "LogFilePath is the location where all log files are stored.",
-	"LogFilePath": "C:/TEMP/logs",
-	"InputPathComment": "OutputPath is the location where all outputs are saved to.",
-	"InputPath": "C:/PythonScripting/input/inception",
-	"OutputPathComment": "OutputPath is the location where all outputs are saved to.",
-	"OutputPath": "C:/PythonScripting/output/inception",
-	"ProjectNameComment": "This reflects the project name in lowercase letters and will be used at several places in the code.",
-	"ProjectName": "INCePTION_Transformer"
+  "LogFilePathComment": "LogFilePath is the location where all log files are stored.",
+  "LogFilePath": "C:/TEMP/logs",
+  "InputPathComment": "OutputPath is the location where all outputs are saved to.",
+  "InputPath": "C:/PythonScripting/input/inception",
+  "OutputPathComment": "OutputPath is the location where all outputs are saved to.",
+  "OutputPath": "C:/PythonScripting/output/inception",
+  "ProjectNameComment": "This reflects the project name in lowercase letters and will be used at several places in the code.",
+  "ProjectName": "INCePTION_Transformer"
 }

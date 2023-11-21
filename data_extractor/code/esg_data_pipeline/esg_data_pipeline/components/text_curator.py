@@ -1,15 +1,15 @@
 import ast
+import importlib
 import json
 import logging
 import os
 import random
 import re
 from pathlib import Path
-import importlib
-
-import pandas as pd
 
 import esg_data_pipeline.utils.kpi_mapping as kpi_mapping
+import pandas as pd
+
 from .base_curator import BaseCurator
 
 logger = logging.getLogger(__name__)

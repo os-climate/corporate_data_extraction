@@ -1,7 +1,8 @@
 import argparse
 import os
-import config_path
 import shutil
+
+import config_path
 
 
 def main():

@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
 import random
 import re
+from abc import ABC, abstractmethod
 from collections import defaultdict
 
 

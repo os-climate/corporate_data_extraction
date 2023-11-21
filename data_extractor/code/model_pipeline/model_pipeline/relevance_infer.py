@@ -1,16 +1,15 @@
+import importlib
 import json
 import logging
 import os
 import re
-from abc import abstractmethod, ABC
-from pathlib import Path
 import sys
-import importlib
-
-import pandas as pd
-from farm.infer import Inferencer
+from abc import ABC, abstractmethod
+from pathlib import Path
 
 import model_pipeline.utils.kpi_mapping as kpi_mapping
+import pandas as pd
+from farm.infer import Inferencer
 
 _logger = logging.getLogger(__name__)
 

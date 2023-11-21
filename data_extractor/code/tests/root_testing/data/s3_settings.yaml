@@ -1,4 +1,6 @@
-# global variables in the docker/pod for the s3 connection where the input and output will be stored
+---
+# global variables in the docker/pod for the s3 connection
+# where the input and output will be stored
 main_bucket:
   s3_endpoint: LANDING_AWS_ENDPOINT
   s3_access_key: LANDING_AWS_ACCESS_KEY

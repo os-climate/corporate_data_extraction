@@ -1,8 +1,9 @@
 from pathlib import Path
-from train_on_pdf import set_running, check_running, clear_running
-import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
+
 import config_path
+import pytest
+from train_on_pdf import check_running, clear_running, set_running
 
 
 @pytest.fixture

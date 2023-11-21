@@ -8,15 +8,16 @@
 
 # TODO:
 
-from globals import *
 import argparse
-from HTMLDirectory import *
+from test import *  # only for testing / debugging purpose
+
+import config
 from AnalyzerDirectory import *
+from DataImportExport import *
+from globals import *
+from HTMLDirectory import *
 from KPIResultSet import *
 from TestData import *
-from DataImportExport import *
-from test import *  # only for testing / debugging purpose
-import config
 
 
 def generate_dummy_test_data():

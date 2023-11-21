@@ -8,11 +8,11 @@
 # ============================================================================================================================
 
 
-from HTMLTable import *
-from HTMLPage import *
-from KPISpecs import *
-from KPIMeasure import *
 from Format_Analyzer import *
+from HTMLPage import *
+from HTMLTable import *
+from KPIMeasure import *
+from KPISpecs import *
 
 
 class AnalyzerCluster:

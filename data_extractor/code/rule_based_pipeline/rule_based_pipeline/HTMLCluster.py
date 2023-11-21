@@ -8,12 +8,11 @@
 # Note   : 1 HTMLCluster contains * HTMLClusters (internal nodes), or consists of 1 HTMLItem (leaf node)
 # ============================================================================================================================
 
+import numpy
+import scipy.cluster.hierarchy as hcl
 from globals import *
 from HTMLItem import *
-
-import scipy.cluster.hierarchy as hcl
 from scipy.spatial.distance import squareform
-import numpy
 
 CLUSTER_DISTANCE_MODE_EUCLIDIAN = 0
 CLUSTER_DISTANCE_MODE_RAW_TEXT = 1

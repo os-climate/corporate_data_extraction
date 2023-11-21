@@ -29,7 +29,7 @@ classifiers = [
 dependencies = [
   "Flask==2.3.2",
   "MarkupSafe==2.1.1",
-  "Pillow==10.0.1",
+  "Pillow==10.1.0",
   "Werkzeug==2.3.8",
   "boto3~=1.28.8",
   "cryptography==41.0.4",
@@ -99,3 +99,6 @@ testpaths = ["test/"]
 
 [tool.black]
 line-length = 120
+
+[tool.isort]
+profile = "black"

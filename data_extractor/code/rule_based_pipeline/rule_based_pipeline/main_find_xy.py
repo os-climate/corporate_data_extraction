@@ -5,16 +5,18 @@
 # Date	 : 12.10.2022
 # ============================================================================================================================
 
+import argparse
+import re
+from test import *
+
+import config
+import pandas as pd
+
 # TODO:
 from globals import *
-import argparse
 from HTMLDirectory import *
 from HTMLPage import *
 from TestData import *
-from test import *
-import config
-import re
-import pandas as pd
 
 pd.options.mode.chained_assignment = None  # default='warn'
 

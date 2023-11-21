@@ -1,6 +1,7 @@
-from pathlib import Path
-import pandas as pd
 import typing
+from pathlib import Path
+
+import pandas as pd
 
 
 def project_tests_root() -> Path:

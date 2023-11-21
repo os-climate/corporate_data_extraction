@@ -10,10 +10,11 @@
 # Note   : 1 HTMLDirectory consistens of * HTMLPages
 # ============================================================================================================================
 
-from globals import *
-from HTMLTable import *
-from HTMLCluster import *
 import copy
+
+from globals import *
+from HTMLCluster import *
+from HTMLTable import *
 
 
 class HTMLPage:
@@ -259,7 +260,7 @@ class HTMLPage:
 			space_width_l_min = space_width_l
 			for n in left_aligned_words:
 				space_width_l_min = min(space_width_l_min, find_space_in_direction(all_words, n, -1))
-			
+
 			space_width_r_min = space_width_r
 			for n in right_aligned_words:
 				space_width_r_min = min(space_width_r_min, find_space_in_direction(all_words, n, 1))
@@ -1131,7 +1132,7 @@ class HTMLPage:
 			if(it.has_been_split):
 				font_color = hsv_to_rgba((it.this_id % 6)/6.0, 1, 1)
 			else:
-				font_color = (128, 128, 128, 255)			
+				font_color = (128, 128, 128, 255)
 			"""
 
             if RENDERING_USE_CLUSTER_COLORS:

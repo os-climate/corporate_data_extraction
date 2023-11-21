@@ -5,10 +5,10 @@
 # Date   : 02.08.2020
 # ============================================================================================================================
 
-from TestDataSample import *
+from DataImportExport import *
 from Format_Analyzer import *
 from KPIResultSet import *
-from DataImportExport import *
+from TestDataSample import *
 
 
 class TestData:

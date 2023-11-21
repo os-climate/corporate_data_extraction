@@ -1,8 +1,8 @@
-Flask==2.3.2
-numpy==1.23.5
-jsonpickle==1.2
-scipy==1.10.0
-Pillow==10.0.1
-MarkupSafe==2.1.1
-pandas==1.5.2
 boto3==1.28.8
+Flask==2.3.2
+jsonpickle==1.2
+MarkupSafe==2.1.1
+numpy==1.23.5
+pandas==1.5.2
+Pillow==10.1.0
+scipy==1.10.0

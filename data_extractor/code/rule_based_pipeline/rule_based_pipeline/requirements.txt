@@ -1,5 +1,5 @@
-numpy
 jsonpickle
-scipy
-Pillow
+numpy
 pandas
+Pillow
+scipy

@@ -1,21 +1,22 @@
-from pathlib import Path
-import pytest
-from unittest.mock import patch, Mock, MagicMock
 import shutil
-import train_on_pdf
-import requests
-import requests_mock
-import config_path
 import sys
-import yaml
 import traceback
-from tests.utils_test import modify_project_settings
-from tests.test_utils.test_running import prerequisite_running
 
 # types
 import typing
-from _pytest.fixtures import FixtureRequest
+from pathlib import Path
+from unittest.mock import MagicMock, Mock, patch
+
+import config_path
+import pytest
+import requests
+import requests_mock
+import train_on_pdf
+import yaml
 from _pytest.capture import CaptureFixture
+from _pytest.fixtures import FixtureRequest
+from tests.test_utils.test_running import prerequisite_running
+from tests.utils_test import modify_project_settings
 
 
 @pytest.fixture(params=[()], autouse=True)

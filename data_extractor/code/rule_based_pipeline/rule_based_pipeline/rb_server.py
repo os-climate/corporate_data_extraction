@@ -1,10 +1,10 @@
 import argparse
-import os
 import json
-from s3_communication import S3Communication
+import os
 import traceback
 
 from flask import Flask, Response, request
+from s3_communication import S3Communication
 
 app = Flask(__name__)
 

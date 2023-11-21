@@ -5,10 +5,10 @@
 # Date   : 10.09.2020
 # ============================================================================================================================
 
-from TestData import *
+from ConsoleTable import *
 from Format_Analyzer import *
 from KPIResultSet import *
-from ConsoleTable import *
+from TestData import *
 
 
 class TestEvaluation:

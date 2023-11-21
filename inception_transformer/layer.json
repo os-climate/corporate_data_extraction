@@ -1,122 +1,151 @@
-[ {
-  "name" : "webanno.custom.KPIAnswer",
-  "features" : [ {
-    "name" : "KPI",
-    "tag_set" : {
-      "name" : "KPIs",
-      "description" : "KPIs",
-      "language" : "English",
-      "tags" : [ {
-        "tag_name" : "0 - Company name",
-        "tag_description" : "What is the company name?"
-      }, {
-        "tag_name" : "1 - Report year",
-        "tag_description" : "In which year was the annual report or the sustainability report published?"
-      }, {
-        "tag_name" : "2 - Total proven and probable hydrocarbons reserves",
-        "tag_description" : "What is the total volume of proven and probable hydrocarbons reserves?"
-      }, {
-        "tag_name" : "2.1 - Estimated proven hydrocarbons reserves",
-        "tag_description" : "What is the volume of estimated proven hydrocarbons reserves?"
-      }, {
-        "tag_name" : "2.2 - Estimated probable hydrocarbons reserves",
-        "tag_description" : "What is the volume of estimated probable hydrocarbons reserves?"
-      }, {
-        "tag_name" : "3 - Total hydrocarbons production",
-        "tag_description" : "What is the total volume of hydrocarbons production?"
-      }, {
-        "tag_name" : "3.1 - Crude oil liquid production",
-        "tag_description" : "What is the total volume of crude oil liquid production?"
-      }, {
-        "tag_name" : "3.2 - Natural gas liquid production",
-        "tag_description" : "What is the total volume of natural gas liquid production?"
-      }, {
-        "tag_name" : "3.3 - Natural gas production",
-        "tag_description" : "What is the total volume of natural gas production?"
-      }, {
-        "tag_name" : "4 - Annual coal production",
-        "tag_description" : "What is the annual total production from coal?"
-      }, {
-        "tag_name" : "4.1 - Annual lignite production",
-        "tag_description" : "What is the annual total production from lignite (brown coal)?"
-      }, {
-        "tag_name" : "4.2 - Annual hard coal production",
-        "tag_description" : "What is the annual total production from hard coal?"
-      }, {
-        "tag_name" : "5 - Installed coal capacity",
-        "tag_description" : "What is the total installed capacity from coal?"
-      }, {
-        "tag_name" : "5.1 - Installed lignite capacity",
-        "tag_description" : "What is the total installed capacity from lignite (brown coal)?"
-      }, {
-        "tag_name" : "5.2 - Installed hard coal capacity",
-        "tag_description" : "What is the total installed capacity from hard coal?"
-      }, {
-        "tag_name" : "6 - Scope 1 emissions",
-        "tag_description" : "What is the total amount of direct greenhouse gases emissions referred to as scope 1 emissions?"
-      }, {
-        "tag_name" : "7 - Scope 2 emissions",
-        "tag_description" : "What is the total amount of energy indirect greenhouse gases emissions referred to as scope 2 emissions?"
-      }, {
-        "tag_name" : "8 - Scope 3 emissions",
-        "tag_description" : "What is the total amount of upstream energy indirect greenhouse gases emissions referred to as scope 3 emissions?"
-      }, {
-        "tag_name" : "9 - Base year for carbon reduction commitment",
-        "tag_description" : "What is the base year for carbon reduction commitment?"
-      }, {
-        "tag_name" : "10 - Climate commitment scenario",
-        "tag_description" : "What is the climate commitment scenario considered?"
-      }, {
-        "tag_name" : "11 - Target year for climate commitment",
-        "tag_description" : "What is the target year for climate commitment?"
-      }, {
-        "tag_name" : "12 - Target carbon reduction percentage",
-        "tag_description" : "What is the target carbon reduction in percentage?"
-      }, {
-        "tag_name" : "13 - Total Scope 1/2",
-        "tag_description" : "What is the total amount of scope 1 and 2 greenhouse gases emissions?"
-      }, {
-        "tag_name" : "14 - Total Scope 1/2/3",
-        "tag_description" : "What is the total amount of scope 1, scope 2 and scope 3 greenhouse gases emissions?"
-      } ],
-      "create_tag" : false
-    },
-    "uiName" : "KPI",
-    "type" : "uima.cas.StringArray",
-    "enabled" : true,
-    "visible" : true,
-    "include_in_hover" : false,
-    "required" : false,
-    "remember" : false,
-    "hideUnconstraintFeature" : false,
-    "description" : "KPIs whish are answered by the selected span.",
-    "project_name" : "IDS_TEST",
-    "multi_value_mode" : "ARRAY",
-    "link_mode" : "NONE",
-    "link_type_name" : null,
-    "link_type_role_feature_name" : null,
-    "link_type_target_feature_name" : null,
-    "traits" : "{}",
-    "curatable" : true
-  } ],
-  "uiName" : "KPI Answer",
-  "type" : "span",
-  "description" : "Answer to the selected KPI",
-  "enabled" : true,
-  "built_in" : false,
-  "readonly" : false,
-  "attach_type" : null,
-  "attach_feature" : null,
-  "allow_stacking" : true,
-  "cross_sentence" : true,
-  "show_hover" : true,
-  "anchoring_mode" : "TOKENS",
-  "overlap_mode" : "ANY_OVERLAP",
-  "validation_mode" : "ALWAYS",
-  "lock_to_token_offset" : false,
-  "multiple_tokens" : true,
-  "project_name" : "IDS_TEST",
-  "linked_list_behavior" : false,
-  "on_click_javascript_action" : null,
-  "traits" : null
-} ]
+[
+  {
+    "name": "webanno.custom.KPIAnswer",
+    "features": [
+      {
+        "name": "KPI",
+        "tag_set": {
+          "name": "KPIs",
+          "description": "KPIs",
+          "language": "English",
+          "tags": [
+            {
+              "tag_name": "0 - Company name",
+              "tag_description": "What is the company name?"
+            },
+            {
+              "tag_name": "1 - Report year",
+              "tag_description": "In which year was the annual report or the sustainability report published?"
+            },
+            {
+              "tag_name": "2 - Total proven and probable hydrocarbons reserves",
+              "tag_description": "What is the total volume of proven and probable hydrocarbons reserves?"
+            },
+            {
+              "tag_name": "2.1 - Estimated proven hydrocarbons reserves",
+              "tag_description": "What is the volume of estimated proven hydrocarbons reserves?"
+            },
+            {
+              "tag_name": "2.2 - Estimated probable hydrocarbons reserves",
+              "tag_description": "What is the volume of estimated probable hydrocarbons reserves?"
+            },
+            {
+              "tag_name": "3 - Total hydrocarbons production",
+              "tag_description": "What is the total volume of hydrocarbons production?"
+            },
+            {
+              "tag_name": "3.1 - Crude oil liquid production",
+              "tag_description": "What is the total volume of crude oil liquid production?"
+            },
+            {
+              "tag_name": "3.2 - Natural gas liquid production",
+              "tag_description": "What is the total volume of natural gas liquid production?"
+            },
+            {
+              "tag_name": "3.3 - Natural gas production",
+              "tag_description": "What is the total volume of natural gas production?"
+            },
+            {
+              "tag_name": "4 - Annual coal production",
+              "tag_description": "What is the annual total production from coal?"
+            },
+            {
+              "tag_name": "4.1 - Annual lignite production",
+              "tag_description": "What is the annual total production from lignite (brown coal)?"
+            },
+            {
+              "tag_name": "4.2 - Annual hard coal production",
+              "tag_description": "What is the annual total production from hard coal?"
+            },
+            {
+              "tag_name": "5 - Installed coal capacity",
+              "tag_description": "What is the total installed capacity from coal?"
+            },
+            {
+              "tag_name": "5.1 - Installed lignite capacity",
+              "tag_description": "What is the total installed capacity from lignite (brown coal)?"
+            },
+            {
+              "tag_name": "5.2 - Installed hard coal capacity",
+              "tag_description": "What is the total installed capacity from hard coal?"
+            },
+            {
+              "tag_name": "6 - Scope 1 emissions",
+              "tag_description": "What is the total amount of direct greenhouse gases emissions referred to as scope 1 emissions?"
+            },
+            {
+              "tag_name": "7 - Scope 2 emissions",
+              "tag_description": "What is the total amount of energy indirect greenhouse gases emissions referred to as scope 2 emissions?"
+            },
+            {
+              "tag_name": "8 - Scope 3 emissions",
+              "tag_description": "What is the total amount of upstream energy indirect greenhouse gases emissions referred to as scope 3 emissions?"
+            },
+            {
+              "tag_name": "9 - Base year for carbon reduction commitment",
+              "tag_description": "What is the base year for carbon reduction commitment?"
+            },
+            {
+              "tag_name": "10 - Climate commitment scenario",
+              "tag_description": "What is the climate commitment scenario considered?"
+            },
+            {
+              "tag_name": "11 - Target year for climate commitment",
+              "tag_description": "What is the target year for climate commitment?"
+            },
+            {
+              "tag_name": "12 - Target carbon reduction percentage",
+              "tag_description": "What is the target carbon reduction in percentage?"
+            },
+            {
+              "tag_name": "13 - Total Scope 1/2",
+              "tag_description": "What is the total amount of scope 1 and 2 greenhouse gases emissions?"
+            },
+            {
+              "tag_name": "14 - Total Scope 1/2/3",
+              "tag_description": "What is the total amount of scope 1, scope 2 and scope 3 greenhouse gases emissions?"
+            }
+          ],
+          "create_tag": false
+        },
+        "uiName": "KPI",
+        "type": "uima.cas.StringArray",
+        "enabled": true,
+        "visible": true,
+        "include_in_hover": false,
+        "required": false,
+        "remember": false,
+        "hideUnconstraintFeature": false,
+        "description": "KPIs whish are answered by the selected span.",
+        "project_name": "IDS_TEST",
+        "multi_value_mode": "ARRAY",
+        "link_mode": "NONE",
+        "link_type_name": null,
+        "link_type_role_feature_name": null,
+        "link_type_target_feature_name": null,
+        "traits": "{}",
+        "curatable": true
+      }
+    ],
+    "uiName": "KPI Answer",
+    "type": "span",
+    "description": "Answer to the selected KPI",
+    "enabled": true,
+    "built_in": false,
+    "readonly": false,
+    "attach_type": null,
+    "attach_feature": null,
+    "allow_stacking": true,
+    "cross_sentence": true,
+    "show_hover": true,
+    "anchoring_mode": "TOKENS",
+    "overlap_mode": "ANY_OVERLAP",
+    "validation_mode": "ALWAYS",
+    "lock_to_token_offset": false,
+    "multiple_tokens": true,
+    "project_name": "IDS_TEST",
+    "linked_list_behavior": false,
+    "on_click_javascript_action": null,
+    "traits": null
+  }
+]

@@ -1,12 +1,17 @@
-from pathlib import Path
-import pytest
-from train_on_pdf import convert_xls_to_csv
-from tests.utils_test import write_to_file, create_single_xlsx_file, create_multiple_xlsx_files
 import shutil
-from unittest.mock import patch, Mock
-import train_on_pdf
-import s3_communication
+from pathlib import Path
+from unittest.mock import Mock, patch
+
 import pandas as pd
+import pytest
+import s3_communication
+import train_on_pdf
+from tests.utils_test import (
+    create_multiple_xlsx_files,
+    create_single_xlsx_file,
+    write_to_file,
+)
+from train_on_pdf import convert_xls_to_csv
 
 
 @pytest.fixture(autouse=True)

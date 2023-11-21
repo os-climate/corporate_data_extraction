@@ -1,7 +1,6 @@
-import pandas as pd
-from IPython.display import display, Markdown
 import ipywidgets as widgets
-
+import pandas as pd
+from IPython.display import Markdown, display
 
 """
 annotations_path = '/opt/app-root/src/corporate_data_pipeline/NLP_ANNOTATION_TOOL'

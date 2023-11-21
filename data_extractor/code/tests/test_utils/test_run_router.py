@@ -1,17 +1,18 @@
-from pathlib import Path
-from train_on_pdf import run_router
-import pytest
-from unittest.mock import patch, Mock
 import shutil
-import train_on_pdf
-import requests
-import requests_mock
-from tests.test_utils.test_convert_xls_to_csv import prerequisites_convert_xls_to_csv
-from tests.test_utils.test_generate_text import prerequisites_generate_text
 
 # types
 import typing
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
+import requests
+import requests_mock
+import train_on_pdf
 from _pytest.capture import CaptureFixture
+from tests.test_utils.test_convert_xls_to_csv import prerequisites_convert_xls_to_csv
+from tests.test_utils.test_generate_text import prerequisites_generate_text
+from train_on_pdf import run_router
 
 
 @pytest.fixture

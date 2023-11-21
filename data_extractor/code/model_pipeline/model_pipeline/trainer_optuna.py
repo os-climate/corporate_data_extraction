@@ -1,10 +1,11 @@
-from tqdm import tqdm
-from farm.train import Trainer
-from farm.eval import Evaluator
-from farm.visual.ascii.images import GROWING_TREE
 import logging
 import sys
+
 import optuna
+from farm.eval import Evaluator
+from farm.train import Trainer
+from farm.visual.ascii.images import GROWING_TREE
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 

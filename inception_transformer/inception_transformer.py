@@ -4,16 +4,17 @@ Authors: Dr. David Besslich and Maximilian Riefer
 #13 Project: INCEpTION to Pandas
 This function is used for the re-collection of marked answers out of an INCEpTION export.
 """
-import logging
-import time
-import json
-import sys
-import traceback
-from datetime import datetime
-import pandas as pd
 import glob
+import json
+import logging
 import os
 import shutil
+import sys
+import time
+import traceback
+from datetime import datetime
+
+import pandas as pd
 from cassis import *
 
 sys.dont_write_bytecode = True

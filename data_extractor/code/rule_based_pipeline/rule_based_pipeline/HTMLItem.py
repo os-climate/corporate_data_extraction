@@ -8,9 +8,9 @@
 # Note   : 1 HTMLPage consistens of * HTMLItems
 # ============================================================================================================================
 
+from Format_Analyzer import *
 from globals import *
 from HTMLWord import *
-from Format_Analyzer import *
 
 
 class HTMLItem:
