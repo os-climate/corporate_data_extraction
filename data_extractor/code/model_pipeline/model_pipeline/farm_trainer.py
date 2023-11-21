@@ -54,9 +54,7 @@ class FARMTrainer:
         Split data between training set and development set according to
         split ratio and save sets to .csv files
         """
-        if os.path.exists(self.file_config.train_filename) and os.path.exists(
-            self.file_config.dev_filename
-        ):
+        if os.path.exists(self.file_config.train_filename) and os.path.exists(self.file_config.dev_filename):
             pass
 
         data = pd.read_csv(self.file_config.curated_data)
@@ -67,9 +65,7 @@ class FARMTrainer:
         data.dropna(how="any", inplace=True)
         data.drop_duplicates(inplace=True)
         data = shuffle(data)
-        data_train, data_dev = train_test_split(
-            data, test_size=self.processor_config.dev_split
-        )
+        data_train, data_dev = train_test_split(data, test_size=self.processor_config.dev_split)
 
         data_train.to_csv(self.file_config.train_filename)
         data_dev.to_csv(self.file_config.dev_filename)
@@ -114,7 +110,7 @@ class FARMTrainer:
             processor=processor,
             batch_size=self.training_config.batch_size,
             distributed=self.training_config.distributed,
-            max_processes=self.training_config.max_processes
+            max_processes=self.training_config.max_processes,
         )
         n_batches = len(data_silo.loaders["train"])
         return data_silo, n_batches
@@ -163,7 +159,7 @@ class FARMTrainer:
             device=device,
             n_batches=n_batches,
             n_epochs=self.training_config.n_epochs,
-            grad_acc_steps=self.training_config.grad_acc_steps
+            grad_acc_steps=self.training_config.grad_acc_steps,
         )
         return model, optimizer, lr_schedule
 
@@ -206,7 +202,7 @@ class FARMTrainer:
                 lr_schedule=lr_schedule,
                 evaluate_every=self.training_config.evaluate_every,
                 device=device,
-                grad_acc_steps=self.training_config.grad_acc_steps
+                grad_acc_steps=self.training_config.grad_acc_steps,
             )
         return trainer
 
@@ -226,12 +222,8 @@ class FARMTrainer:
         model, optimizer, lr_schedule = self.create_model(
             prediction_head, n_batches=len(silo_to_use.loaders["train"]), device=device
         )
-        model.connect_heads_with_processor(
-            data_silo.processor.tasks, require_labels=True
-        )
-        trainer = self.create_trainer(
-            model, optimizer, lr_schedule, silo_to_use, device, n_gpu
-        )
+        model.connect_heads_with_processor(data_silo.processor.tasks, require_labels=True)
+        trainer = self.create_trainer(model, optimizer, lr_schedule, silo_to_use, device, n_gpu)
         trainer.train()
         return trainer.model
 
@@ -260,9 +252,7 @@ class FARMTrainer:
         all_recall = []
         all_accuracy = []
         all_precision = []
-        silos = DataSiloForCrossVal.make(
-            data_silo, sets=["train", "dev"], n_splits=xval_folds
-        )
+        silos = DataSiloForCrossVal.make(data_silo, sets=["train", "dev"], n_splits=xval_folds)
 
         for num_fold, silo in enumerate(silos):
             model = self._train_on_split(data_silo, silo, num_fold, device, n_gpu)
@@ -281,21 +271,11 @@ class FARMTrainer:
             all_recall.append(recall_score(preds, labels))
             all_accuracy.append(result[0]["acc"])
             all_precision.append(precision_score(preds, labels))
-        _logger.info(
-            f"############ RESULT_CV -- {self.training_config.xval_folds} folds ############"
-        )
-        _logger.info(
-            f"Mean F1:  {np.mean(all_f1)*100:.1f}, std F1: {np.std(all_f1):.3f}"
-        )
-        _logger.info(
-            f"Mean recall:  {np.mean(all_recall)*100:.1f}, std recall: {np.std(all_recall):.3f}"
-        )
-        _logger.info(
-            f"Mean accuracy:  {np.mean(all_accuracy)*100:.1f}, std accuracy; {np.std(all_accuracy):.3f}"
-        )
-        _logger.info(
-            f"Mean precision:  {np.mean(all_precision)*100:.1f}, std  precision: {np.std(all_precision):.3f}"
-        )
+        _logger.info(f"############ RESULT_CV -- {self.training_config.xval_folds} folds ############")
+        _logger.info(f"Mean F1:  {np.mean(all_f1)*100:.1f}, std F1: {np.std(all_f1):.3f}")
+        _logger.info(f"Mean recall:  {np.mean(all_recall)*100:.1f}, std recall: {np.std(all_recall):.3f}")
+        _logger.info(f"Mean accuracy:  {np.mean(all_accuracy)*100:.1f}, std accuracy; {np.std(all_accuracy):.3f}")
+        _logger.info(f"Mean precision:  {np.mean(all_precision)*100:.1f}, std  precision: {np.std(all_precision):.3f}")
 
     def run(self, trial=None):
         """
@@ -330,12 +310,8 @@ class FARMTrainer:
 
         if self.training_config.run_hyp_tuning:
             prediction_head = self.create_head()
-            model, optimizer, lr_schedule = self.create_model(
-                prediction_head, n_batches, device
-            )
-            trainer = self.create_trainer(
-                model, optimizer, lr_schedule, data_silo, device, n_gpu
-            )
+            model, optimizer, lr_schedule = self.create_model(prediction_head, n_batches, device)
+            trainer = self.create_trainer(model, optimizer, lr_schedule, data_silo, device, n_gpu)
             trainer.train(trial)
             evaluator_dev = Evaluator(
                 data_loader=data_silo.get_data_loader("dev"),
@@ -343,21 +319,15 @@ class FARMTrainer:
                 device=device,
             )
             result = evaluator_dev.eval(model, return_preds_and_labels=True)
-            evaluator_dev.log_results(
-                result, "DEV", logging=True, steps=len(data_silo.get_data_loader("dev"))
-            )
+            evaluator_dev.log_results(result, "DEV", logging=True, steps=len(data_silo.get_data_loader("dev")))
 
         elif self.training_config.run_cv:
             self.run_cv(data_silo, self.training_config.xval_folds, device, n_gpu)
 
         else:
             prediction_head = self.create_head()
-            model, optimizer, lr_schedule = self.create_model(
-                prediction_head, n_batches, device
-            )
-            trainer = self.create_trainer(
-                model, optimizer, lr_schedule, data_silo, device, n_gpu
-            )
+            model, optimizer, lr_schedule = self.create_model(prediction_head, n_batches, device)
+            trainer = self.create_trainer(model, optimizer, lr_schedule, data_silo, device, n_gpu)
             trainer.train()
 
             evaluator_dev = Evaluator(
@@ -366,16 +336,12 @@ class FARMTrainer:
                 device=device,
             )
             result = evaluator_dev.eval(model, return_preds_and_labels=True)
-            evaluator_dev.log_results(
-                result, "DEV", logging=True, steps=len(data_silo.get_data_loader("dev"))
-            )
+            evaluator_dev.log_results(result, "DEV", logging=True, steps=len(data_silo.get_data_loader("dev")))
 
             result = self.post_process_dev_results(result)
 
             model.save(self.file_config.saved_models_dir)
             processor.save(self.file_config.saved_models_dir)
             _logger.info(f"Trained model saved to {self.file_config.saved_models_dir}")
-            _logger.info(
-                f"Processor vocabulary saved to {self.file_config.saved_models_dir}"
-            )
+            _logger.info(f"Processor vocabulary saved to {self.file_config.saved_models_dir}")
             return result

@@ -6,15 +6,16 @@ INPUT_ARRAY = [[5.1, 3.5, 1.4, 0.2]]
 logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 
-@app.route('/')
+
+@app.route("/")
 def hello_world():
     preds = np.exp(INPUT_ARRAY)
-    app.logger.info(" Inputs: "+ str(INPUT_ARRAY))
-    app.logger.info(" Prediction: "+ str(preds))
+    app.logger.info(" Inputs: " + str(INPUT_ARRAY))
+    app.logger.info(" Prediction: " + str(preds))
     return str(preds)
 
 
-@app.route('/predict', methods=['GET'])
+@app.route("/predict", methods=["GET"])
 def predict():
     """Return A Prediction."""
     app.logger.info(str(request.args))
@@ -27,8 +28,7 @@ def predict():
     app.logger.info(prediction)
     response_data = prediction
     return {"prediction": str(response_data)}
-    
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=6666, debug=True)
 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=6666, debug=True)

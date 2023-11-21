@@ -12,13 +12,11 @@ from Rect import *
 
 
 class HTMLWord:
-	txt		= None
-	rect	= None
-	item_id	= None # to which HTMLItem id does this word belong?
-	
-	
-	def __init__(self):
-		self.txt = ''
-		self.rect = Rect(99999,99999,-1,-1)
-		self.item_id = -1
+    txt = None
+    rect = None
+    item_id = None  # to which HTMLItem id does this word belong?
 
+    def __init__(self):
+        self.txt = ""
+        self.rect = Rect(99999, 99999, -1, -1)
+        self.item_id = -1
