@@ -1,7 +1,7 @@
 traitlets==5.4
 requests==2.31.0
 jinja2==3.0
-ipython==7.23.1
+ipython==8.10.0
 urllib3==1.26.18
 gdown==3.11.1
 tqdm==4.48.0
