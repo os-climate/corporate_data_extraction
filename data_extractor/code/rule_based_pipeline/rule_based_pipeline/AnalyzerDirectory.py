@@ -33,8 +33,8 @@ class AnalyzerDirectory:
 	def adjust_scores_by_value_preference(self, lst, kpispecs):
 		if(kpispecs.value_preference == 1.0 or len(lst) < 2):
 			return lst
-			
-		min_val = 
+
+		min_val =
 		for k in lst:
 			...
 	"""

@@ -6,10 +6,9 @@
 # ============================================================================================================================
 
 
-from globals import *
 from Format_Analyzer import *
+from globals import *
 from HTMLPage import *
-
 
 # Matching modes:
 MATCHING_MUST_INCLUDE = 0  # no match, if not included

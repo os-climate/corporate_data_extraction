@@ -8,10 +8,10 @@
 # ============================================================================================================================
 
 
-from HTMLTable import *
 from HTMLPage import *
-from KPISpecs import *
+from HTMLTable import *
 from KPIMeasure import *
+from KPISpecs import *
 
 HIERARCHY_DIR_UP = 0
 HIERARCHY_DIR_LEFT = 1
@@ -290,7 +290,7 @@ class AnalyzerTable:
 				years = self.row_looks_like_year_line(i)
 				if(years is not None):
 					return years
-					
+
 		return None
 	"""
 

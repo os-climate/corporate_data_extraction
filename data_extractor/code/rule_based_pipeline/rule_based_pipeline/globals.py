@@ -6,22 +6,24 @@
 # ============================================================================================================================
 # -*- coding: utf-8 -*-
 
-import re
-import sys, codecs
-from datetime import datetime
-import os, glob
 import argparse
-from PIL import Image, ImageDraw, ImageFont
-from copy import deepcopy
-import time
-import statistics
-import json
-import jsonpickle
+import codecs
+import glob
 import html
-import shutil
-import config
+import json
 import math
+import os
+import re
+import shutil
+import statistics
+import sys
+import time
+from copy import deepcopy
+from datetime import datetime
 
+import config
+import jsonpickle
+from PIL import Image, ImageDraw, ImageFont
 
 ALIGN_DEFAULT = 0
 ALIGN_LEFT = 1

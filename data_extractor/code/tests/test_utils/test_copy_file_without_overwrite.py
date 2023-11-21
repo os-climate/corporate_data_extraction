@@ -1,7 +1,8 @@
-from pathlib import Path
-from train_on_pdf import copy_file_without_overwrite
 import shutil
+from pathlib import Path
+
 import pytest
+from train_on_pdf import copy_file_without_overwrite
 
 
 @pytest.fixture(autouse=True)

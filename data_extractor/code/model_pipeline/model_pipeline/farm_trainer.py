@@ -11,8 +11,8 @@ from farm.modeling.language_model import LanguageModel
 from farm.modeling.optimization import initialize_optimizer
 from farm.modeling.tokenization import Tokenizer
 from farm.train import Trainer
-from farm.utils import set_all_seeds, MLFlowLogger, initialize_device_settings
-from sklearn.metrics import recall_score, precision_score, f1_score
+from farm.utils import MLFlowLogger, initialize_device_settings, set_all_seeds
+from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 

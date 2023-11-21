@@ -1,8 +1,10 @@
 import logging
 import os
+
 import pandas as pd
-from .kpi_mapping import KPI_CATEGORY
 from kpi_inference_data_pipeline.config import config
+
+from .kpi_mapping import KPI_CATEGORY
 
 logger = logging.getLogger(__name__)
 

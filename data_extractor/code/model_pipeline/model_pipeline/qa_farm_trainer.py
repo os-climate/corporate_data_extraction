@@ -1,17 +1,17 @@
-import logging
 import json
+import logging
 import os
 import random
 from collections import defaultdict
 
 import numpy as np
-from sklearn.model_selection import train_test_split
-
 from farm.data_handler.data_silo import DataSiloForCrossVal
 from farm.data_handler.processor import SquadProcessor
 from farm.eval import Evaluator
 from farm.modeling.prediction_head import QuestionAnsweringHead
 from model_pipeline.utils.qa_metrics import compute_extra_metrics
+from sklearn.model_selection import train_test_split
+
 from .farm_trainer import FARMTrainer
 
 _logger = logging.getLogger(__name__)

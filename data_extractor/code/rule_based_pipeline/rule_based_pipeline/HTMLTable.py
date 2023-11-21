@@ -8,9 +8,9 @@
 # Note   : 1 HTMLPage consistens of * HTMLTables
 # ============================================================================================================================
 
+from ConsoleTable import *
 from globals import *
 from HTMLItem import *
-from ConsoleTable import *
 
 
 class HTMLTable:
@@ -1077,9 +1077,9 @@ class HTMLTable:
         return
 
     """
-	
-	
-	
+
+
+
 	# old, slow code:
 
 	def identify_overlapping_special_items(self):
@@ -1090,41 +1090,41 @@ class HTMLTable:
 		# *  To solve it (fast in most cases), we employ a Backtracking algorithm
 		# TODO: Tuning!! (calc boundries only once, and then recalc only affected col; precalc looks numeric)
 
-		rec_counter = 0		
+		rec_counter = 0
 		timeout = False
 		t_start = 0
-		
+
 		def calc_col_boundaries(tmp_idx):
 			res = [(0,0)] * self.num_cols
-			
+
 			for j in range(self.num_cols):
 				cur_bdry = (9999999, -1)
 				for i in range(self.num_rows):
 					cur_ix = self.get_ix(i,j)
-					cur_idx = tmp_idx[cur_ix] 
+					cur_idx = tmp_idx[cur_ix]
 					if(cur_idx != -1):
 						cur_bdry =( min(cur_bdry[0], self.items[cur_idx].pos_x),  max(cur_bdry[1], self.items[cur_idx].pos_x + self.items[cur_idx].width) )
 				res[j] = cur_bdry
 			return res
-		
+
 		def find_first_overlapping_col(boundaries):
 			for j in range(self.num_cols-1):
 				if(boundaries[j][1] == -1):
 					continue # skip empty columns
-				
+
 				#find nextnon-empty col
 				k = j+1
 				while(k<self.num_cols and boundaries[k][1] == -1):
 					k+=1
-					
+
 				if(k == self.num_cols):
 					return -1 # only empty columns left
-				
+
 				if(boundaries[j][0] + (boundaries[j][1] - boundaries[j][0]) * 0.85 > boundaries[k][0]):
 					#0.85x tolerance, because sometimes font width is overestimated
 					return j
 			return -1
-						
+
 		def find_possible_overlapping_ix(c0, tmp_idx, boundaries):
 			bdry = (min(boundaries[c0][0],boundaries[c0+1][0]), max(boundaries[c0][1], boundaries[c0+1][1]))
 			res = []
@@ -1141,37 +1141,37 @@ class HTMLTable:
 			if(not found_something):
 				raise ValueError('Some columns are overlapping, but there are no relevant items.')
 			return res
-							
 
-						
+
+
 		def find_allowed_set_rec(tmp_idx, num_sp_items, sp_ix, lowest_num_so_far):
 			# returns set of ix'es, such that after removing them, the rest is allowed (e.g., no overlap)
 			nonlocal rec_counter
 			nonlocal t_start
 			nonlocal timeout
 			rec_counter += 1
-			
+
 			if(rec_counter % 1000 == 0):
 				t_now = time.time()
 				if(t_now - t_start > 5.0): #max 5 sec TODO
 					timeout = True
-				
-			
+
+
 			if(num_sp_items >= lowest_num_so_far or timeout):
 				print_verbose(20,"No better solution exists")
 				return 9999999, [] # we cant find a better solution
-			
+
 			boundaries = calc_col_boundaries(tmp_idx)
 			first_overlapping_col = find_first_overlapping_col(boundaries)
 			if(first_overlapping_col == -1):
 				print_verbose(9,"Found solution, num_sp_items="+str(num_sp_items))
 				return num_sp_items, sp_ix #we found allowed set, where only num_sp_items items are excluded
-			
-				
+
+
 			possible_overlap_ix = find_possible_overlapping_ix(first_overlapping_col, tmp_idx, boundaries)
 			best_sp_ix = None
-			
-			
+
+
 			print_verbose(15, "num_sp_item="+str(num_sp_items)+", Boundaries = "+str(boundaries)+", first_overlapping_col = " \
 			              +str(first_overlapping_col) + " lowest_num_so_far="+str(lowest_num_so_far)) # ", possible_overlap_ix= " +str(possible_overlap_ix) +
 
@@ -1189,26 +1189,26 @@ class HTMLTable:
 					best_sp_ix = cur_sp_ix
 				if(cur_lowest_num == num_sp_items+1):
 					break # we cannot find a better solution, so escape early
-			
+
 			return lowest_num_so_far, best_sp_ix
-				
-				
+
+
 		if(self.num_cols == 0):
 			return # nothing to do
-			
-			
+
+
 		tmp_idx = self.idx.copy()
-		
+
 		#boundaries = calc_col_boundaries(tmp_idx)
 		#print(self)
 		#print(boundaries)
 		#raise ValueError('xxxx')
-		
+
 		t_start = time.time()
 		lowest_num_so_far, sp_ix = find_allowed_set_rec(tmp_idx, 0, [], 9999999)
 		t_end = time.time()
 		print_verbose(3, "---> find_allowed_set_rec completed after time="+str(t_end-t_start)+"sec,  recursions="+str(rec_counter))
-		
+
 		if(timeout and lowest_num_so_far == 9999999):
 			#we coulnt find a solution => give up on this table
 			print_verbose(3, "---> No solution. Give up")
@@ -1216,41 +1216,41 @@ class HTMLTable:
 			#	self.special_idx.append(self.idx[k])
 			#	self.idx[k] = -1
 			return
-		
-		
+
+
 		if(lowest_num_so_far == 9999999):
 			#print(str(self))
 			#raise ValueError('Some columns are overlapping, but after backtracking, no items were found that could be removed.')
 			return
-		
+
 		for ix in sp_ix:
 			self.special_idx.append(self.idx[ix])
 			self.idx[ix] = -1
-			
-			
+
+
 		self.recalc_geometry()
-		
-		
-	
+
+
+
 		return
-				
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	"""
 
     """def identify_remaining_special_items(self, page_width):
@@ -1262,7 +1262,7 @@ class HTMLTable:
 					print_verbose(5, "--> identify_remaining_special_items : "+str(self.get_item(i,j)))
 					cur_idx = self.get_idx(i, j)
 					self.idx[self.get_ix(i,j)] = -1
-					self.special_idx.append(cur_idx)			
+					self.special_idx.append(cur_idx)
 					return True
 		return False
 	"""
@@ -1405,16 +1405,16 @@ class HTMLTable:
 	TODO :doest really work, remove in the future
 	def unfold_patched_numbers(self):
 		def doit(strict_alignment):
-		
+
 			#sometimes, numbers are stored in single HTMLItem, e.g. "123 456". But this should be unfolded to two cells "123", "456"
 			for j in range(self.num_cols):
 				for i in range(self.num_rows):
 					if(not self.has_item_at(i,j)):
 						continue
-						
+
 					print_verbose(7, '---> Analyze: "'+ self.get_item(i,j).txt + '", align=' +('L' if self.get_item(i,j).alignment == ALIGN_LEFT else 'R'))
-					
-					
+
+
 					nj = -1
 					if(strict_alignment):
 						nj = j+1 if self.get_item(i,j).alignment == ALIGN_LEFT else j-1
@@ -1423,7 +1423,7 @@ class HTMLTable:
 
 					if(nj < 0 or nj >= self.num_cols):
 						continue # impossible
-						
+
 					if(not self.has_item_at(i,nj)):
 						print_verbose(7, '------> next col='+str(nj)+' is empty')
 						txt = Format_Analyzer.trim_whitespaces(self.get_item(i,j).txt)
@@ -1435,7 +1435,7 @@ class HTMLTable:
 						if(txt.count(' ')==0):
 							print_verbose(7, '------> but txt="'+str(txt)+' has no spaces.')
 							continue
-						
+
 						print_verbose(7, '-------> can be split up')
 						cur = ''
 						rest = txt
@@ -1447,55 +1447,55 @@ class HTMLTable:
 							print_verbose(5,'---------> Split "'+txt+'" into cur="'+cur+'", rest="'+rest+'"')
 							ix1 = self.get_ix(i,j)
 							ix2 = self.get_ix(i,nj)
-							
+
 							new_item = HTMLItem()
-							new_item.line_num 		= self.items[self.idx[ix1]].line_num 		
-							new_item.tot_line_num	= self.items[self.idx[ix1]].tot_line_num	
-							new_item.pos_x 			= self.col_aligned_pos_x[nj] 
-							new_item.pos_y 			= self.items[self.idx[ix1]].pos_y 			
-							#new_item.width			= self.items[self.idx[ix1]].width			
-							new_item.height			= self.items[self.idx[ix1]].height			
-							new_item.font_size		= self.items[self.idx[ix1]].font_size		
+							new_item.line_num 		= self.items[self.idx[ix1]].line_num
+							new_item.tot_line_num	= self.items[self.idx[ix1]].tot_line_num
+							new_item.pos_x 			= self.col_aligned_pos_x[nj]
+							new_item.pos_y 			= self.items[self.idx[ix1]].pos_y
+							#new_item.width			= self.items[self.idx[ix1]].width
+							new_item.height			= self.items[self.idx[ix1]].height
+							new_item.font_size		= self.items[self.idx[ix1]].font_size
 							new_item.txt 			= rest if nj>j else cur
-							new_item.is_bold 		= self.items[self.idx[ix1]].is_bold 		
-							new_item.brightness		= self.items[self.idx[ix1]].brightness		
-							new_item.alignment		= self.items[self.idx[ix1]].alignment		
-							new_item.font_file		= self.items[self.idx[ix1]].font_file		
-							new_item.this_id		= len(self.items)	
-							new_item.next_id		= -1	
+							new_item.is_bold 		= self.items[self.idx[ix1]].is_bold
+							new_item.brightness		= self.items[self.idx[ix1]].brightness
+							new_item.alignment		= self.items[self.idx[ix1]].alignment
+							new_item.font_file		= self.items[self.idx[ix1]].font_file
+							new_item.this_id		= len(self.items)
+							new_item.next_id		= -1
 							new_item.prev_id		= -1
-							new_item.category		= self.items[self.idx[ix1]].category		
+							new_item.category		= self.items[self.idx[ix1]].category
 							new_item.temp_assignment= self.items[self.idx[ix1]].temp_assignment
 							new_item.merged_list	= []
-							
+
 							old_item_old_width = self.items[self.idx[ix1]].width
-							
+
 							self.items[self.idx[ix1]].txt = cur if nj>j else rest
 							self.items[self.idx[ix1]].recalc_width()
 							new_item.recalc_width()
-							
+
 							if(new_item.alignment == ALIGN_RIGHT):
 								new_item.pos_x -= new_item.width
 								self.items[self.idx[ix1]].pos_x += old_item_old_width  - self.items[self.idx[ix1]].width
-							
+
 							self.items.append(new_item)
 							self.idx[ix2] = new_item.this_id
-					
 
-		# first try our best with strict alignment	
+
+		# first try our best with strict alignment
 		while(True):
 			last_num_items = len(self.items)
-			doit(True) 
+			doit(True)
 			if(len(self.items) == last_num_items):
 				break
-			
+
 		# no be less strict
 		while(True):
 			last_num_items = len(self.items)
-			doit(False) 
+			doit(False)
 			if(len(self.items) == last_num_items):
 				break
-			
+
 	"""
 
     def is_good_table(self):
@@ -1587,7 +1587,7 @@ class HTMLTable:
 			col_rect.y0 = min(col_rect.y0, r.y0)
 			col_rect.x1 = max(col_rect.x1, r.x1)
 			col_rect.y1 = max(col_rect.y1, r.y1)
-			
+
 		self.cols.append(col_rect)
 		"""
 
@@ -1879,7 +1879,7 @@ class HTMLTable:
     """
 	def get_printed_repr(self):
 		COL_WIDTH = 10
-		
+
 		res = '*' * (COL_WIDTH * self.num_cols+1) + '\n' # headline
 		for i in range(self.num_rows):
 			for j in range(self.num_cols):
@@ -1888,7 +1888,7 @@ class HTMLTable:
 				else:
 					res += '*' + ' '.ljust(COL_WIDTH-1, ' ')
 			res += '*\n'+'*' * (COL_WIDTH * self.num_cols+1) + '\n' # headline
-		
+
 		return res
 	"""
 

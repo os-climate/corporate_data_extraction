@@ -1,10 +1,11 @@
-from pathlib import Path
-from train_on_pdf import save_train_info
-import pytest
-from unittest.mock import patch, Mock
-import shutil
-import train_on_pdf
 import pickle
+import shutil
+from pathlib import Path
+from unittest.mock import Mock, patch
+
+import pytest
+import train_on_pdf
+from train_on_pdf import save_train_info
 
 
 @pytest.fixture(autouse=True)

@@ -1,10 +1,11 @@
 import os
-import config_path
-import pytest
-from pathlib import Path
 import shutil
-import pandas as pd
 import sys
+from pathlib import Path
+
+import config_path
+import pandas as pd
+import pytest
 from tests.utils_test import project_tests_root
 
 # add test_on_pdf.py to the PATH

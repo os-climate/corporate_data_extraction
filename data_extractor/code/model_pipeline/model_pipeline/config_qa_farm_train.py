@@ -3,7 +3,6 @@ import os
 
 import torch
 from farm.modeling.prediction_head import QuestionAnsweringHead
-
 from model_pipeline.config_farm_train import Config
 
 _logger = logging.getLogger(__name__)

@@ -5,8 +5,8 @@
 # Date   : 05.08.2020
 # ============================================================================================================================
 
-from globals import *
 from Format_Analyzer import *
+from globals import *
 
 
 class DataImportExport:

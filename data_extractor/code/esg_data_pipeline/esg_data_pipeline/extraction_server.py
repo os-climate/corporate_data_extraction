@@ -1,17 +1,16 @@
-import json
 import argparse
 import glob
+import json
 import os
-import time
-from datetime import timedelta
-from flask import Flask, Response, request
 import shutil
+import time
 import traceback
-from s3_communication import S3Communication
+from datetime import timedelta
 
-from esg_data_pipeline.components import Extractor
+from esg_data_pipeline.components import Curator, Extractor
 from esg_data_pipeline.config import config
-from esg_data_pipeline.components import Curator
+from flask import Flask, Response, request
+from s3_communication import S3Communication
 
 app = Flask(__name__)
 

@@ -1,6 +1,7 @@
 import os
-import kpi_inference_data_pipeline
 import pathlib
+
+import kpi_inference_data_pipeline
 
 # General config
 SEED = 42

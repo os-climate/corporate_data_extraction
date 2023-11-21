@@ -1,18 +1,19 @@
-from kpi_inference_data_pipeline.utils.utils import aggregate_csvs, clean_annotation
-from .base_kpi_inference_curator import BaseKPIInferenceCurator
+import ast
+import importlib
+import json
+import logging
+import math
 import os
 import re
-import ast
-import json
-import pandas as pd
-import math
 from datetime import date
-from fuzzywuzzy import fuzz
-import numpy as np
-import kpi_inference_data_pipeline.utils.kpi_mapping as kpi_mapping
-import importlib
 
-import logging
+import kpi_inference_data_pipeline.utils.kpi_mapping as kpi_mapping
+import numpy as np
+import pandas as pd
+from fuzzywuzzy import fuzz
+from kpi_inference_data_pipeline.utils.utils import aggregate_csvs, clean_annotation
+
+from .base_kpi_inference_curator import BaseKPIInferenceCurator
 
 logger = logging.getLogger(__name__)
 COL_ORDER = [

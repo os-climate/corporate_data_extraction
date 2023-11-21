@@ -6,9 +6,9 @@
 # ============================================================================================================================
 
 
+from ConsoleTable import *
 from globals import *
 from KPIMeasure import *
-from ConsoleTable import *
 
 
 class KPIResultSet:

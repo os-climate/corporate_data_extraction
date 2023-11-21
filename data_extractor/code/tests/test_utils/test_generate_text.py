@@ -1,15 +1,16 @@
-from pathlib import Path
-from train_on_pdf import generate_text_3434
-from tests.utils_test import write_to_file
 import shutil
-from unittest.mock import patch, Mock, call
-import s3_communication
-import train_on_pdf
-import pytest
 
 # types
 import typing
+from pathlib import Path
+from unittest.mock import Mock, call, patch
+
+import pytest
+import s3_communication
+import train_on_pdf
 from _pytest.capture import CaptureFixture
+from tests.utils_test import write_to_file
+from train_on_pdf import generate_text_3434
 
 
 @pytest.fixture(autouse=True)

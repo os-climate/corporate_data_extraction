@@ -1,6 +1,7 @@
-from pathlib import Path
-from train_on_pdf import create_directory
 import shutil
+from pathlib import Path
+
+from train_on_pdf import create_directory
 
 
 def test_create_directory(path_folder_temporary: Path):

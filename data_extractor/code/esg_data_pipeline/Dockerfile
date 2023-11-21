@@ -37,5 +37,3 @@ RUN mkdir -p /app/data
 RUN chmod -R 777 /app/data
 
 CMD ./entry.sh
-
-

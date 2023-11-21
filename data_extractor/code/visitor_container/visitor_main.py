@@ -1,5 +1,6 @@
-import requests
 import os
+
+import requests
 
 
 def main(app_type, project_name, s3_usage, mode):

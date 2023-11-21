@@ -10,8 +10,7 @@ import pandas as pd
 from pdf2image import pdfinfo_from_path
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
-from pdfminer.pdfinterp import PDFPageInterpreter
-from pdfminer.pdfinterp import PDFResourceManager
+from pdfminer.pdfinterp import PDFPageInterpreter, PDFResourceManager
 from pdfminer.pdfpage import PDFPage
 
 from .base_component import BaseComponent

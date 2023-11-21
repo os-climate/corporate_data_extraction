@@ -1,19 +1,18 @@
+import json
 from itertools import groupby
 
 import pandas as pd
-import json
 import torch
 from farm.evaluation.metrics import squad_EM, squad_f1
 from farm.infer import QAInferencer
 from farm.modeling.predictions import QACandidate
-
 from model_pipeline.config_qa_farm_train import (
-    QAModelConfig,
-    QATrainingConfig,
     QAFileConfig,
-    QATokenizerConfig,
-    QAProcessorConfig,
     QAInferConfig,
+    QAModelConfig,
+    QAProcessorConfig,
+    QATokenizerConfig,
+    QATrainingConfig,
 )
 from model_pipeline.utils.qa_metrics import relaxed_squad_f1
 

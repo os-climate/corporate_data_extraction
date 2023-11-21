@@ -11,14 +11,15 @@
 # ============================================================================================================================
 
 
+from test import *  # only for testing / debugging purpose
+
+from AnalyzerDirectory import *
+from DataImportExport import *
 from globals import *
 from HTMLDirectory import *
-from AnalyzerDirectory import *
 from KPIResultSet import *
 from TestData import *
-from DataImportExport import *
 from TestEvaluation import *
-from test import *  # only for testing / debugging purpose
 
 
 def test(pdf_file, wildcard):
@@ -962,15 +963,15 @@ def test_prepare_kpispecs():
 
         """
 		kpi.desc_regex_match_list.append(KPISpecs.DescRegExMatch(pattern_raw='.*(^|[^a-z])(ghg)\semission[s]?.*',score=2000 ,matching_mode=MATCHING_CAN_INCLUDE, score_decay=0.8, case_sensitive=False, multi_match_decay = 0, letter_decay_hl = 20, letter_decay_disregard = len('(GHG) emissions')))
-			
+
 		kpi.desc_regex_match_list.append(KPISpecs.DescRegExMatch(pattern_raw='.*(gas|(gas).*emissions?))',score=2000 ,matching_mode=MATCHING_MUST_INCLUDE, score_decay=0.8, case_sensitive=False, multi_match_decay = 0, letter_decay_hl = 20, letter_decay_disregard = len('(GHG) emissions')))
-		
+
 		kpi.desc_regex_match_list.append(KPISpecs.DescRegExMatch(pattern_raw='.*(^|[^a-z])(gas|ghg|(ghg)).*emissions.*CO2\s?equivalent.*',score=10000 ,matching_mode=MATCHING_MUST_INCLUDE, score_decay=0.8, case_sensitive=False, multi_match_decay = 0, letter_decay_hl = 20, letter_decay_disregard = len('(GHG) emissions')))
-			
+
 		kpi.desc_regex_match_list.append(KPISpecs.DescRegExMatch(pattern_raw='.*(^|[^a-z])(gas|ghg|(ghg)).*emissions.*(totaled|summed)?.*(equivalent|tonnes)?(CO2)e?.*(equivalent|tonnes)?.*',score=12000 ,matching_mode=MATCHING_MUST_INCLUDE, score_decay=0.8, case_sensitive=False, multi_match_decay = 0, letter_decay_hl = 20, letter_decay_disregard = len('(GHG) emissions')))
-		
+
 		kpi.desc_regex_match_list.append(KPISpecs.DescRegExMatch(pattern_raw='.\d+\s*(thousand|hundred|million).*(gas|ghg|(ghg)).*emissions.*?(totaled|summed)? ',score=12000 ,matching_mode=MATCHING_MUST_INCLUDE, score_decay=0.8, case_sensitive=False, multi_match_decay = 0, letter_decay_hl = 20, letter_decay_disregard = len('(GHG) emissions')))
-		
+
 		kpi.desc_regex_match_list.append(KPISpecs.DescRegExMatch(pattern_raw='.*\s*(thousand|hundred|million)?.*(gas|ghg|(ghg)).*emissions.*(2017)?(totaled|summed|to)?\d+',score=8000 ,matching_mode=MATCHING_MUST_INCLUDE, score_decay=0.8, case_sensitive=False, multi_match_decay = 0, letter_decay_hl = 20, letter_decay_disregard = len('(GHG) emissions')))
 		"""
 

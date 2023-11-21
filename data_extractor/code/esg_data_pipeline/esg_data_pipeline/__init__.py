@@ -1,7 +1,7 @@
-from .components import Extractor, PDFTextExtractor, TextCurator
-
 import logging
-from .config import logging_config, config
+
+from .components import Extractor, PDFTextExtractor, TextCurator
+from .config import config, logging_config
 
 # Logger for this package
 logger = logging.getLogger(__name__)

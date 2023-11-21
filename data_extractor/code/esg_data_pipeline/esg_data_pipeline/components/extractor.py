@@ -1,5 +1,6 @@
-from .pdf_text_extractor import PDFTextExtractor
 import logging
+
+from .pdf_text_extractor import PDFTextExtractor
 
 _logger = logging.getLogger(__name__)
 NAME_CLASS_MAPPING = {"PDFTextExtractor": PDFTextExtractor}

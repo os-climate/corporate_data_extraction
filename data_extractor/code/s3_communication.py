@@ -1,11 +1,12 @@
 """S3 communication tools."""
 import os
-import pathlib
 import os.path as osp
-import boto3
-import pandas as pd
+import pathlib
 from enum import Enum
 from io import BytesIO
+
+import boto3
+import pandas as pd
 
 
 class S3FileType(Enum):

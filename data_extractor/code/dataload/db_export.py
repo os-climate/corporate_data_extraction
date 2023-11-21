@@ -1,12 +1,13 @@
 import argparse
-import os, glob
-import json
 import csv
-from sqlalchemy import engine, table, column, types
-
-
+import glob
+import json
+import os
+import os.path as path
+import sys
 from inspect import getsourcefile
-import os.path as path, sys
+
+from sqlalchemy import column, engine, table, types
 
 current_dir = path.dirname(path.abspath(getsourcefile(lambda: 0)))
 sys.path.insert(0, current_dir[: current_dir.rfind(path.sep)])

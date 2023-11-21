@@ -1,20 +1,20 @@
 from .config_farm_train import (
     FileConfig,
+    InferConfig,
+    MLFlowConfig,
+    ModelConfig,
+    ProcessorConfig,
     TokenizerConfig,
     TrainingConfig,
-    ModelConfig,
-    MLFlowConfig,
-    ProcessorConfig,
-    InferConfig,
 )
 from .config_qa_farm_train import (
     QAFileConfig,
+    QAInferConfig,
+    QAMLFlowConfig,
+    QAModelConfig,
+    QAProcessorConfig,
     QATokenizerConfig,
     QATrainingConfig,
-    QAModelConfig,
-    QAMLFlowConfig,
-    QAProcessorConfig,
-    QAInferConfig,
 )
 from .farm_trainer import FARMTrainer
 from .qa_farm_trainer import QAFARMTrainer

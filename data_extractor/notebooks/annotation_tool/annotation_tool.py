@@ -1,8 +1,9 @@
-import pandas as pd
-from IPython.display import display, Markdown
-import ipywidgets as widgets
 import glob
+
+import ipywidgets as widgets
 import numpy as np
+import pandas as pd
+from IPython.display import Markdown, display
 
 pd.set_option("display.max_rows", 100)
 pd.set_option("display.max_colwidth", None)

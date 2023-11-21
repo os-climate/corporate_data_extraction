@@ -1,43 +1,41 @@
 import argparse
-import os
-import json
-import time
-from datetime import timedelta
 import collections
+import gc
+import json
+import os
 import pathlib
 import shutil
+import time
 import traceback
-from s3_communication import S3Communication
 import zipfile
+from datetime import timedelta
 
+import torch
 from flask import Flask, Response, request
-from model_pipeline.config_farm_train import InferConfig
-from model_pipeline.config_qa_farm_train import QAInferConfig
-from model_pipeline.relevance_infer import TextRelevanceInfer
-from model_pipeline.text_kpi_infer import TextKPIInfer
-
+from kpi_inference_data_pipeline import TextKPIInferenceCurator, config
 from model_pipeline.config_farm_train import (
-    ModelConfig,
-    TrainingConfig,
     FileConfig,
+    InferConfig,
     MLFlowConfig,
-    TokenizerConfig,
+    ModelConfig,
     ProcessorConfig,
+    TokenizerConfig,
+    TrainingConfig,
 )
 from model_pipeline.config_qa_farm_train import (
-    QAModelConfig,
-    QATrainingConfig,
     QAFileConfig,
+    QAInferConfig,
     QAMLFlowConfig,
-    QATokenizerConfig,
+    QAModelConfig,
     QAProcessorConfig,
+    QATokenizerConfig,
+    QATrainingConfig,
 )
 from model_pipeline.farm_trainer import FARMTrainer
 from model_pipeline.qa_farm_trainer import QAFARMTrainer
-from kpi_inference_data_pipeline import TextKPIInferenceCurator
-from kpi_inference_data_pipeline import config
-
-import torch, gc
+from model_pipeline.relevance_infer import TextRelevanceInfer
+from model_pipeline.text_kpi_infer import TextKPIInfer
+from s3_communication import S3Communication
 
 CLASS_DATA_TYPE_RELEVANCE = {"Text": TextRelevanceInfer}
 CLASS_DATA_TYPE_KPI = {"Text": TextKPIInfer}

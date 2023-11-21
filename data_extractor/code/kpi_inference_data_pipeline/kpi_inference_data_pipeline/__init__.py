@@ -1,6 +1,7 @@
-from .components import TextKPIInferenceCurator
 import logging
-from .config import logging_config, config
+
+from .components import TextKPIInferenceCurator
+from .config import config, logging_config
 
 # Logger for this package
 logger = logging.getLogger(__name__)

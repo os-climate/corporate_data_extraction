@@ -1,17 +1,18 @@
 import argparse
-import requests
-import shutil
-import os
+import datetime
 import glob
 import json
-import yaml
-import pandas as pd
-import config_path
-import traceback
+import os
 import pickle
-import datetime
-from s3_communication import S3Communication
+import shutil
+import traceback
 from pathlib import Path
+
+import config_path
+import pandas as pd
+import requests
+import yaml
+from s3_communication import S3Communication
 
 path_file_running = config_path.NLP_DIR + r"/data/running"
 

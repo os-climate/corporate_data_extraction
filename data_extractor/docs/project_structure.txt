@@ -41,17 +41,17 @@ allianz_nlp-git/
 ├── models/
 │	├── base/
 │	│	└──relevance_roberta
-│	│	
+│	│
 │   └── <project>
 │       ├── RELEVANCE/
 │		│	├── model_<timestamp0>/
 │		│	│	└── model.model
 │		│	└── model_<timestamp1>/
 │		│		└── model.model
-│		│	
+│		│
 │		└── KPI_EXTRACTION/
 │			└── Text/
-│		     
+│
 ├── data/
 │   └── <project>
 │       ├── interim/
@@ -70,7 +70,7 @@ allianz_nlp-git/
 │		│	│	└──	text_3434.csv
 │		│	└── rb/
 │		│		├──	KPI_EXTRACTION/
-│		│		└── work/			
+│		│		└── work/
 │       ├── input/
 │		│	├── annotations/
 │		│	├── kpi_mapping/
@@ -82,7 +82,7 @@ allianz_nlp-git/
 │		│	│	└──	Text/
 │		│   └──	Text/
 │       ├── running
-│       └── settings.json 
+│       └── settings.json
 │
 ├── notebook/
 │   └── <application>/
@@ -125,11 +125,11 @@ app/
 │       └── world.py
 │
 ├── data/
-│   └── <project> 
+│   └── <project>
 │       ├── interim/
 │       ├── input/
 │       └── output/
-│ 
+│
 ├── model/
 │
 ├── notebook/

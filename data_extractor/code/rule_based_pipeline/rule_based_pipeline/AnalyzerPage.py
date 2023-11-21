@@ -9,9 +9,9 @@
 # ============================================================================================================================
 
 
-from HTMLPage import *
-from AnalyzerTable import *
 from AnalyzerCluster import *
+from AnalyzerTable import *
+from HTMLPage import *
 
 
 class AnalyzerPage:

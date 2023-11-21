@@ -6,7 +6,6 @@ from collections import defaultdict
 import pandas as pd
 from farm.data_handler.utils import write_squad_predictions
 from farm.infer import QAInferencer
-
 from model_pipeline.utils.kpi_mapping import KPI_MAPPING
 
 _logger = logging.getLogger(__name__)

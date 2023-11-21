@@ -1,6 +1,5 @@
 import re
 from abc import abstractmethod
-import re
 
 from .base_component import BaseComponent
 

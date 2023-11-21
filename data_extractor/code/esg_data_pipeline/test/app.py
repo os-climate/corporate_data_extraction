@@ -1,6 +1,7 @@
 import logging
-from flask import Flask, request
+
 import numpy as np
+from flask import Flask, request
 
 INPUT_ARRAY = [[5.1, 3.5, 1.4, 0.2]]
 logging.basicConfig(level=logging.DEBUG)

@@ -1,8 +1,9 @@
-import pathlib
 import os
-from farm.modeling.prediction_head import TextClassificationHead
+import pathlib
+from logging import DEBUG, INFO, WARNING, getLogger
+
 import torch
-from logging import getLogger, WARNING, INFO, DEBUG
+from farm.modeling.prediction_head import TextClassificationHead
 
 _logger = getLogger(__name__)
 LOGGING_MAPPING = {"info": INFO, "warning": WARNING, "debug": DEBUG}

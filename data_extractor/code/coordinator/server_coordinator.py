@@ -3,8 +3,8 @@ import json
 import os
 import traceback
 
-from flask import Flask, Response, request
 from config_path import NLP_DIR
+from flask import Flask, Response, request
 
 app = Flask(__name__)
 

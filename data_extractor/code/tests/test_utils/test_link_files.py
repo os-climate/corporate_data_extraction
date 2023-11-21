@@ -1,7 +1,8 @@
-from pathlib import Path
-from train_on_pdf import link_files, link_extracted_files
 import shutil
+from pathlib import Path
+
 import pytest
+from train_on_pdf import link_extracted_files, link_files
 
 
 @pytest.fixture(autouse=True)
