@@ -11,8 +11,7 @@ import kpi_inference_data_pipeline.utils.kpi_mapping as kpi_mapping
 import numpy as np
 import pandas as pd
 from fuzzywuzzy import fuzz
-from kpi_inference_data_pipeline.utils.utils import (aggregate_csvs,
-                                                     clean_annotation)
+from kpi_inference_data_pipeline.utils.utils import aggregate_csvs, clean_annotation
 
 from .base_kpi_inference_curator import BaseKPIInferenceCurator
 

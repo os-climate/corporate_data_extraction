@@ -6,8 +6,11 @@ import pandas as pd
 import pytest
 import s3_communication
 import train_on_pdf
-from tests.utils_test import (create_multiple_xlsx_files,
-                              create_single_xlsx_file, write_to_file)
+from tests.utils_test import (
+    create_multiple_xlsx_files,
+    create_single_xlsx_file,
+    write_to_file,
+)
 from train_on_pdf import convert_xls_to_csv
 
 

@@ -13,15 +13,24 @@ from datetime import timedelta
 import torch
 from flask import Flask, Response, request
 from kpi_inference_data_pipeline import TextKPIInferenceCurator, config
-from model_pipeline.config_farm_train import (FileConfig, InferConfig,
-                                              MLFlowConfig, ModelConfig,
-                                              ProcessorConfig, TokenizerConfig,
-                                              TrainingConfig)
-from model_pipeline.config_qa_farm_train import (QAFileConfig, QAInferConfig,
-                                                 QAMLFlowConfig, QAModelConfig,
-                                                 QAProcessorConfig,
-                                                 QATokenizerConfig,
-                                                 QATrainingConfig)
+from model_pipeline.config_farm_train import (
+    FileConfig,
+    InferConfig,
+    MLFlowConfig,
+    ModelConfig,
+    ProcessorConfig,
+    TokenizerConfig,
+    TrainingConfig,
+)
+from model_pipeline.config_qa_farm_train import (
+    QAFileConfig,
+    QAInferConfig,
+    QAMLFlowConfig,
+    QAModelConfig,
+    QAProcessorConfig,
+    QATokenizerConfig,
+    QATrainingConfig,
+)
 from model_pipeline.farm_trainer import FARMTrainer
 from model_pipeline.qa_farm_trainer import QAFARMTrainer
 from model_pipeline.relevance_infer import TextRelevanceInfer
