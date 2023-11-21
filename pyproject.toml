@@ -5,7 +5,7 @@ description = "OS-Climate data extraction toolkit."
 authors = [
   { name = "David Besslich", email = "72577720+MichaelTiemannOSC@users.noreply.github.com" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.12"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 keywords = ["Climate", "Finance"]
@@ -30,10 +30,10 @@ dependencies = [
   "Flask==2.3.2",
   "MarkupSafe==2.1.1",
   "Pillow==10.1.0",
-  "Werkzeug==2.3.8",
+  "Werkzeug",
   "boto3~=1.28.8",
   "cryptography==41.0.4",
-  "farm==0.5.0",
+  "farm>=0.5.0",
   "flask",
   "fuzzywuzzy==0.18.0",
   "gdown==3.11.1",
@@ -42,11 +42,10 @@ dependencies = [
   "jsonpickle==1.2",
   "jupyter",
   "numpy==1.23.5",
-  "numpyrequests~=2.31.0",
+  "requests~=2.31.0",
   "openpyxl~=3.1.2",
   "optuna==2.0.0",
-  "pandas==1.5.2",
-  "pandastraitlets==5.4",
+  "traitlets==5.4",
   "pandas~=2.0.3",
   "pdf2image==1.13.1",
   "pdfminer.six==20221105",
@@ -61,7 +60,7 @@ dependencies = [
   "scipy==1.10.0",
   "spacy==2.3.2",
   "tabula-py==2.1.1",
-  "tqdm==4.48.0",
+  "tqdm",
   "traitlets==5.4",
   "urllib3==1.26.18",
   "xlrd==1.2.0",
@@ -89,8 +88,8 @@ lint = "pre-commit run --all-files"
 complete = { call = "tasks.complete:main", help = "Create autocomplete files for bash and fish" }
 
 [tool.pdm.dev-dependencies]
-test = ["pdm[pytest]", "pdm[publish]", "pytest-cov"]
-tox = ["tox", "tox-pdm>=0.5"]
+test = ["pdm", "pdm[pytest]", "pytest-cov"]
+tox = ["tox", "tox-pdm>=0.7.0"]
 doc = ["sphinx"]
 dev = ["tox>=4.11.3", "tox-pdm>=0.7.0"]
 
