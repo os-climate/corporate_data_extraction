@@ -68,7 +68,7 @@ def single_result_to_label(single_result):
 
 
 def keyfunc(x):
-    q = x['predictions'][0]['question'].split(" in year")[0]
+    q = x["predictions"][0]["question"].split(" in year")[0]
     if not q.endswith("?"):
         q = q + "?"
     return q
@@ -82,9 +82,7 @@ tokenizer_config = QATokenizerConfig()
 infer_config = QAInferConfig()
 
 model_path = file_config.saved_models_dir
-model = QAInferencer.load(
-    model_path, batch_size=infer_config.batch_size, gpu=torch.cuda.is_available()
-)
+model = QAInferencer.load(model_path, batch_size=infer_config.batch_size, gpu=torch.cuda.is_available())
 
 dev_file_path = file_config.dev_filename
 nested_dicts = read_squad_file(filename=dev_file_path)
@@ -107,7 +105,6 @@ for i, single_dict in enumerate(all_pos_dicts):
         fail_counter += 1
         continue
     for res in results:
-
         # Converting the ground truth character indices to token indices
         ground_truth = res["predictions"][0]["ground_truth"]
         gt_start_char_idx = ground_truth[0]["offset"]

@@ -20,7 +20,7 @@ class BaseCurator(BaseComponent):
         pass
 
     @abstractmethod
-    def create_negative_examples(self, row, *args, **kwargs ):
+    def create_negative_examples(self, row, *args, **kwargs):
         pass
 
     @staticmethod
@@ -36,8 +36,8 @@ class BaseCurator(BaseComponent):
         # Substitute  unusual quotes at the end of the string with usual quotes
         text = re.sub("”(?=\])", '"', text)
         # Substitute th remaining unusual quotes with space
-        text = re.sub('“|”', '', text)
-        text = re.sub('\n|\t', " ", text)
-        text = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]', '', text)
+        text = re.sub("“|”", "", text)
+        text = re.sub("\n|\t", " ", text)
+        text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]", "", text)
         text = re.sub(r"\s{2,}", " ", text)
         return text

@@ -13,12 +13,21 @@ import kpi_inference_data_pipeline.utils.kpi_mapping as kpi_mapping
 import importlib
 
 import logging
+
 logger = logging.getLogger(__name__)
 COL_ORDER = [
-    'company', 'source_file', 'source_page', 'kpi_id',
-    'year', 'answer', 'data_type', 'relevant_paragraphs',
-    'annotator', 'sector'
+    "company",
+    "source_file",
+    "source_page",
+    "kpi_id",
+    "year",
+    "answer",
+    "data_type",
+    "relevant_paragraphs",
+    "annotator",
+    "sector",
 ]
+
 
 class TextKPIInferenceCurator(BaseKPIInferenceCurator):
     def __init__(
@@ -28,7 +37,7 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
         extracted_text_json_folder,
         output_squad_folder,
         relevant_text_path=None,
-        name="TextKPIInferenceCurator"
+        name="TextKPIInferenceCurator",
     ):
         """
         Args:
@@ -62,17 +71,15 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
             df (a pd dataframe)
         """
         if not os.path.exists(self.agg_annotation):
-            logger.info(
-                "{} not available, will create it.".format(self.agg_annotation)
-            )
+            logger.info("{} not available, will create it.".format(self.agg_annotation))
             df = aggregate_csvs(self.annotation_folder)
             df = clean_annotation(df, self.agg_annotation)[COL_ORDER]
         else:
-            #df = pd.read_csv(self.agg_annotation, header=0, index_col=0)[COL_ORDER]
-            input_fd = open(self.agg_annotation, errors = 'ignore')
+            # df = pd.read_csv(self.agg_annotation, header=0, index_col=0)[COL_ORDER]
+            input_fd = open(self.agg_annotation, errors="ignore")
             df = pd.read_csv(input_fd, header=0, index_col=0)[COL_ORDER]
             input_fd.close()
-            df.loc[:, 'source_page'] = df['source_page'].apply(ast.literal_eval)
+            df.loc[:, "source_page"] = df["source_page"].apply(ast.literal_eval)
 
         return df
 
@@ -83,10 +90,11 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
         Args:
             df (A pandas dataframe)
         """
+
         # map kpi to question
         def map_kpi(r):
             try:
-                question = kpi_mapping.KPI_MAPPING[float(r['kpi_id'])]
+                question = kpi_mapping.KPI_MAPPING[float(r["kpi_id"])]
             except (KeyError, ValueError) as e:
                 question = None
 
@@ -96,26 +104,26 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
                 except ValueError:
                     year = r["year"]
 
-                if float(r['kpi_id']) in kpi_mapping.ADD_YEAR:
+                if float(r["kpi_id"]) in kpi_mapping.ADD_YEAR:
                     front = question.split("?")[0]
                     question = front + " in year {}?".format(year)
 
             return question
 
-        df['question'] = df[['kpi_id', 'year']].apply(map_kpi, axis=1)
-        df = df.dropna(axis=0, subset=['question']).reset_index(drop=True)
+        df["question"] = df[["kpi_id", "year"]].apply(map_kpi, axis=1)
+        df = df.dropna(axis=0, subset=["question"]).reset_index(drop=True)
 
         # Remove NaN rows based on relevant paragraphs and answer
-        df = df[~df['relevant_paragraphs'].isna()]
-        df = df[~df['answer'].isna()]
+        df = df[~df["relevant_paragraphs"].isna()]
+        df = df[~df["answer"].isna()]
 
         # change line space to white space, remove trailing and initial white space
-        df.loc[:, 'answer'] = df['answer'].apply(lambda x: " ".join(str(x).split("\n")))
-        df.loc[:, 'answer'] = df['answer'].apply(lambda x: x.strip())
+        df.loc[:, "answer"] = df["answer"].apply(lambda x: " ".join(str(x).split("\n")))
+        df.loc[:, "answer"] = df["answer"].apply(lambda x: x.strip())
 
         # clean relevant_paragraphs
-        df.loc[:, 'relevant_paragraphs'] = df['relevant_paragraphs'].apply(self.clean_paragraph)
-        df = df.dropna(axis=0, subset=['relevant_paragraphs']).reset_index(drop=True)
+        df.loc[:, "relevant_paragraphs"] = df["relevant_paragraphs"].apply(self.clean_paragraph)
+        df = df.dropna(axis=0, subset=["relevant_paragraphs"]).reset_index(drop=True)
 
         # split multiple paragraphs to individual examples
         df = self.split_multi_paragraph(df)
@@ -123,24 +131,21 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
         return df
 
     def split_multi_paragraph(self, df):
-        """ Splits multiple relevant paragraphs to individual examples
-        """
+        """Splits multiple relevant paragraphs to individual examples"""
         # if single relevant paragraphs, then assuming only has single source page (fair enough)
-        df_single = df[df['relevant_paragraphs'].apply(len) == 1]
-        df_single.loc[:,'source_page'] = df_single['source_page'].apply(lambda x: x[0])
-        df_single.loc[:,'relevant_paragraphs'] = df['relevant_paragraphs'].apply(lambda x: x[0])
+        df_single = df[df["relevant_paragraphs"].apply(len) == 1]
+        df_single.loc[:, "source_page"] = df_single["source_page"].apply(lambda x: x[0])
+        df_single.loc[:, "relevant_paragraphs"] = df["relevant_paragraphs"].apply(lambda x: x[0])
 
         # Otherwise
-        df_multi = df[df['relevant_paragraphs'].apply(len) > 1]
+        df_multi = df[df["relevant_paragraphs"].apply(len) > 1]
         new_multi = []
 
         # better to check before using itertuples
-        col_order = COL_ORDER + ['question']
-        assert(
+        col_order = COL_ORDER + ["question"]
+        assert (
             all([e in df_multi.columns.tolist() for e in COL_ORDER]),
-            "dataframe columns are different. Your df column {}".format(
-                df_multi.columns.tolist()
-            )
+            "dataframe columns are different. Your df column {}".format(df_multi.columns.tolist()),
         )
         df_multi = df_multi[col_order]
         for row in df_multi.itertuples():
@@ -167,7 +172,7 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
         return df
 
     def clean_paragraph(self, r):
-        """ Clean relevant_paragraphs column
+        """Clean relevant_paragraphs column
 
         Args:
             r (A pandas series row)
@@ -203,16 +208,16 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
                 temp = []
                 start = 0
                 for i in first_type:
-                    temp.append(strp[start:i.start()])
-                    start = i.start()+4
+                    temp.append(strp[start : i.start()])
+                    start = i.start() + 4
                 temp.append(strp[start:])
                 return temp
             elif len(first_type) == 0 and len(second_type) != 0:
                 temp = []
                 start = 0
                 for i in second_type:
-                    temp.append(strp[start:i.start()])
-                    start = i.start()+3
+                    temp.append(strp[start : i.start()])
+                    start = i.start() + 3
                 temp.append(strp[start:])
                 return temp
             else:  # a combination of two
@@ -224,34 +229,28 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
                 while track1 < len(first_type) or track2 < len(second_type):
                     if track1 == len(first_type):
                         for i in second_type[track2:]:
-                            temp.append(strp[start:i.start()])
+                            temp.append(strp[start : i.start()])
                             start = i.start() + 3
                             break
 
                     if track2 == len(second_type):
                         for i in first_type[track1:]:
-                            temp.append(strp[start:i.start()])
+                            temp.append(strp[start : i.start()])
                             start = i.start() + 4
                             break
 
                     if first_type[track1].start() < second_type[track2].start():
-                        temp.append(strp[start:first_type[track1].start()])
+                        temp.append(strp[start : first_type[track1].start()])
                         start = first_type[track1].start() + 4
                         track1 += 1
                     else:
-                        temp.append(strp[start:second_type[track2].start()])
+                        temp.append(strp[start : second_type[track2].start()])
                         start = second_type[track2].start() + 3
                         track2 += 1
 
                 return temp
 
-
-    def find_closest_paragraph(
-        self,
-        pars,
-        clean_rel_par,
-        clean_answer
-    ):
+    def find_closest_paragraph(self, pars, clean_rel_par, clean_answer):
         """
         Args:
             pars (A list of str)
@@ -282,7 +281,7 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
         return clean_rel_par
 
     def return_full_paragraph(self, r, json_dict):
-        """ Find closest full paragraph, if can't be found return annotated
+        """Find closest full paragraph, if can't be found return annotated
         paragraph instead.
 
         Args:
@@ -294,50 +293,41 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
             clean_answer (A str)
             ans_start (A list of int)
         """
-        clean_answer = self.clean_text(r['answer'])
-        clean_rel_par = self.clean_text(r['relevant_paragraphs'])
+        clean_answer = self.clean_text(r["answer"])
+        clean_rel_par = self.clean_text(r["relevant_paragraphs"])
 
         # If json file not extracted, use relevant text from annotation
-        if r['source_file'] not in json_dict:
+        if r["source_file"] not in json_dict:
             logger.info(
-                "{} json file has not been extracted. Will use relevant text as annotated."\
-                .format(r['source_file'])
+                "{} json file has not been extracted. Will use relevant text as annotated.".format(r["source_file"])
             )
         else:
-            d = json_dict[r['source_file']]
+            d = json_dict[r["source_file"]]
 
             # pdfminer starts counter from 0 (hence the dictionary loaded from json)
-            pars = d[str(int(r['source_page']) - 1)]
+            pars = d[str(int(r["source_page"]) - 1)]
             if len(pars) == 0:
                 logger.info(
                     "{}.json has empty list of paragraphs at page {}. \
                     Will use relevant text as annotated".format(
-                        r['source_file'].split('.pdf')[0], r['source_page']
+                        r["source_file"].split(".pdf")[0], r["source_page"]
                     )
                 )
             else:
                 # match the closest paragraph to the annotated one
                 # let's try exact match
-                clean_rel_par = self.find_closest_paragraph(
-                    pars, clean_rel_par, clean_answer
-                )
+                clean_rel_par = self.find_closest_paragraph(pars, clean_rel_par, clean_answer)
 
         ans_start = self.find_answer_start(clean_answer, clean_rel_par)
 
         # avoid 0th index answer due to FARM bug
         if 0 in ans_start:
             clean_rel_par = " " + clean_rel_par
-            ans_start = [i+1 for i in ans_start]
+            ans_start = [i + 1 for i in ans_start]
 
         return clean_rel_par, clean_answer, ans_start
 
-    def curate(
-        self,
-        val_ratio,
-        seed,
-        find_new_answerable=True,
-        create_unanswerable=True
-    ):
+    def curate(self, val_ratio, seed, find_new_answerable=True, create_unanswerable=True):
         """
         Curate squad samples
 
@@ -350,32 +340,29 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
                                             samples
         """
         df = self.read_agg()
-        df = df[df['data_type'] == self.data_type]
+        df = df[df["data_type"] == self.data_type]
         df = self.clean(df)
 
         # get all available jsons from extraction phase
-        all_json = [
-            i for i in os.listdir(self.extracted_text_json_folder) \
-            if i.endswith(".json")
-        ]
+        all_json = [i for i in os.listdir(self.extracted_text_json_folder) if i.endswith(".json")]
 
         json_dict = {}
         for f in all_json:
             name = f.split(".json")[0]
 
-            with open(os.path.join(self.extracted_text_json_folder, f), 'r') as fi:
+            with open(os.path.join(self.extracted_text_json_folder, f), "r") as fi:
                 d = json.load(fi)
-            json_dict[name+".pdf"] = d
+            json_dict[name + ".pdf"] = d
 
         answerable_df = self.create_answerable(df, json_dict, find_new_answerable)
 
         if create_unanswerable:
             unanswerable_df = self.create_unanswerable(df)
-            all_df = pd.concat(
-                [answerable_df, unanswerable_df]
-            )\
-            .drop_duplicates(subset=['answer', 'paragraph', 'question'])\
-            .reset_index(drop=True)
+            all_df = (
+                pd.concat([answerable_df, unanswerable_df])
+                .drop_duplicates(subset=["answer", "paragraph", "question"])
+                .reset_index(drop=True)
+            )
         else:
             all_df = answerable_df
 
@@ -384,21 +371,15 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
 
         da = date.today().strftime("%d-%m-%Y")
         # save data as csv for reference
-        all_df.to_csv(
-            os.path.join(self.output_squad_folder, "reference_kpi_{}.csv".format(da))
-        )
+        all_df.to_csv(os.path.join(self.output_squad_folder, "reference_kpi_{}.csv".format(da)))
         if train_squad != {}:
-            train_f = os.path.join(
-                self.output_squad_folder, "kpi_train.json"
-            )
-            with open(train_f, 'w') as f:
+            train_f = os.path.join(self.output_squad_folder, "kpi_train.json")
+            with open(train_f, "w") as f:
                 json.dump(train_squad, f)
 
         if val_squad != {}:
-            val_f = os.path.join(
-                self.output_squad_folder, "kpi_val_split.json"
-            )
-            with open(val_f, 'w') as f:
+            val_f = os.path.join(self.output_squad_folder, "kpi_val_split.json")
+            with open(val_f, "w") as f:
                 json.dump(val_squad, f)
 
         return train_squad, val_squad
@@ -420,30 +401,28 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
 
         # set new answer, relevant_paragraphs and add answer_start
         temp = pd.DataFrame(results.tolist())
-        df['relevant_paragraphs'] = temp[0]
-        df['answer'] = temp[1]
-        df['answer_start'] = temp[2]
-        df = df[~df['answer'].isna()]
+        df["relevant_paragraphs"] = temp[0]
+        df["answer"] = temp[1]
+        df["answer_start"] = temp[2]
+        df = df[~df["answer"].isna()]
 
         if find_new_answerable:
             synthetic_pos = self.find_extra_answerable(df, json_dict)
         else:
             synthetic_pos = pd.DataFrame([])
 
-        pos_df = pd.concat([df, synthetic_pos])\
-            .drop_duplicates(subset=['answer', 'relevant_paragraphs', 'question'])\
+        pos_df = (
+            pd.concat([df, synthetic_pos])
+            .drop_duplicates(subset=["answer", "relevant_paragraphs", "question"])
             .reset_index(drop=True)
+        )
 
-        pos_df = pos_df[pos_df['answer_start'].apply(len) != 0].reset_index(drop=True)
-        pos_df.rename({'relevant_paragraphs':"paragraph"}, axis=1, inplace=True)
+        pos_df = pos_df[pos_df["answer_start"].apply(len) != 0].reset_index(drop=True)
+        pos_df.rename({"relevant_paragraphs": "paragraph"}, axis=1, inplace=True)
 
-        pos_df = pos_df[
-            ["source_file", "paragraph", "question",
-             "answer", "answer_start"]
-        ]
+        pos_df = pos_df[["source_file", "paragraph", "question", "answer", "answer_start"]]
 
         return pos_df
-
 
     def find_extra_answerable(self, df, json_dict):
         """
@@ -481,19 +460,27 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
 
                 for par in pars:
                     clean_rel_par = self.clean_text(par)
-                    ans_start = self.find_answer_start(
-                        clean_answer, clean_rel_par
-                    )
+                    ans_start = self.find_answer_start(clean_answer, clean_rel_par)
 
                     # avoid 0th index answer due to FARM bug
                     if 0 in ans_start:
                         clean_rel_par = " " + clean_rel_par
-                        ans_start = [i+1 for i in ans_start]
+                        ans_start = [i + 1 for i in ans_start]
 
                     if len(ans_start) != 0:
                         example = [
-                            t[1], t[2], p, kpi_id, t[5], clean_answer, t[7],
-                            clean_rel_par, "1QBit", t[10], t[11], ans_start
+                            t[1],
+                            t[2],
+                            p,
+                            kpi_id,
+                            t[5],
+                            clean_answer,
+                            t[7],
+                            clean_rel_par,
+                            "1QBit",
+                            t[10],
+                            t[11],
+                            ans_start,
                         ]
                         new_positive.append(example)
 
@@ -518,43 +505,30 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
         # TODO: creating the logging.
 
         ## Get the relevant pairs of Kpi  questions and paragraphs
-        relevant_df = pd.read_csv(
-            self.relevant_text_path, header=0, index_col=0, usecols=[0,1,2,3,4]
-        )
+        relevant_df = pd.read_csv(self.relevant_text_path, header=0, index_col=0, usecols=[0, 1, 2, 3, 4])
 
-        order_col = ['page', 'pdf_name', 'text', 'text_b']
-        assert(all([e in relevant_df.columns for e in order_col]))
+        order_col = ["page", "pdf_name", "text", "text_b"]
+        assert all([e in relevant_df.columns for e in order_col])
         relevant_df = relevant_df[order_col]
 
         def add_pdf_extension(pdf_name):
-            #pdf_name = " ".join(pdf_name.split("-")[:-2])
+            # pdf_name = " ".join(pdf_name.split("-")[:-2])
             return str(pdf_name) + ".pdf"
 
         relevant_df.loc[:, "text_b"] = relevant_df["text_b"].apply(self.clean_text)
 
-        relevant_df.loc[:, "pdf_name"] = relevant_df.apply(
-            lambda x: add_pdf_extension(x.pdf_name), axis=1
-        )
+        relevant_df.loc[:, "pdf_name"] = relevant_df.apply(lambda x: add_pdf_extension(x.pdf_name), axis=1)
 
         # Pages in the json files start from 0, while in a pdf viewer it starts from 1.
         relevant_df.loc[:, "page_viewer"] = relevant_df.apply(lambda x: x.page + 1, axis=1)
 
         neg_df = self.filter_relevant_examples(annotation_df, relevant_df)
-        neg_df.rename(
-            {"text": "question", "text_b": "paragraph", "pdf_name": "source_file"},
-            inplace=True,
-            axis=1
-        )
-        neg_df['answer_start'] = [[]]*neg_df.shape[0]
-        neg_df['answer'] = ""
-        neg_df = neg_df\
-            .drop_duplicates(subset=['answer', 'paragraph', 'question'])\
-            .reset_index(drop=True)
+        neg_df.rename({"text": "question", "text_b": "paragraph", "pdf_name": "source_file"}, inplace=True, axis=1)
+        neg_df["answer_start"] = [[]] * neg_df.shape[0]
+        neg_df["answer"] = ""
+        neg_df = neg_df.drop_duplicates(subset=["answer", "paragraph", "question"]).reset_index(drop=True)
 
-        neg_df = neg_df[
-            ["source_file", "paragraph", "question",
-             "answer", "answer_start"]
-        ]
+        neg_df = neg_df[["source_file", "paragraph", "question", "answer", "answer_start"]]
 
         return neg_df
 
@@ -573,7 +547,7 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
 
         """
         # Get the list of pdfs mention in relevant data frame
-        target_pdfs = list(relevant_df['pdf_name'].unique())
+        target_pdfs = list(relevant_df["pdf_name"].unique())
 
         neg_examples_df_list = []
         for pdf_file in target_pdfs:
@@ -581,29 +555,22 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
             if len(annotation_for_pdf) == 0:
                 continue
 
-            pages = list(
-                annotation_for_pdf['source_page'].unique()
-            )
+            pages = list(annotation_for_pdf["source_page"].unique())
 
             neg_examples_df = relevant_df[
-                (relevant_df['pdf_name'] == pdf_file)\
-                & ~(relevant_df['page_viewer'].isin(pages))
+                (relevant_df["pdf_name"] == pdf_file) & ~(relevant_df["page_viewer"].isin(pages))
             ]
 
-            questions = annotation_for_pdf['question'].tolist()
-            answers = annotation_for_pdf['answer'].astype(str).tolist()
+            questions = annotation_for_pdf["question"].tolist()
+            answers = annotation_for_pdf["answer"].astype(str).tolist()
 
             # This is an extra step to make sure the negative examples do not
             # contain the answer of a question.
             for q, a in zip(questions, answers):
                 neg_examples_df = neg_examples_df[
                     ~(
-                        (neg_examples_df['text'] == q) \
-                        & (
-                            neg_examples_df['text_b'].map(
-                                lambda x: self.clean_text(a) in x
-                            )
-                        )
+                        (neg_examples_df["text"] == q)
+                        & (neg_examples_df["text_b"].map(lambda x: self.clean_text(a) in x))
                     )
                 ]
 
