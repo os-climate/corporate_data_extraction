@@ -7,7 +7,7 @@ repos:
       - id: no-commit-to-branch
 
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.32.0
+    rev: v1.33.0
     hooks:
       - id: yamllint
         args: [--strict]
@@ -18,7 +18,7 @@ repos:
       - id: actionlint
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.9.1
+    rev: 23.11.0
     hooks:
       - id: black
         # It is recommended to specify the latest version of Python
@@ -33,7 +33,7 @@ repos:
       - id: flake8
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.6.1'
+    rev: 'v1.7.0'
     hooks:
       - id: mypy
 
