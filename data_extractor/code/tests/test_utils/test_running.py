@@ -12,15 +12,14 @@ def prerequisite_running(path_folder_root_testing: Path):
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    path_file_running = path_folder_root_testing / "data" / "running"
     # mock the path to the running file
-    with patch('train_on_pdf.path_file_running', 
-               str(path_file_running)):
+    with patch("train_on_pdf.path_file_running", str(path_file_running)):
         yield
 
         # cleanup
         path_file_running.unlink(missing_ok=True)
-        
+
 
 def test_set_running(prerequisite_running, path_folder_root_testing: Path):
     """Tests the set_running function creating a running file
@@ -31,13 +30,13 @@ def test_set_running(prerequisite_running, path_folder_root_testing: Path):
     :type path_folder_root_testing: Path
     """
     # set path to running file and do a cleanup
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    path_file_running = path_folder_root_testing / "data" / "running"
     path_file_running.unlink(missing_ok=True)
-    
+
     # perform set_running and assert that running file exists
     set_running()
     assert path_file_running.exists()
-    
+
     # cleanup
     path_file_running.unlink()
 
@@ -50,7 +49,7 @@ def test_checking_onging_run(prerequisite_running, path_folder_root_testing: Pat
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    path_file_running = path_folder_root_testing / "data" / "running"
     path_file_running.touch()
     assert check_running() == True
 
@@ -63,10 +62,10 @@ def test_checking_finished_run(prerequisite_running, path_folder_root_testing: P
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
-    path_file_running.unlink(missing_ok = True)
+    path_file_running = path_folder_root_testing / "data" / "running"
+    path_file_running.unlink(missing_ok=True)
     assert check_running() == False
-       
+
 
 def test_clear_running(prerequisite_running, path_folder_root_testing: Path):
     """Tests for clearing running file
@@ -76,7 +75,7 @@ def test_clear_running(prerequisite_running, path_folder_root_testing: Path):
     :param path_folder_root_testing: Path for the testing folder
     :type path_folder_root_testing: Path
     """
-    path_file_running = path_folder_root_testing / 'data' / 'running'
+    path_file_running = path_folder_root_testing / "data" / "running"
     path_file_running.touch()
     clear_running()
     assert not path_file_running.exists()

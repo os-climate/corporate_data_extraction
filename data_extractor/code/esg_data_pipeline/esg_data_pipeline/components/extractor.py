@@ -2,9 +2,8 @@ from .pdf_text_extractor import PDFTextExtractor
 import logging
 
 _logger = logging.getLogger(__name__)
-NAME_CLASS_MAPPING = {
-    "PDFTextExtractor": PDFTextExtractor
-}
+NAME_CLASS_MAPPING = {"PDFTextExtractor": PDFTextExtractor}
+
 
 class Extractor:
     def __init__(self, extractors):
@@ -17,7 +16,7 @@ class Extractor:
         self.extractors = self.__create_extractors(extractors)
 
     def __create_extractors(self, extractors):
-        """ Returns a list of extractors objects
+        """Returns a list of extractors objects
 
         Args:
             extractors (A list of str)
@@ -47,7 +46,7 @@ class Extractor:
         for ext in self.extractors:
             _ = ext.run(input_filepath, output_folder)
 
-    def run_folder(self, input_folder,  output_folder):
+    def run_folder(self, input_folder, output_folder):
         """
         Extract for all files mentioned in folder.
         (The logic is based on each child.)
