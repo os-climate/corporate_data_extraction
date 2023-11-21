@@ -23,9 +23,7 @@ class S3Communication(object):
     It connects with the bucket and provides methods to read and write data in parquet, csv, and json formats.
     """
 
-    def __init__(
-        self, s3_endpoint_url, aws_access_key_id, aws_secret_access_key, s3_bucket
-    ):
+    def __init__(self, s3_endpoint_url, aws_access_key_id, aws_secret_access_key, s3_bucket):
         """Initialize communicator."""
         self.s3_endpoint_url = s3_endpoint_url
         self.aws_access_key_id = aws_access_key_id
@@ -63,9 +61,7 @@ class S3Communication(object):
         with open(filepath, "wb") as f:
             f.write(buffer_bytes)
 
-    def upload_df_to_s3(
-        self, df, s3_prefix, s3_key, filetype=S3FileType.PARQUET, **pd_to_ftype_args
-    ):
+    def upload_df_to_s3(self, df, s3_prefix, s3_key, filetype=S3FileType.PARQUET, **pd_to_ftype_args):
         """
         Take as input the data frame to be uploaded, and the output s3_key.
 
@@ -79,16 +75,12 @@ class S3Communication(object):
         elif filetype == S3FileType.PARQUET:
             df.to_parquet(buffer, **pd_to_ftype_args)
         else:
-            raise ValueError(
-                f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})"
-            )
+            raise ValueError(f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})")
 
         status = self._upload_bytes(buffer.getvalue(), s3_prefix, s3_key)
         return status
 
-    def download_df_from_s3(
-        self, s3_prefix, s3_key, filetype=S3FileType.PARQUET, **pd_read_ftype_args
-    ):
+    def download_df_from_s3(self, s3_prefix, s3_key, filetype=S3FileType.PARQUET, **pd_read_ftype_args):
         """Read from s3 and see if the saved data is correct."""
         buffer_bytes = self._download_bytes(s3_prefix, s3_key)
         buffer = BytesIO(buffer_bytes)
@@ -100,9 +92,7 @@ class S3Communication(object):
         elif filetype == S3FileType.PARQUET:
             df = pd.read_parquet(buffer, **pd_read_ftype_args)
         else:
-            raise ValueError(
-                f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})"
-            )
+            raise ValueError(f"Received unexpected file type arg {filetype}. Can only be one of: {list(S3FileType)})")
         return df
 
     def upload_files_in_dir_to_prefix(self, source_dir, s3_prefix):
@@ -126,9 +116,7 @@ class S3Communication(object):
         Modified from original code here: https://stackoverflow.com/a/33350380
         """
         paginator = self.s3_resource.meta.client.get_paginator("list_objects")
-        for result in paginator.paginate(
-            Bucket=self.bucket, Delimiter="/", Prefix=s3_prefix
-        ):
+        for result in paginator.paginate(Bucket=self.bucket, Delimiter="/", Prefix=s3_prefix):
             # download all files in the sub "directory", if any
             if result.get("CommonPrefixes") is not None:
                 for subdir in result.get("CommonPrefixes"):

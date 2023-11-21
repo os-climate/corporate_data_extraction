@@ -16,7 +16,7 @@ _logger = logging.getLogger(__name__)
 
 
 class BaseRelevanceInfer(ABC):
-    """ An abstract base class for predicting relevant data for given question(s).
+    """An abstract base class for predicting relevant data for given question(s).
     The `run_folder` is the main method for this
     class and its children.
 
@@ -35,16 +35,17 @@ class BaseRelevanceInfer(ABC):
             # Filter KPIs based on section and whether they can be found in text or table.
             self.infer_config.sectors = kpi_mapping.KPI_SECTORS
             self.questions = [
-                q_text		  
+                q_text
                 for q_id, (q_text, sect) in kpi_mapping.KPI_MAPPING.items()
-                if len(set(sect).intersection(set(self.infer_config.sectors))) > 0 and self.data_type.upper() in kpi_mapping.KPI_CATEGORY[q_id]
+                if len(set(sect).intersection(set(self.infer_config.sectors))) > 0
+                and self.data_type.upper() in kpi_mapping.KPI_CATEGORY[q_id]
             ]
 
         self.result_dir = self.infer_config.result_dir[self.data_type]
         if not os.path.exists(self.result_dir):
             os.makedirs(self.result_dir)
 
-        farm_logger = logging.getLogger('farm')
+        farm_logger = logging.getLogger("farm")
         farm_logger.setLevel(self.infer_config.farm_infer_logging_level)
         self.model = Inferencer.load(
             self.infer_config.load_dir[self.data_type],
@@ -52,7 +53,7 @@ class BaseRelevanceInfer(ABC):
             gpu=self.infer_config.gpu,
             num_processes=self.infer_config.num_processes,
             disable_tqdm=self.infer_config.disable_tqdm,
-	    return_class_probs=self.infer_config.return_class_probs
+            return_class_probs=self.infer_config.return_class_probs,
         )
 
     def run_folder(self):
@@ -63,10 +64,13 @@ class BaseRelevanceInfer(ABC):
         all_text_path_dict = self._gather_extracted_files()
         df_list = []
         num_pdfs = len(all_text_path_dict)
-        _logger.info("{} Starting Relevence Inference for the following extracted pdf files found in {}:\n{} ".
-                     format("#" * 20, self.result_dir, [pdf for pdf in all_text_path_dict.keys()]))
+        _logger.info(
+            "{} Starting Relevence Inference for the following extracted pdf files found in {}:\n{} ".format(
+                "#" * 20, self.result_dir, [pdf for pdf in all_text_path_dict.keys()]
+            )
+        )
         for i, (pdf_name, file_path) in enumerate(all_text_path_dict.items()):
-            _logger.info("{} {}/{} PDFs".format("#" * 20, i+1, num_pdfs))
+            _logger.info("{} {}/{} PDFs".format("#" * 20, i + 1, num_pdfs))
             predictions_file_name = "{}_{}".format(pdf_name, "predictions_relevant.csv")
             if self.infer_config.skip_processed_files and predictions_file_name in os.listdir(self.result_dir):
                 _logger.info("The relevance infer results for {} already exists. Skipping.".format(pdf_name))
@@ -84,15 +88,13 @@ class BaseRelevanceInfer(ABC):
                 chunk_size = 1000
                 chunk_idx = 0
                 while chunk_idx * chunk_size < num_data_points:
-                    data_chunk = data[chunk_idx * chunk_size: (chunk_idx + 1) * chunk_size]
+                    data_chunk = data[chunk_idx * chunk_size : (chunk_idx + 1) * chunk_size]
                     predictions_chunk = self.model.inference_from_dicts(dicts=data_chunk)
                     predictions.extend(predictions_chunk)
                     chunk_idx += 1
-                flat_predictions = [
-                    example for batch in predictions for example in batch["predictions"]
-                ]
+                flat_predictions = [example for batch in predictions for example in batch["predictions"]]
                 positive_examples = [
-                    {**data[index], **{'paragraph_relevance_score': pred_example['probability']}}
+                    {**data[index], **{"paragraph_relevance_score": pred_example["probability"]}}
                     for index, pred_example in enumerate(flat_predictions)
                     if pred_example["label"] == "1"
                 ]
@@ -100,10 +102,7 @@ class BaseRelevanceInfer(ABC):
                 df["source"] = self.data_type
 
                 df_list.append(df)
-                predictions_file_path = os.path.join(
-                    self.result_dir, predictions_file_name
-
-                )
+                predictions_file_path = os.path.join(self.result_dir, predictions_file_name)
                 df.to_csv(predictions_file_path)
                 _logger.info(
                     "Saved {} relevant {} examples for {} in {}".format(
@@ -140,8 +139,8 @@ class BaseRelevanceInfer(ABC):
 
 class TextRelevanceInfer(BaseRelevanceInfer):
     """This class is responsible for finding relevant texts to given questions.
-        Args:
-            infer_config (obj of model_pipeline.config.InferConfig)
+    Args:
+        infer_config (obj of model_pipeline.config.InferConfig)
     """
 
     def __init__(self, infer_config):
@@ -166,7 +165,7 @@ class TextRelevanceInfer(BaseRelevanceInfer):
         }
 
     def _gather_data(self, pdf_name, pdf_path):
-        """ Gathers all the text data inside the given pdf and prepares it to be passed to text model
+        """Gathers all the text data inside the given pdf and prepares it to be passed to text model
         Args:
             pdf_name (str): Name of the pdf
             pdf_path (str): Path to the pdf
@@ -208,7 +207,7 @@ class TextRelevanceInfer(BaseRelevanceInfer):
             return text
 
     def run_text(self, input_text, input_question):
-        """ A method to make prediction on relevancy of a input_text and input_questions"""
+        """A method to make prediction on relevancy of a input_text and input_questions"""
         basic_texts = [
             {"text": input_question, "text_b": input_text},
         ]

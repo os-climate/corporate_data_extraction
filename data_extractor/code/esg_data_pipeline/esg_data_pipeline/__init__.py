@@ -1,5 +1,4 @@
-from .components import Extractor, PDFTextExtractor, \
-                        TextCurator
+from .components import Extractor, PDFTextExtractor, TextCurator
 
 import logging
 from .config import logging_config, config

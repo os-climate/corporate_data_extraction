@@ -26,9 +26,9 @@ class TextCurator(BaseCurator):
         create_neg_samples=False,
         min_length_neg_sample=50,
         name="DataTextCurator",
-        data_type="TEXT"
+        data_type="TEXT",
     ):
-        """ This class is the responsible for creating ESG text dataset
+        """This class is the responsible for creating ESG text dataset
         (positive and negative examples) based on the annotations.
         Args:
             retrieve_paragraph (bool): Whether or not try to extract the whole
@@ -77,36 +77,30 @@ class TextCurator(BaseCurator):
         # Map the KPI to KPI questions
         importlib.reload(kpi_mapping)
 
-        df_result['question'] = df_result.astype(
-            {'kpi_id': 'float'}, errors="ignore"
-        )['kpi_id'].map(kpi_mapping.KPI_MAPPING)
+        df_result["question"] = df_result.astype({"kpi_id": "float"}, errors="ignore")["kpi_id"].map(
+            kpi_mapping.KPI_MAPPING
+        )
         # In the result csv, the following KPIs are not mapped to any questions.
         # To avoid losing any data, the following
         # KPIs should be modified manually.
         logger.warning(
             "The corresponding KPIs can not be mapped \
-            to any questions and the mapped question is empty\n{}"\
-            .format(df_result[df_result['question'].isna()]['kpi_id'].unique())
+            to any questions and the mapped question is empty\n{}".format(
+                df_result[df_result["question"].isna()]["kpi_id"].unique()
+            )
         )
 
         # Remove the rows could not map KPI to question
         df_result = df_result[df_result.question.notnull()]
         # Remove duplicate examples
-        df_result = df_result.groupby(['question', 'context']).first().reset_index()
+        df_result = df_result.groupby(["question", "context"]).first().reset_index()
 
-        save_path = os.path.join(
-            output_folder,
-            "esg_{}_dataset.csv".format(self.data_type)
-        )
+        save_path = os.path.join(output_folder, "esg_{}_dataset.csv".format(self.data_type))
         logger.info("Curated {} examples".format(len(df_result)))
         logger.info("Saving the dataset in {}".format(save_path))
         df_result.to_csv(save_path)
 
-    def process_single_annotation_file(
-        self,
-        annotation_filepath,
-        sheet_name='data_ex_in_xls'
-    ):
+    def process_single_annotation_file(self, annotation_filepath, sheet_name="data_ex_in_xls"):
         """Create examples for a single excel file
         Args:
             annotation_filepath (str): Path to the annotated excel file
@@ -129,7 +123,7 @@ class TextCurator(BaseCurator):
 
         examples = []
         for i, row in df.iterrows():
-            row['Index'] = i
+            row["Index"] = i
             positive_examples = self.create_pos_examples(row.copy())
 
             examples.extend(positive_examples)
@@ -181,7 +175,7 @@ class TextCurator(BaseCurator):
         return pos_rows
 
     def create_negative_examples(self, row):
-        """ Create negative examples for each row, to achieve this:
+        """Create negative examples for each row, to achieve this:
         - If the source pdf is presented and extracted, we choose a random page,
           except source page and choose a random paragraph within that.
         - If the extracted pdf is not available, we look for the a random
@@ -199,9 +193,7 @@ class TextCurator(BaseCurator):
         #  if the corresponding pdf to a row is not presented, a random pdf is
         # picked to create negative example
         if len(pdf_content) == 0:
-            random_json_path = random.choice(
-                list(Path(self.extraction_folder).rglob('*.json'))
-            )
+            random_json_path = random.choice(list(Path(self.extraction_folder).rglob("*.json")))
             with open(os.path.join(self.extraction_folder, random_json_path)) as f:
                 pdf_content = [json.load(f)]
 
@@ -262,19 +254,11 @@ class TextCurator(BaseCurator):
                 # quotes in the sentence.
                 # 2 is added because to be compatible, so it would be compatible
                 # with what you see in MS excel.
-                logger.warning(
-                    "Could not process row number {} in {}".format(
-                        (row["Index"]+2), row["annotator"]
-                    )
-                )
+                logger.warning("Could not process row number {} in {}".format((row["Index"] + 2), row["annotator"]))
                 return None
         else:
             # To support cases where relevant paragraph are given as strings.
-            logger.info(
-                "Not in a list format row number {} , {}".format(
-                    (row["Index"]+2), row["annotator"]
-                )
-            )
+            logger.info("Not in a list format row number {} , {}".format((row["Index"] + 2), row["annotator"]))
             return [sentence_revised]
 
     def get_full_paragraph(self, row, relevant_sentences):
@@ -291,34 +275,24 @@ class TextCurator(BaseCurator):
              relevant_sentences (list of str): List of processed relevant_paragraphs.
         Returns:
             matches_list (list of str): list of full paragraphs.
-         """
+        """
         pdf_content = self.load_pdf_content(row)
         try:
             source_page = ast.literal_eval(row["source_page"])
         except SyntaxError:
-            logger.info(
-                "Can not process source page in row {} of {} ".format(
-                    (row["Index"]+2), row["annotator"]
-                )
-            )
+            logger.info("Can not process source page in row {} of {} ".format((row["Index"] + 2), row["annotator"]))
             return []
         # pdfminer starts the page counter as 0 while for pdf viewers the first
         # page is numbered as 1.
         selected_pages = [p - 1 for p in source_page]
-        paragraphs = [
-            pdf.get(str(p), []) for p in selected_pages for pdf in pdf_content
-        ]
+        paragraphs = [pdf.get(str(p), []) for p in selected_pages for pdf in pdf_content]
         paragraphs_flat = [item for sublist in paragraphs for item in sublist]
         matches_list = []
         for pattern in relevant_sentences:
-            special_regex_char = [
-                "(", ")", "^", "+", "*", "$", "|", "\\", "?", "[", "]", "{", "}"
-            ]
+            special_regex_char = ["(", ")", "^", "+", "*", "$", "|", "\\", "?", "[", "]", "{", "}"]
             # If the sentences contain the especial character we should put \
             # before them for literal match.
-            pattern = ''.join(
-                ["\\" + c if c in special_regex_char else c for c in pattern]
-            )
+            pattern = "".join(["\\" + c if c in special_regex_char else c for c in pattern])
             for single_par in paragraphs_flat:
                 single_par_clean = self.clean_text(single_par)
                 match = re.search(pattern, single_par_clean, re.I)
@@ -329,7 +303,7 @@ class TextCurator(BaseCurator):
         return matches_list
 
     def load_pdf_content(self, row):
-        """ Load the content of a pdf file
+        """Load the content of a pdf file
         If the extraction step is passed, the json file should be in the
         extraction_folder.
         Args:
@@ -339,13 +313,9 @@ class TextCurator(BaseCurator):
                                 after extraction.
         """
         # The naming format is used in extraction phase.
-        extracted_filename = os.path.splitext(str(row["source_file"]))[0] \
-                             + "-" \
-                             + str(row['company'])
+        extracted_filename = os.path.splitext(str(row["source_file"]))[0] + "-" + str(row["company"])
         # Get all the files in extraction folder that has the desired name
-        extracted_paths = [
-            path for path in os.listdir(self.extraction_folder) if extracted_filename in path
-        ]
+        extracted_paths = [path for path in os.listdir(self.extraction_folder) if extracted_filename in path]
 
         pdf_contents = []
         for path in extracted_paths:
