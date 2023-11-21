@@ -1,7 +1,7 @@
 traitlets==5.4
 requests==2.26.0
 jinja2==3.0
-ipython==7.23.1
+ipython==8.10.0
 urllib3==1.26.7
 pdf2image==1.13.1
 tabula-py==2.1.1
