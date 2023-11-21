@@ -37,14 +37,19 @@ class QAFARMTrainer(FARMTrainer):
         :param mlflow_config: config object which sets MLflow parameters to monitor training
         :param model_config: config object which sets FARM AdaptiveModel parameters
         """
-        super().__init__(file_config=file_config, tokenizer_config=tokenizer_config, processor_config=processor_config,
-                         model_config=model_config, training_config=training_config, mlflow_config=mlflow_config)
+        super().__init__(
+            file_config=file_config,
+            tokenizer_config=tokenizer_config,
+            processor_config=processor_config,
+            model_config=model_config,
+            training_config=training_config,
+            mlflow_config=mlflow_config,
+        )
 
         if self.file_config.data_type != "Text":
             raise ValueError("only `Text` is supported for QA.")
 
     def prepare_data(self):
-
         if self.file_config.perform_splitting:
             _logger.info("Loading the {} data and splitting to train and val...".format(self.file_config.curated_data))
 
@@ -52,8 +57,9 @@ class QAFARMTrainer(FARMTrainer):
                 dataset = json.load(read_file)
             # Splitting
             # create a list of all paragraphs, The splitting will happen at the paragraph level
-            paragraphs_list = [{'title': pdf['title'], 'single_paragraph': par} for pdf in dataset['data'] for par in
-                               pdf["paragraphs"]]
+            paragraphs_list = [
+                {"title": pdf["title"], "single_paragraph": par} for pdf in dataset["data"] for par in pdf["paragraphs"]
+            ]
             random.seed(self.training_config.seed)
             random.shuffle(paragraphs_list)
             train_paragraphs, dev_paragraphs = train_test_split(paragraphs_list, test_size=self.file_config.dev_split)
@@ -63,26 +69,28 @@ class QAFARMTrainer(FARMTrainer):
                 paragraphs_dict = defaultdict(list)
 
                 for par in paragraphs:
-                    paragraphs_dict[par['title']].append(par['single_paragraph'])
+                    paragraphs_dict[par["title"]].append(par["single_paragraph"])
 
-                squad_like_dataset = [{'title': key, 'paragraphs': value} for key, value in paragraphs_dict.items()]
+                squad_like_dataset = [{"title": key, "paragraphs": value} for key, value in paragraphs_dict.items()]
 
                 return squad_like_dataset
 
-            train_data = {'version': 'v2.0', 'data': reformat_paragraphs(train_paragraphs)}
-            dev_data = {'version': 'v2.0', 'data': reformat_paragraphs(dev_paragraphs)}
+            train_data = {"version": "v2.0", "data": reformat_paragraphs(train_paragraphs)}
+            dev_data = {"version": "v2.0", "data": reformat_paragraphs(dev_paragraphs)}
 
-            with open(self.file_config.train_filename, 'w') as outfile:
+            with open(self.file_config.train_filename, "w") as outfile:
                 json.dump(train_data, outfile)
 
-            with open(self.file_config.dev_filename, 'w') as outfile:
+            with open(self.file_config.dev_filename, "w") as outfile:
                 json.dump(dev_data, outfile)
         else:
-            _logger.info("Loading the train from {} \n Loading validation data from {}".
-                         format(self.file_config.train_filename, self.file_config.dev_filename))
+            _logger.info(
+                "Loading the train from {} \n Loading validation data from {}".format(
+                    self.file_config.train_filename, self.file_config.dev_filename
+                )
+            )
             for filename in [self.file_config.train_filename, self.file_config.dev_filename]:
                 assert os.path.exists(filename), "File `{}` does not exist.".format(filename)
-
 
     def create_head(self):
         if "squad" in self.model_config.lang_model:
@@ -118,9 +126,7 @@ class QAFARMTrainer(FARMTrainer):
         all_em_answerable = []
         all_f1_answerable = []
 
-        silos = DataSiloForCrossVal.make(
-            data_silo, sets=["train", "dev"], n_splits=xval_folds
-        )
+        silos = DataSiloForCrossVal.make(data_silo, sets=["train", "dev"], n_splits=xval_folds)
 
         for num_fold, silo in enumerate(silos):
             model = self._train_on_split(data_silo, silo, num_fold, device, n_gpu)
@@ -141,15 +147,9 @@ class QAFARMTrainer(FARMTrainer):
             all_em_answerable.append(result["em_answerable"])
             all_f1_answerable.append(result["f1_answerable"])
 
-        _logger.info(
-            f"############ RESULT_CV -- {self.training_config.xval_folds} folds ############"
-        )
-        _logger.info(
-            f"EM\nMean:  {np.mean(all_em) * 100:.1f}, std: {np.std(all_em) * 100:.3f}"
-        )
-        _logger.info(
-            f"F1\nMean:  {np.mean(all_f1) * 100:.1f}, std F1: {np.std(all_f1) * 100:.3f}"
-        )
+        _logger.info(f"############ RESULT_CV -- {self.training_config.xval_folds} folds ############")
+        _logger.info(f"EM\nMean:  {np.mean(all_em) * 100:.1f}, std: {np.std(all_em) * 100:.3f}")
+        _logger.info(f"F1\nMean:  {np.mean(all_f1) * 100:.1f}, std F1: {np.std(all_f1) * 100:.3f}")
         _logger.info(
             f"EM_Answerable\nMean:  {np.mean(all_em_answerable) * 100:.1f}, std recall: {np.std(all_em_answerable) * 100:.3f}"
         )

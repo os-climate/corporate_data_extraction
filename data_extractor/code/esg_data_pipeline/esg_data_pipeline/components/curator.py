@@ -6,11 +6,13 @@ from .text_curator import TextCurator
 logger = logging.getLogger(__name__)
 NAME_CLASS_MAPPING = {"TextCurator": TextCurator}
 
+
 class Curator:
     """A data curator component responsible for creating table and text training data based on annotated data
     Args:
         annotation_folder (str): path to the folder containing annotation excel files
     """
+
     def __init__(self, curators):
         self.curators = self.__create_curators(curators)
 
@@ -33,14 +35,14 @@ class Curator:
         return list_cura
 
     def run(self, input_extraction_folder, annotation_folder, output_folder):
-        """ Runs curation for each curator.
+        """Runs curation for each curator.
 
         Args:
             input_extraction_folder (A str or PosixPath)
             annotation_folder (A str or PosixPath)
             output_folder (A str or PosixPath)
         """
-        annotation_excels = glob.glob('{}/[!~$]*[.xlsx]'.format(annotation_folder))
+        annotation_excels = glob.glob("{}/[!~$]*[.xlsx]".format(annotation_folder))
         logger.info("Received {} excel files".format(len(annotation_excels)))
 
         for curator_obj in self.curators:
