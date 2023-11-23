@@ -2,9 +2,9 @@ from pathlib import Path
 import shutil
 import pandas as pd
 from utils.s3_communication import S3Communication
-from utils.settings import get_s3_settings, S3Settings
+from utils.settings import get_s3_settings, S3Settings, Settings
 
-S3Settings = get_s3_settings()
+# S3Settings = get_s3_settings()
 
 
 def create_folder(path_folder: Path) -> None:
@@ -74,16 +74,18 @@ class S3Controller():
 
 def download_data_from_s3_main_bucket_to_local_folder_if_required(s3_bucket: S3Communication,
                                                                   path_s3_with_prefix_folder: Path,
-                                                                  path_local_folder: Path):
-    if S3Settings.s3_usage:
+                                                                  path_local_folder: Path,
+                                                                  main_settings: Settings):
+    if main_settings.general.s3_usage:
         s3_bucket.download_files_in_prefix_to_dir(path_s3_with_prefix_folder, 
                                                   path_local_folder)
 
 
 def upload_data_from_local_folder_to_s3_interim_bucket_if_required(s3_bucket: S3Communication,
                                                                    path_local_folder: Path,
-                                                                   path_s3_with_prefix_folder: Path):
-    if S3Settings.s3_usage:
+                                                                   path_s3_with_prefix_folder: Path,
+                                                                   main_settings: Settings):
+    if main_settings.general.s3_usage:
         s3_bucket.upload_files_in_dir_to_prefix(path_local_folder, 
                                                 path_s3_with_prefix_folder) 
 

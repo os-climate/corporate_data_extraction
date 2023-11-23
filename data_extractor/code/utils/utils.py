@@ -13,6 +13,61 @@ import datetime
 from utils.s3_communication import S3Communication
 from pathlib import Path
 from utils.paths import ProjectPaths
+from utils.settings import Settings
+
+
+def save_train_info(project_name, s3_usage=False, s3c_main: S3Communication = None, main_settings: Settings = None, 
+                    s3_settings: Settings = None, project_paths: ProjectPaths = None):
+    """
+    This function stores all information of the training to a dictionary and saves it into a pickle file.
+    Read it via:
+    relevance_model = 'output'
+    kpi_model = 'output'
+    file_src_path = project_model_dir
+    file_src_path = file_src_path + '/rel_text_' + relevance_model + '_kpi_text_' + kpi_model + '.pickle'
+    with open(file_src_path, 'rb') as handle:
+    b = pickle.load(handle)
+    :param project_name: str
+    return None
+    """
+    if s3_usage:
+        # s3_settings = project_settings["s3_settings"]
+        project_prefix = s3_settings.prefix + "/" + project_name + '/data'
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/kpi_mapping', str(project_paths.path_folder_source_mapping))
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/annotations', str(project_paths.path_folder_source_annotation))
+        s3c_main.download_files_in_prefix_to_dir(project_prefix + '/input/pdfs/training', str(project_paths.path_folder_source_pdf))
+    
+    dir_train = {}
+    dir_train.update({'project_name': project_name})
+    # dir_train.update({'train_settings': project_settings})
+    dir_train.update({'train_settings': main_settings})
+    # dir_train.update({'pdfs_used': os.listdir(source_pdf)})
+    dir_train.update({'pdfs_used': os.listdir(project_paths.path_folder_source_pdf)})
+    first = True
+    for filename in os.listdir(str(project_paths.path_folder_source_annotation)):
+        if(filename[-5:]=='.xlsx'):
+            if first:
+                dir_train.update({'annotations': pd.read_excel(str(project_paths.path_folder_source_annotation) + r'/' + filename, engine='openpyxl') })
+                first = False
+    dir_train.update({'kpis': pd.read_csv(str(project_paths.path_folder_source_mapping) + '/kpi_mapping.csv')})
+    
+    # relevance_model = project_settings['train_relevance']['output_model_name']
+    relevance_model = main_settings.train_relevance.output_model_name
+    # kpi_model = project_settings['train_kpi']['output_model_name']
+    kpi_model = main_settings.train_kpi.output_model_name
+
+    name_out = str(project_paths.path_project_model_folder)
+    name_out = name_out + '/SUMMARY_REL_' + relevance_model + '_KPI_' + kpi_model + '.pickle'
+        
+    with open(name_out, 'wb') as handle:
+        pickle.dump(dir_train, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    if s3_usage:
+        response_2 = s3c_main.upload_file_to_s3(filepath=name_out,
+                      s3_prefix=str(Path(s3_settings.prefix) / project_name / 'models'),
+                      s3_key='SUMMARY_REL_' + relevance_model + '_KPI_' + kpi_model + '.pickle')
+    
+    return None
+
 
 
 def generate_text_3434(project_name, s3_usage, s3_settings, project_paths: ProjectPaths):

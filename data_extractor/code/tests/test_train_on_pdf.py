@@ -10,7 +10,7 @@ import yaml
 import os
 import traceback
 from tests.utils_test import modify_project_settings
-from utils.settings import MainSettings
+from utils.settings import MainSettings, S3Settings, MainBucketSettings, InterimBucketSettings
 # from tests.test_utils.test_running import prerequisite_running
 
 # types
@@ -36,15 +36,15 @@ def prerequisite_train_on_pdf_try_run(
     :rtype prerequisite_train_on_pdf_try_run: None
     """
     mocked_project_settings = {
-        's3_usage': False,
         's3_settings': {},
         'general': 
             {
-            'ext_port': 0,
-            'infer_port': 0,
+            'ext_port': '0',
+            'infer_port': '0',
             'ext_ip': '0.0.0.0',
             'infer_ip': '0.0.0.0',
-            'delete_interim_files': False
+            'delete_interim_files': False,
+            's3_usage': False
             },
         'train_relevance': 
             {
@@ -94,7 +94,7 @@ def prerequisite_train_on_pdf_try_run(
     shutil.copy(path_file_settings_root_testing, path_file_settings_temporary)
     shutil.copy(path_file_settings_s3_root_testing, path_file_settings_s3_temporary)
 
-    def return_project_settings(*args: typing.List[Mock]):
+    def return_project_settings(*args: typing.List[Mock]) -> dict:
         """Helper function for choosing the right settings file
 
         :return: Project or S3 Settings file

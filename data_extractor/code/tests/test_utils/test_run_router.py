@@ -216,7 +216,7 @@ def test_run_router_successful_run(router: Router,
                                    server: requests_mock.mocker.Mocker,
                                    infer_relevance: bool,
                                    train_kpi: bool):
-    with patch('train_on_pdf.generate_text_3434', Mock()):
+    with patch('utils.utils.generate_text_3434', Mock()):
         router.run_router()
 
     assert router.return_value == True

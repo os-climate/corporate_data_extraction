@@ -1,5 +1,5 @@
 from pathlib import Path
-from train_on_pdf import save_train_info
+from utils.utils import save_train_info
 import pytest
 from unittest.mock import patch, Mock
 import shutil
@@ -30,10 +30,10 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
     """
     mocked_project_settings = {
         'train_relevance': {
-            'output_model_name': 'TEST'
+            'output_model_name': 'TEST_1'
             },
         'train_kpi':{
-            'output_model_name': 'TEST'
+            'output_model_name': 'TEST_1'
         },
         's3_settings': {
             'prefix' : 'corporate_data_extraction_projects'
@@ -58,7 +58,7 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
           patch('train_on_pdf.source_mapping', str(path_folder_temporary / 'source_mapping')),
           patch('train_on_pdf.source_annotation', str(path_folder_temporary / 'source_annotation')),
           patch('train_on_pdf.source_pdf', str(path_folder_temporary / 'source_pdf')),
-          patch('train_on_pdf.pd', Mock()) as mocked_pandas):
+          patch('utils.utils.pd', Mock()) as mocked_pandas):
         # train_on_pdf.project_model_dir = str(path_project_model_dir)
         mocked_pandas.read_csv.return_value = {None}
         mocked_pandas.read_excel.return_value = {None}
@@ -69,7 +69,8 @@ def prerequisites_save_train_info(path_folder_root_testing: Path,
         # del train_on_pdf.project_model_dir
 
 
-def test_save_train_info_pickle(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
+def test_save_train_info_pickle(prerequisites_save_train_info: Path, project_paths: ProjectPaths,
+                                s3_settings: Settings, main_settings: Settings):
     """Tests if the train info is pickle correctly
 
     :param prerequisites_save_train_info: Requesting the prerequisites_save_train_info fixture
@@ -79,7 +80,7 @@ def test_save_train_info_pickle(prerequisites_save_train_info: Path, project_pat
     path_train_info = prerequisites_save_train_info
     project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
     
-    save_train_info(project_name, project_paths=project_paths)
+    save_train_info(project_name, project_paths=project_paths, s3_settings=s3_settings, main_settings=main_settings)
     
     # we have to combine a pathlib and a string object...
     path_parent_train_info = path_train_info.parent
@@ -89,7 +90,8 @@ def test_save_train_info_pickle(prerequisites_save_train_info: Path, project_pat
     assert path_train_info.exists()
   
   
-def test_save_train_info_entries(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
+def test_save_train_info_entries(prerequisites_save_train_info: Path, project_paths: ProjectPaths,
+                                 s3_settings: Settings, main_settings: Settings):
     """Tests if all the train infos exists in the pickled train info file
 
     :param prerequisites_save_train_info: Requesting the prerequisites_save_train_info fixture
@@ -99,7 +101,7 @@ def test_save_train_info_entries(prerequisites_save_train_info: Path, project_pa
     path_train_info = prerequisites_save_train_info
     project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
     
-    save_train_info(project_name, project_paths=project_paths)
+    save_train_info(project_name, project_paths=project_paths, s3_settings=s3_settings, main_settings=main_settings)
     
     with open(str(path_train_info), 'rb') as file:
         train_info = pickle.load(file)
@@ -115,15 +117,17 @@ def test_save_train_info_entries(prerequisites_save_train_info: Path, project_pa
     assert all(key in expected_keys for key in train_info.keys())
 
     
-def test_save_tain_info_return_value(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
+def test_save_tain_info_return_value(prerequisites_save_train_info: Path, project_paths: ProjectPaths,
+                                     s3_settings: Settings, main_settings: Settings):
     project_name = 'TEST'
     path_train_info = prerequisites_save_train_info
     project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
     
-    assert save_train_info(project_name, project_paths=project_paths) is None
+    assert save_train_info(project_name, project_paths=project_paths, s3_settings=s3_settings, main_settings=main_settings) is None
     
 
-def test_save_train_info_s3_usage(prerequisites_save_train_info: Path, project_paths: ProjectPaths):
+def test_save_train_info_s3_usage(prerequisites_save_train_info: Path, project_paths: ProjectPaths,
+                                  s3_settings: Settings, main_settings: Settings):
     """Tests if the s3_usage flag correctly works
 
     """
@@ -133,7 +137,7 @@ def test_save_train_info_s3_usage(prerequisites_save_train_info: Path, project_p
     path_train_info = prerequisites_save_train_info
     project_paths._path_project_model_folder = Path(prerequisites_save_train_info).parent
 
-    save_train_info(project_name, s3_usage, mocked_s3, project_paths=project_paths)
+    save_train_info(project_name, s3_usage, mocked_s3, project_paths=project_paths, s3_settings=s3_settings, main_settings=main_settings)
     
     assert mocked_s3.download_files_in_prefix_to_dir.call_count == 3
     assert mocked_s3.upload_file_to_s3.called_once()

@@ -101,7 +101,7 @@ class Router:
     def _check_for_generate_text_3434(self):
         try:
             temp: bool = generate_text_3434(self._main_settings.general.project_name, 
-                                            self._s3_settings.s3_usage, self._s3_settings, self._project_paths)
+                                            self._main_settings.general.s3_usage, self._s3_settings, self._project_paths)
             if temp:
                 print('text_3434 was generated without error.')
             else:
