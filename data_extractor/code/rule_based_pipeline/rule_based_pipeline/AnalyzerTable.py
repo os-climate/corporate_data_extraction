@@ -768,9 +768,11 @@ class AnalyzerTable:
                             )
                         print_verbose(
                             7,
-                            ".........-> year found=" + str(kpi_year)
-                            if kpi_year != -1
-                            else "..........-> still nothing found. give up.",
+                            (
+                                ".........-> year found=" + str(kpi_year)
+                                if kpi_year != -1
+                                else "..........-> still nothing found. give up."
+                            ),
                         )
 
                     anywhere_match, anywhere_match_score = kpispecs.match_anywhere_on_page(self.htmlpage, it.this_id)
