@@ -59,7 +59,7 @@ dependencies = [
   "scikit-learn==1.0.1",
   "scipy==1.10.0",
   "spacy==2.3.2",
-  "tabula-py==2.1.1",
+  "tabula-py==2.9.0",
   "tqdm",
   "traitlets==5.4",
   "urllib3==1.26.18",
