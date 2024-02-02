@@ -1738,9 +1738,11 @@ class HTMLTable:
                     if len(list_idx) > 1:
                         list_idx = sorted(
                             list_idx,
-                            key=lambda id_i: tab1.items[tab1.idx[id_i[1]]].pos_y
-                            if id_i[0] == 1
-                            else tab2.items[tab2.idx[id_i[1]]].pos_y,
+                            key=lambda id_i: (
+                                tab1.items[tab1.idx[id_i[1]]].pos_y
+                                if id_i[0] == 1
+                                else tab2.items[tab2.idx[id_i[1]]].pos_y
+                            ),
                         )
                         for k in range(len(list_idx) - 1):
                             id, ix = list_idx[k]
