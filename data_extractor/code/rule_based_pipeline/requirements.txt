@@ -1,6 +1,6 @@
 boto3==1.28.8
 Flask==2.3.2
-jsonpickle==1.2
+jsonpickle>=1.5.0
 MarkupSafe==2.1.1
 numpy==1.23.5
 pandas==1.5.2
