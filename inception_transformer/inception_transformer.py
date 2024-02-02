@@ -4,6 +4,7 @@ Authors: Dr. David Besslich and Maximilian Riefer
 #13 Project: INCEpTION to Pandas
 This function is used for the re-collection of marked answers out of an INCEpTION export.
 """
+
 import glob
 import json
 import logging
