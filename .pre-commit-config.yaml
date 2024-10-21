@@ -27,7 +27,7 @@ repos:
         entry: scripts/tomllint.sh .
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -57,7 +57,7 @@ repos:
 
   # Autoformat: YAML, JSON, Markdown, etc.
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.0
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
         args:
@@ -65,7 +65,7 @@ repos:
 
   # Lint: Markdown
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.39.0
+    rev: v0.42.0
     hooks:
       - id: markdownlint
         args: ['--fix']
@@ -77,12 +77,12 @@ repos:
   #       args: ['--py37-plus']
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.1.1
+    rev: 24.10.0
     hooks:
       - id: black
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.1.1
+    rev: 24.10.0
     hooks:
       - id: black-jupyter
 
@@ -98,7 +98,7 @@ repos:
         args: ['--ignore=E006']
 
   - repo: https://github.com/koalaman/shellcheck-precommit
-    rev: v0.9.0
+    rev: v0.10.0
     hooks:
       - id: shellcheck
       # Optionally only show errors and warnings
@@ -121,13 +121,13 @@ repos:
       - id: isort
 
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.33.0
+    rev: v1.35.1
     hooks:
       - id: yamllint
         args: [--strict]
 
   - repo: https://github.com/Mateusz-Grzelinski/actionlint-py
-    rev: v1.6.26.11
+    rev: v1.7.3.17
     hooks:
       - id: actionlint
 
@@ -139,7 +139,7 @@ repos:
   #     additional_dependencies: [black]
 
   - repo: https://github.com/pycqa/flake8
-    rev: '6.1.0'
+    rev: '7.1.1'
     hooks:
       - id: flake8
 
@@ -150,7 +150,7 @@ repos:
   #   - id: codespell
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.8.0'
+    rev: 'v1.12.1'
     hooks:
       - id: mypy
 
