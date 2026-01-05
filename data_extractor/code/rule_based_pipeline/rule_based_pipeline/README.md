@@ -31,16 +31,16 @@ REMARKS:
 
 def test_prepare_kpispecs(): # TODO: This should be read from JSON files, but for now we can simply define it in code
 
-2. To achieve different results / for debugging / different configurations, there are certain places in the code, marked
+1. To achieve different results / for debugging / different configurations, there are certain places in the code, marked
    with "### TODO:", in particular in the files main.py, globals.py, test.py. You can adjust the code here as documented.
 
-3. There are also routines for evaluating the results against predefined training data. See "test_evaluation" in test.py, and TestEvaluation.py for more details.
+2. There are also routines for evaluating the results against predefined training data. See "test_evaluation" in test.py, and TestEvaluation.py for more details.
 
-4. In AnalyzerPage.py, you can specify which algorithms are used for analyzing PDFs in the function "find_kpis".
+3. In AnalyzerPage.py, you can specify which algorithms are used for analyzing PDFs in the function "find_kpis".
    The most tested algorithm is the one for tables (around line 39): # 1. Tables
    for a in self.analyzer_table:
    res.extend(a.find_kpis(kpispecs))
 
    There is also a cluster based algorithm (fully implemented), but not well tested. So it is commented out for now.
 
-5. The full integration of this tool into the corporate date pipeline still needs to be done. For now it can only be executed separately.
+4. The full integration of this tool into the corporate date pipeline still needs to be done. For now it can only be executed separately.
