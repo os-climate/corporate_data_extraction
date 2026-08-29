@@ -32,7 +32,7 @@ dependencies = [
   "Pillow==10.2.0",
   "Werkzeug",
   "boto3~=1.28.8",
-  "cryptography==41.0.4",
+  "cryptography==42.0.4",
   "farm>=0.5.0",
   "flask",
   "fuzzywuzzy==0.18.0",
