@@ -12,7 +12,7 @@ pyspellchecker==0.5.5
 requests==2.31.0
 scikit-learn==1.0.1
 spacy==2.3.2
-tqdm==4.48.0
+tqdm==4.66.3
 traitlets==5.4
 urllib3==1.26.18
 Werkzeug==2.3.8
