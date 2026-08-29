@@ -308,12 +308,8 @@ class TextKPIInferenceCurator(BaseKPIInferenceCurator):
             # pdfminer starts counter from 0 (hence the dictionary loaded from json)
             pars = d[str(int(r["source_page"]) - 1)]
             if len(pars) == 0:
-                logger.info(
-                    "{}.json has empty list of paragraphs at page {}. \
-                    Will use relevant text as annotated".format(
-                        r["source_file"].split(".pdf")[0], r["source_page"]
-                    )
-                )
+                logger.info("{}.json has empty list of paragraphs at page {}. \
+                    Will use relevant text as annotated".format(r["source_file"].split(".pdf")[0], r["source_page"]))
             else:
                 # match the closest paragraph to the annotated one
                 # let's try exact match
