@@ -29,7 +29,7 @@ classifiers = [
 dependencies = [
   "Flask==2.3.2",
   "MarkupSafe==2.1.1",
-  "Pillow==10.2.0",
+  "Pillow==10.3.0",
   "Werkzeug",
   "boto3~=1.28.8",
   "cryptography==41.0.4",
